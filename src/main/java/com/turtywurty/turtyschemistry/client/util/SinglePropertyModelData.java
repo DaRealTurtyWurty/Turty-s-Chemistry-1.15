@@ -19,6 +19,7 @@ public class SinglePropertyModelData<T> implements IModelData {
 		return prop == this.prop;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Nullable
 	@Override
 	public <T2> T2 getData(ModelProperty<T2> prop) {
@@ -27,6 +28,7 @@ public class SinglePropertyModelData<T> implements IModelData {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Nullable
 	@Override
 	public <T2> T2 setData(ModelProperty<T2> prop, T2 data) {
