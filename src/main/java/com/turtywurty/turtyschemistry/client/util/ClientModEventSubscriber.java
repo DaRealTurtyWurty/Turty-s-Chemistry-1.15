@@ -35,14 +35,14 @@ public final class ClientModEventSubscriber {
 		ScreenManager.registerFactory(ContainerTypeInit.GAS_EXTRACTOR.get(), GasExtractorScreen::new);
 
 		// Set Render Types
-		RenderTypeLookup.setRenderLayer(BlockInit.AUTOCLAVE.get(), RenderType.getTranslucent());
-		RenderTypeLookup.setRenderLayer(BlockInit.AGITATOR.get(), RenderType.getTranslucent());
-		RenderTypeLookup.setRenderLayer(BlockInit.CONVEYOR.get(), RenderType.getTranslucent());
-		RenderTypeLookup.setRenderLayer(BlockInit.GREEN_ALGAE.get(), RenderType.getTranslucent());
-		RenderTypeLookup.setRenderLayer(BlockInit.GAS_EXTRACTOR.get(), RenderType.getCutout());
-		RenderTypeLookup.setRenderLayer(FluidInit.BRINE_STILL.get(), RenderType.getTranslucent());
-		RenderTypeLookup.setRenderLayer(FluidInit.BRINE_FLOWING.get(), RenderType.getTranslucent());
-		RenderTypeLookup.setRenderLayer(FluidInit.BRINE_BLOCK.get(), RenderType.getTranslucent());
+		RenderTypeLookup.setRenderLayer(BlockInit.AUTOCLAVE.get(), layer -> layer == RenderType.getSolid() || layer == RenderType.getTranslucent());
+		RenderTypeLookup.setRenderLayer(BlockInit.AGITATOR.get(), layer -> layer == RenderType.getSolid() || layer == RenderType.getTranslucent());
+		RenderTypeLookup.setRenderLayer(BlockInit.CONVEYOR.get(), type -> type.equals(RenderType.getTranslucent()));
+		RenderTypeLookup.setRenderLayer(BlockInit.GREEN_ALGAE.get(), type -> type.equals(RenderType.getTranslucent()));
+		RenderTypeLookup.setRenderLayer(BlockInit.GAS_EXTRACTOR.get(), type -> type.equals(RenderType.getCutout()));
+		RenderTypeLookup.setRenderLayer(FluidInit.BRINE_STILL.get(), type -> type.equals(RenderType.getTranslucent()));
+		RenderTypeLookup.setRenderLayer(FluidInit.BRINE_FLOWING.get(), type -> type.equals(RenderType.getTranslucent()));
+		RenderTypeLookup.setRenderLayer(FluidInit.BRINE_BLOCK.get(), type -> type.equals(RenderType.getTranslucent()));
 
 		// Bind TileEntity to TileEntityRenderer
 		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.AUTOCLAVE.get(), AutoclaveTileEntityRenderer::new);

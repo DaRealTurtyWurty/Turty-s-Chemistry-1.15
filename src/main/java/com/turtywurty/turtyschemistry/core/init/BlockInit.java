@@ -30,7 +30,7 @@ public class BlockInit {
 			TurtyChemistry.MOD_ID);
 
 	public static final RegistryObject<Block> FRACTIONAL_DISTILLER = BLOCKS.register("fractional_distiller",
-			() -> new FractionalDistillerBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+			() -> new FractionalDistillerBlock(makeMachineProperties()));
 
 	public static final RegistryObject<Block> PROPANE_TANK = BLOCKS.register("propane", () -> new PropaneTankBlock(
 			Block.Properties.create(Material.IRON).hardnessAndResistance(0.6F).sound(SoundType.METAL).notSolid()));
@@ -39,86 +39,84 @@ public class BlockInit {
 			Block.Properties.create(Material.IRON).hardnessAndResistance(0.6F).sound(SoundType.METAL).notSolid()));
 
 	public static final RegistryObject<Block> AGITATOR = BLOCKS.register("agitator",
-			() -> new AgitatorBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES.notSolid()));
+			() -> new AgitatorBlock(makeMachineProperties().notSolid()));
 
 	public static final RegistryObject<Block> AUTOCLAVE = BLOCKS.register("autoclave",
-			() -> new AutoclaveBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES.notSolid()));
+			() -> new AutoclaveBlock(makeMachineProperties().notSolid()));
 
 	public static final RegistryObject<Block> BALER = BLOCKS.register("baler",
-			() -> new BalerBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES.notSolid()));
+			() -> new BalerBlock(makeMachineProperties().notSolid()));
 
 	public static final RegistryObject<Block> BLOWER = BLOCKS.register("blower",
-			() -> new BlowerBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+			() -> new BlowerBlock(makeMachineProperties()));
 
 	public static final RegistryObject<Block> BOILER = BLOCKS.register("boiler",
-			() -> new BoilerBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+			() -> new BoilerBlock(makeMachineProperties()));
 
 	public static final RegistryObject<Block> CONVEYOR = BLOCKS.register("conveyor",
-			() -> new PlainConveyorBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+			() -> new PlainConveyorBlock(makeMachineProperties()));
 
 	public static final RegistryObject<Block> BRIQUETTING_PRESS = BLOCKS.register("briquetting_press",
-			() -> new BriquettingPressBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+			() -> new BriquettingPressBlock(makeMachineProperties()));
 
 	/*
 	 * public static final RegistryObject<Block> CALCINER =
 	 * BLOCKS.register("calciner", () -> new
-	 * CalcinerBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+	 * CalcinerBlock(makeMachineProperties()));
 	 * 
 	 * public static final RegistryObject<Block> CENTRIFUGE =
 	 * BLOCKS.register("centrifuge", () -> new
-	 * CentrifugeBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+	 * CentrifugeBlock(makeMachineProperties()));
 	 * 
 	 * public static final RegistryObject<Block> CHILLER =
-	 * BLOCKS.register("chiller", () -> new
-	 * ChillerBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+	 * BLOCKS.register("chiller", () -> new ChillerBlock(makeMachineProperties()));
 	 * 
 	 * public static final RegistryObject<Block> CLARIFIER =
 	 * BLOCKS.register("clarifier", () -> new
-	 * ClarifierBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+	 * ClarifierBlock(makeMachineProperties()));
 	 * 
 	 * public static final RegistryObject<Block> CLASSIFIER =
 	 * BLOCKS.register("classifier", () -> new
-	 * ClassifierBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+	 * ClassifierBlock(makeMachineProperties()));
 	 * 
 	 * public static final RegistryObject<Block> COMPACTOR =
 	 * BLOCKS.register("compactor", () -> new
-	 * CompactorBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+	 * CompactorBlock(makeMachineProperties()));
 	 * 
 	 * public static final RegistryObject<Block> COMPRESSOR =
 	 * BLOCKS.register("compressor", () -> new
-	 * CompressorBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+	 * CompressorBlock(makeMachineProperties()));
 	 * 
 	 * 
 	 * public static final RegistryObject<Block> COOLING_TOWER =
 	 * BLOCKS.register("cooling_tower", () -> new
-	 * CoolingTowerBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+	 * CoolingTowerBlock(makeMachineProperties()));
 	 * 
 	 * public static final RegistryObject<Block> CRYSTALLIZER =
 	 * BLOCKS.register("crystallizer", () -> new
-	 * CrystallizerBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+	 * CrystallizerBlock(makeMachineProperties()));
 	 * 
 	 * public static final RegistryObject<Block> CYCLONE =
-	 * BLOCKS.register("cyclone", () -> new
-	 * CycloneBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+	 * BLOCKS.register("cyclone", () -> new CycloneBlock(makeMachineProperties()));
 	 * 
 	 * public static final RegistryObject<Block> DEODORIZER =
 	 * BLOCKS.register("deodorizer", () -> new
-	 * DeodorizerBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+	 * DeodorizerBlock(makeMachineProperties()));
 	 * 
 	 * public static final RegistryObject<Block> BASIC_DIGESTER =
 	 * BLOCKS.register("basic_digester", () -> new
-	 * BasicDigesterBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+	 * BasicDigesterBlock(makeMachineProperties()));
 	 * 
 	 * public static final RegistryObject<Block> EXPELLER =
 	 * BLOCKS.register("expeller", () -> new
-	 * ExpellerBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+	 * ExpellerBlock(makeMachineProperties()));
 	 * 
 	 * public static final RegistryObject<Block> EXTRUDER =
 	 * BLOCKS.register("extruder", () -> new
-	 * ExtruderBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+	 * ExtruderBlock(makeMachineProperties()));
 	 * 
 	 * public static final RegistryObject<Block> FAN = BLOCKS.register("fan", () ->
-	 * new FanBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES));
+	 * new FanBlock(makeMachineProperties()));
 	 */
 
 	public static final RegistryObject<GreenAlgaeBlock> GREEN_ALGAE = BLOCKS.register("green_algae",
@@ -128,9 +126,14 @@ public class BlockInit {
 			() -> new GasBlock(Block.Properties.from(Blocks.AIR).tickRandomly()));
 
 	public static final RegistryObject<GasExtractorBlock> GAS_EXTRACTOR = BLOCKS.register("gas_extractor",
-			() -> new GasExtractorBlock(BlockPropertyInit.BASIC_MACHINE_PROPERTIES.notSolid()));
+			() -> new GasExtractorBlock(makeMachineProperties().notSolid()));
 
 	public static final RegistryObject<Block> BRINE_BLOCK = BLOCKS.register("brine_block",
 			() -> new Block(Block.Properties.create(Material.ROCK).hardnessAndResistance(2.0f, 4.0f).harvestLevel(1)
 					.harvestTool(ToolType.PICKAXE).sound(SoundType.STONE).speedFactor(0.6f).slipperiness(0.5f)));
+
+	protected static Block.Properties makeMachineProperties() {
+		return Block.Properties.create(Material.IRON).hardnessAndResistance(1.2f).sound(SoundType.METAL).harvestLevel(2)
+				.harvestTool(ToolType.PICKAXE);
+	}
 }
