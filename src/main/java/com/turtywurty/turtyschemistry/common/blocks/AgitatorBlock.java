@@ -5,22 +5,23 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import com.turtywurty.turtyschemistry.common.tileentity.AgitatorTileEntity;
-import com.turtywurty.turtyschemistry.core.init.StatsInit;
 import com.turtywurty.turtyschemistry.core.init.TileEntityTypeInit;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.fluid.EmptyFluid;
+import net.minecraft.item.BucketItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.shapes.IBooleanFunction;
@@ -29,6 +30,8 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 
 public class AgitatorBlock extends BaseHorizontalBlock {
 
@@ -133,37 +136,57 @@ public class AgitatorBlock extends BaseHorizontalBlock {
 		return BlockRenderType.MODEL;
 	}
 
-	@SuppressWarnings("deprecation")
-	@Override
-	public void onReplaced(BlockState oldState, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-		if (oldState.getBlock() != newState.getBlock()) {
-			TileEntity tileEntity = worldIn.getTileEntity(pos);
-			if (tileEntity instanceof AgitatorTileEntity) {
-				final NonNullList<ItemStack> inventory = ((AgitatorTileEntity) tileEntity).getInventory();
-				for (int stack = 0; stack < inventory.size(); ++stack) {
-					InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), inventory.get(stack));
-				}
-			}
-		}
-		super.onReplaced(oldState, worldIn, pos, newState, isMoving);
-	}
-
 	@Override
 	public ActionResultType onBlockActivated(final BlockState state, final World worldIn, final BlockPos pos,
 			final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
-		if (!state.get(PROCESSING)) {
-			TileEntity tileentity = worldIn.getTileEntity(pos);
-			if (tileentity instanceof AgitatorTileEntity) {
-				AgitatorTileEntity agitator = (AgitatorTileEntity) tileentity;
-				ItemStack itemstack = player.getHeldItem(handIn);
-				if (!worldIn.isRemote
-						&& agitator.addItem(player.abilities.isCreativeMode ? itemstack.copy() : itemstack)) {
-					player.addStat(StatsInit.INTERACT_WITH_AGITATOR);
-					return ActionResultType.SUCCESS;
+		if (worldIn.getTileEntity(pos) instanceof AgitatorTileEntity) {
+			ItemStack stack = player.getHeldItem(handIn);
+			if (stack.getItem() instanceof BucketItem) {
+				BucketItem bucket = (BucketItem) stack.getItem();
+				AgitatorTileEntity tile = (AgitatorTileEntity) worldIn.getTileEntity(pos);
+				if (!(bucket.getFluid() instanceof EmptyFluid)) {
+					for (int tank = 0; tank < tile.getHandler().getTanks(); tank++) {
+						if (tile.getHandler().isFluidValid(tank, new FluidStack(bucket.getFluid(), 1000))) {
+							tile.getHandler().fill(tank, new FluidStack(bucket.getFluid(), 1000), FluidAction.EXECUTE);
+							if (!worldIn.isRemote && !player.abilities.isCreativeMode) {
+								player.setHeldItem(handIn, new ItemStack(Items.BUCKET));
+							}
+							System.out.println(tile.getHandler().getContents().get(tank).getFluid());
+							return ActionResultType.SUCCESS;
+						}
+					}
+				} else {
+					int fullSlots = 0;
+					int fluidSlot = 0;
+					for (FluidStack fluidstack : tile.getHandler().getContents()) {
+						if (!fluidstack.isEmpty()) {
+							fullSlots++;
+						} else {
+							fluidSlot = tile.getHandler().getContents().indexOf(fluidstack);
+						}
+					}
+
+					if (fullSlots == 1) {
+						System.out.println("1 full slot");
+						Item newBucket = tile.getHandler().getFluidInTank(fluidSlot - 1).getFluid().getFilledBucket();
+						if (!worldIn.isRemote && !player.abilities.isCreativeMode) {
+							stack.shrink(1);
+							if (stack.isEmpty()) {
+								player.setHeldItem(handIn, new ItemStack(newBucket));
+							} else if (!player.inventory.addItemStackToInventory(new ItemStack(newBucket))) {
+								player.dropItem(new ItemStack(newBucket), false);
+							}
+						}
+						tile.getHandler().drain(fluidSlot - 1, tile.getHandler().getTankCapacity(fluidSlot - 1),
+								FluidAction.EXECUTE);
+						return ActionResultType.SUCCESS;
+					} else {
+						return ActionResultType.FAIL;
+					}
 				}
 			}
 		}
 
-		return ActionResultType.PASS;
+		return ActionResultType.FAIL;
 	}
 }

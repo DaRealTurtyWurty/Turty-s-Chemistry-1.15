@@ -1,30 +1,49 @@
 package com.turtywurty.turtyschemistry.common.tileentity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.turtywurty.turtyschemistry.TurtyChemistry;
+import com.turtywurty.turtyschemistry.common.container.AgitatorContainer;
+import com.turtywurty.turtyschemistry.common.fluidhandlers.AgitatorFluidStackHandler;
 import com.turtywurty.turtyschemistry.core.init.TileEntityTypeInit;
+import com.turtywurty.turtyschemistry.core.util.AgitatorData;
+import com.turtywurty.turtyschemistry.core.util.FluidStackHandler;
 
-import net.minecraft.inventory.IClearable;
-import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.item.ItemStack;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.NonNullList;
+import net.minecraft.util.Direction;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.registries.ForgeRegistries;
 
-public class AgitatorTileEntity extends TileEntity implements IClearable, ITickableTileEntity {
+public class AgitatorTileEntity extends TileEntity implements ITickableTileEntity, INamedContainerProvider {
 
-	private static final String PROCESSING_TIME_LEFT_TAG = "processingTimeLeft";
-	private static final String MAX_PROCESSING_TIME_TAG = "maxProcessingTime";
-
-	private final NonNullList<ItemStack> inventory = NonNullList.withSize(7, ItemStack.EMPTY);
-
-	public short processTimeLeft = -1;
-	public short maxProcessingTime = -1;
-	public boolean lastProcessing = false;
+	public AgitatorFluidStackHandler handler = new AgitatorFluidStackHandler(6, 1) {
+		@Override
+		public void onContentsChanged() {
+			super.onContentsChanged();
+			markDirty();
+		}
+	};
+	private LazyOptional<FluidStackHandler> optional = LazyOptional.of(() -> handler);
 
 	public AgitatorTileEntity(TileEntityType<?> tileEntityTypeIn) {
 		super(tileEntityTypeIn);
@@ -34,81 +53,125 @@ public class AgitatorTileEntity extends TileEntity implements IClearable, ITicka
 		this(TileEntityTypeInit.AGITATOR.get());
 	}
 
-	@Override
-	public void tick() {
-		if (isValidRecipe(this.getInventory())) {
-
-		}
-	}
-
-	private boolean isValidRecipe(NonNullList<ItemStack> inputs) {
-		return false;
-	}
-
-	public NonNullList<ItemStack> getInventory() {
-		return this.inventory;
-	}
-
-	public boolean addItem(ItemStack itemStackIn) {
-		for (int i = 0; i < this.inventory.size(); ++i) {
-			ItemStack itemstack = this.inventory.get(i);
-			if (itemstack.isEmpty()) {
-				this.inventory.set(i, itemStackIn.split(1));
-				this.inventoryChanged();
-				return true;
-			}
-		}
-		return false;
+	public FluidStackHandler getHandler() {
+		return handler;
 	}
 
 	@Override
 	public void read(CompoundNBT compound) {
+		loadRestorable(compound);
 		super.read(compound);
-		this.inventory.clear();
-		ItemStackHelper.loadAllItems(compound, this.inventory);
-		this.processTimeLeft = compound.getShort(PROCESSING_TIME_LEFT_TAG);
-		this.maxProcessingTime = compound.getShort(MAX_PROCESSING_TIME_TAG);
 	}
 
+	public void loadRestorable(@Nullable CompoundNBT compound) {
+		if (compound != null && compound.contains("fluidinv")) {
+			CompoundNBT tanks = (CompoundNBT) compound.get("fluidinv");
+			handler.deserializeNBT(tanks);
+		}
+	}
+
+	@Nonnull
+	@Override
 	public CompoundNBT write(CompoundNBT compound) {
-		this.writeItems(compound);
-		compound.putShort(PROCESSING_TIME_LEFT_TAG, this.processTimeLeft);
-		compound.putShort(MAX_PROCESSING_TIME_TAG, this.maxProcessingTime);
-		return compound;
+		CompoundNBT tanks = handler.serializeNBT();
+		compound.put("fluidinv", tanks);
+		return super.write(compound);
 	}
 
-	private CompoundNBT writeItems(CompoundNBT compound) {
-		super.write(compound);
-		ItemStackHelper.saveAllItems(compound, this.inventory, true);
-		return compound;
+	@Override
+	public void tick() {
+		int tank = 0;
+		if (!this.getHandler().isEmpty()) {
+			for (FluidStack stack : this.getHandler().getContents()) {
+				if (this.getHandler().isFluidValid(tank, stack) && !this.getHandler().getFluidInTank(tank).isEmpty()) {
+					// System.out.println(this.getHandler().getFluidInTank(tank).getFluid().getRegistryName()
+					// + " " + tank);
+				}
+				tank++;
+			}
+		}
+	}
+
+	private List<AgitatorData> getRecipes() {
+		List<AgitatorData> aData = new ArrayList<AgitatorData>();
+		TurtyChemistry.AGITATOR_DATA.getData().forEach((name, data) -> {
+			aData.add(data);
+		});
+		return aData;
+	}
+
+	private boolean isValidRecipe() {
+		List<Fluid> recipeFluids = new ArrayList<Fluid>();
+
+		for (AgitatorData recipe : this.getRecipes()) {
+			Fluid fluid = ForgeRegistries.FLUIDS.getValue(new ResourceLocation(recipe.getInputfluid1()));
+			recipeFluids.add(fluid);
+		}
+
+		for (Fluid fluid : (Fluid[]) this.getHandler().getContents().stream().map(stack -> stack.getFluid())
+				.toArray()) {
+			for (Fluid fluid1 : recipeFluids) {
+				if (fluid1 != fluid) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	@Nonnull
+	@Override
+	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+		return cap == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY ? optional.cast()
+				: super.getCapability(cap, side);
+	}
+
+	@Override
+	public void markDirty() {
+		super.markDirty();
+		world.notifyBlockUpdate(pos, getBlockState(), getBlockState(), 3);
+	}
+
+	@Override
+	public SUpdateTileEntityPacket getUpdatePacket() {
+		CompoundNBT nbt = new CompoundNBT();
+		nbt.put("fluidinv", handler.serializeNBT());
+		return new SUpdateTileEntityPacket(getPos(), 1, nbt);
+	}
+
+	@Override
+	@Nonnull
+	public CompoundNBT getUpdateTag() {
+		CompoundNBT nbt = super.getUpdateTag();
+		nbt.put("fluidinv", handler.serializeNBT());
+		return nbt;
+	}
+
+	@Override
+	public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket packet) {
+		handler.deserializeNBT((CompoundNBT) packet.getNbtCompound().get("fluidinv"));
+	}
+
+	@Override
+	public void remove() {
+		super.remove();
+		optional.invalidate();
+	}
+
+	@Override
+	public void handleUpdateTag(CompoundNBT tag) {
+		super.handleUpdateTag(tag);
+		handler.deserializeNBT(tag.getCompound("fluidinv"));
+	}
+
+	@Override
+	public ITextComponent getDisplayName() {
+		return new TranslationTextComponent("container." + TurtyChemistry.MOD_ID + ".agitator");
 	}
 
 	@Nullable
 	@Override
-	public SUpdateTileEntityPacket getUpdatePacket() {
-		return new SUpdateTileEntityPacket(this.pos, 13, this.getUpdateTag());
-	}
-
-	@Override
-	public CompoundNBT getUpdateTag() {
-		return this.writeItems(new CompoundNBT());
-	}
-
-	@Override
-	public void clear() {
-		this.inventory.clear();
-	}
-
-	private void inventoryChanged() {
-		this.markDirty();
-		this.getWorld().notifyBlockUpdate(this.getPos(), this.getBlockState(), this.getBlockState(), 3);
-	}
-
-	public void dropAllItems() {
-		if (!this.world.isRemote) {
-			InventoryHelper.dropItems(this.getWorld(), this.getPos(), this.getInventory());
-		}
-
-		this.inventoryChanged();
+	public Container createMenu(int windowID, PlayerInventory playerInventory, PlayerEntity playerEntity) {
+		return new AgitatorContainer(windowID, playerInventory, this);
 	}
 }
