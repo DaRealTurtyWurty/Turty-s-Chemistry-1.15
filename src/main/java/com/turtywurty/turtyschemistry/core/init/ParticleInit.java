@@ -18,7 +18,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 @Mod.EventBusSubscriber(modid = TurtyChemistry.MOD_ID, bus = Bus.MOD, value = Dist.CLIENT)
 public class ParticleInit {
 
-	public static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES = new DeferredRegister<ParticleType<?>>(
+	public static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES = DeferredRegister.create(
 			ForgeRegistries.PARTICLE_TYPES, TurtyChemistry.MOD_ID);
 
 	public static final RegistryObject<BasicParticleType> GAS_PARTICLE = PARTICLE_TYPES.register("gas_particle",

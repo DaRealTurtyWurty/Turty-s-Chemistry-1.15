@@ -25,7 +25,7 @@ public class FluidInit {
 	public static final ResourceLocation BRINE_OVERLAY_RL = new ResourceLocation(TurtyChemistry.MOD_ID,
 			"blocks/brine_overlay");
 
-	public static final DeferredRegister<Fluid> FLUIDS = new DeferredRegister<Fluid>(ForgeRegistries.FLUIDS,
+	public static final DeferredRegister<Fluid> FLUIDS = DeferredRegister.create(ForgeRegistries.FLUIDS,
 			TurtyChemistry.MOD_ID);
 
 	public static final RegistryObject<FlowingFluid> BRINE_STILL = FLUIDS.register("brine_still",

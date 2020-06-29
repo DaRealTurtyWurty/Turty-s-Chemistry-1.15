@@ -12,7 +12,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public class StatsInit {
 
-	public static final DeferredRegister<StatType<?>> STAT_TYPES = new DeferredRegister<>(ForgeRegistries.STAT_TYPES,
+	public static final DeferredRegister<StatType<?>> STAT_TYPES = DeferredRegister.create(ForgeRegistries.STAT_TYPES,
 			TurtyChemistry.MOD_ID);
 
 	public static final RegistryObject<StatType<ResourceLocation>> MACHINES = STAT_TYPES.register("machines",

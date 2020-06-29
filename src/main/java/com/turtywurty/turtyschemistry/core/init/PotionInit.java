@@ -11,7 +11,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public class PotionInit {
 
-	public static final DeferredRegister<Effect> EFFECTS = new DeferredRegister<Effect>(ForgeRegistries.POTIONS,
+	public static final DeferredRegister<Effect> EFFECTS = DeferredRegister.create(ForgeRegistries.POTIONS,
 			TurtyChemistry.MOD_ID);
 
 	public static final RegistryObject<Effect> SUFFOCATING_EFFECT = EFFECTS.register("suffocating",

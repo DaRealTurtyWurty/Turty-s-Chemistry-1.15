@@ -11,7 +11,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public class RecipeSerializerInit {
 
-	public static final DeferredRegister<IRecipeSerializer<?>> SERIALIZERS = new DeferredRegister(
+	public static final DeferredRegister<IRecipeSerializer<?>> SERIALIZERS = DeferredRegister.create(
 			ForgeRegistries.RECIPE_SERIALIZERS, TurtyChemistry.MOD_ID);
 
 	public static final RegistryObject<IRecipeSerializer<AutoclaveRecipe>> AUTOCLAVE_RECIPE_SERIALIZER = SERIALIZERS

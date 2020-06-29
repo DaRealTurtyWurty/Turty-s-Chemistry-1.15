@@ -16,7 +16,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public class BiomeInit {
 
-	public static final DeferredRegister<Biome> BIOMES = new DeferredRegister<Biome>(ForgeRegistries.BIOMES,
+	public static final DeferredRegister<Biome> BIOMES = DeferredRegister.create(ForgeRegistries.BIOMES,
 			TurtyChemistry.MOD_ID);
 
 	public static final RegistryObject<BrineFlatsBiome> BRINE_FLATS = BIOMES
