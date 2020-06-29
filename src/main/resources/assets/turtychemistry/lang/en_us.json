@@ -139,6 +139,8 @@
     "item.turtychemistry.chrysoberyl": "Chrysoberyl",
     "item.turtychemistry.test_tube": "Test Tube",
     "item.turtychemistry.balloon": "Balloon",
+    "item.turtychemistry.sawdust": "Sawdust",
+    "item.turtychemistry.briquette": "Briquette",
     
     "itemGroup.chemistrytab": "Turty's Chemistry",
     
@@ -160,6 +162,9 @@
     "block.turtychemistry.gas_extractor": "Gas Extractor",
     "block.turtychemistry.brine": "Brine",
     "block.turtychemistry.brine_block": "Brine Block",
+    "block.turtychemistry.colemanite": "Colemanite",
+    "block.turtychemistry.boracite": "Boracite",
+    "block.turtychemistry.painite": "Painite",
     
     "container.turtychemistry.gas_extractor": "Gas Extractor",
     
