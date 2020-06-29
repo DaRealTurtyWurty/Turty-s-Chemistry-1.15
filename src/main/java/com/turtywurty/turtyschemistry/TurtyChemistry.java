@@ -3,6 +3,9 @@ package com.turtywurty.turtyschemistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.turtywurty.turtyschemistry.client.util.ClientUtils;
+import com.turtywurty.turtyschemistry.common.blocks.BalerPart;
+import com.turtywurty.turtyschemistry.common.blocks.BriquettingPressPart;
 import com.turtywurty.turtyschemistry.common.blocks.GasBlock;
 import com.turtywurty.turtyschemistry.core.init.BiomeInit;
 import com.turtywurty.turtyschemistry.core.init.BlockInit;
@@ -14,14 +17,20 @@ import com.turtywurty.turtyschemistry.core.init.PotionInit;
 import com.turtywurty.turtyschemistry.core.init.RecipeSerializerInit;
 import com.turtywurty.turtyschemistry.core.init.StatsInit;
 import com.turtywurty.turtyschemistry.core.init.TileEntityTypeInit;
+import com.turtywurty.turtyschemistry.core.packets.BriquettingPressButtonPacket;
+import com.turtywurty.turtyschemistry.core.util.AgitatorData;
+import com.turtywurty.turtyschemistry.core.util.SimpleJsonDataManager;
 import com.turtywurty.turtyschemistry.core.world.features.HeliumGasPocket;
 import com.turtywurty.turtyschemistry.core.world.features.HeliumPocket;
 
 import net.minecraft.block.FlowingFluidBlock;
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.resources.IReloadableResourceManager;
+import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.GenerationStage;
@@ -66,6 +75,17 @@ public class TurtyChemistry {
 	public static final String CHAT = "chat." + MOD_ID + ".";
 	public static final String CHAT_INFO = CHAT + "info.";
 
+	public static final SimpleJsonDataManager<AgitatorData> AGITATOR_DATA = new SimpleJsonDataManager<AgitatorData>(
+			"agitator", AgitatorData.class);
+
+	public static void onClientInit() {
+		IResourceManager manager = Minecraft.getInstance().getResourceManager();
+		if (manager instanceof IReloadableResourceManager) {
+			IReloadableResourceManager reloader = (IReloadableResourceManager) manager;
+			reloader.addReloadListener(AGITATOR_DATA);
+		}
+	}
+
 	public static final SimpleChannel packetHandler = NetworkRegistry.ChannelBuilder
 			.named(new ResourceLocation(MOD_ID, "main")).networkProtocolVersion(() -> NETWORK_VERSION)
 			.serverAcceptedVersions(NETWORK_VERSION::equals).clientAcceptedVersions(NETWORK_VERSION::equals)
@@ -76,7 +96,10 @@ public class TurtyChemistry {
 
 		final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-		modEventBus.addListener(this::generateFeatures);
+		modEventBus.addListener(this::commonSetup);
+
+		if (ClientUtils.getClientWorld() != null)
+			onClientInit();
 
 		ParticleInit.PARTICLE_TYPES.register(modEventBus);
 		PotionInit.EFFECTS.register(modEventBus);
@@ -92,7 +115,13 @@ public class TurtyChemistry {
 		MinecraftForge.EVENT_BUS.register(this);
 	}
 
-	public void generateFeatures(final FMLCommonSetupEvent event) {
+	private void registerPackets() {
+		int index = 0;
+		packetHandler.registerMessage(index++, BriquettingPressButtonPacket.class, BriquettingPressButtonPacket::encode,
+				BriquettingPressButtonPacket::decode, BriquettingPressButtonPacket::onRecieved);
+	}
+
+	public void generateFeatures() {
 		DeferredWorkQueue.runLater(() -> {
 			for (Biome biome : ForgeRegistries.BIOMES) {
 				if (biome.getCategory().equals(Biome.Category.SWAMP)
@@ -115,14 +144,20 @@ public class TurtyChemistry {
 		});
 	}
 
+	private void commonSetup(final FMLCommonSetupEvent event) {
+		this.generateFeatures();
+		this.registerPackets();
+	}
+
 	@SubscribeEvent
 	public static void onRegisterItems(final RegistryEvent.Register<Item> event) {
 		final IForgeRegistry<Item> registry = event.getRegistry();
 
-		BlockInit.BLOCKS
-				.getEntries().stream().filter(block -> !block.get().equals(BlockInit.GREEN_ALGAE.get())
-						&& !(block.get() instanceof GasBlock) && !(block.get() instanceof FlowingFluidBlock))
-				.map(RegistryObject::get).forEach(block -> {
+		BlockInit.BLOCKS.getEntries().stream().map(RegistryObject::get)
+				.filter(block -> !block.equals(BlockInit.GREEN_ALGAE.get()) && !(block instanceof GasBlock)
+						&& !(block instanceof FlowingFluidBlock) && !(block instanceof BalerPart)
+						&& !(block instanceof BriquettingPressPart))
+				.forEach(block -> {
 					final Item.Properties properties = new Item.Properties().group(ChemistryItemGroup.instance);
 					final BlockItem blockItem = new BlockItem(block, properties);
 					blockItem.setRegistryName(block.getRegistryName());
