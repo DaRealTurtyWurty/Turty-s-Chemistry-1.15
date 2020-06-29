@@ -14,7 +14,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
 import net.minecraft.util.NonNullList;
 
-@SuppressWarnings("deprecation")
 public class AutoclaveTileEntityRenderer extends TileEntityRenderer<AutoclaveTileEntity> {
 
 	private float degrees;
