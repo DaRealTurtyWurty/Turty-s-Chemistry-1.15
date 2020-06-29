@@ -1,0 +1,34 @@
+{
+	"name": "Lithium",
+	"icon": "turtychemistry:lithium",
+	"category": "turtychemistry:elements",
+	"read_by_default": true,
+	"sortnum": 2,
+	"pages": [
+		{
+			"type": "text",
+			"text": "Lithium is the second element on the periodic table, and has an atomic mass of 3. Lithium is a solid metal at room temperature and normal atmospheric pressure. Lithium is extremely reactive to water, and therefore could react with the moisture in the air if left out for too long. Lithium must be stored in a jar filled with mineral oil, to stop any air from oxidizing it. "
+		},
+		
+		{
+			"type": "text",
+			"text": "Lithium is an extremely soft metal, and therefore can be cut very easily."
+		},
+		
+		{
+			"type": "text",
+			"title": "Obtainability",
+			"text": "There are multiple ways in which lithium can be obtained: $(li)From lithium chloride via electrolysis, to separate the lithium and chlorine."
+		},
+		
+		{
+			"type": "text",
+			"text": "$(li)Extracted from brine water through the process of solar evaporation."
+		},
+		
+		{
+			"type": "text",
+			"text": "$(li)Extracted from Spodumene Crystals."
+		}
+	]
+}

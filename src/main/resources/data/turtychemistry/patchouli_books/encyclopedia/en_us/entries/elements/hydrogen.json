@@ -1,0 +1,29 @@
+{
+	"name": "Hydrogen",
+	"icon": "turtychemistry:hydrogen",
+	"category": "turtychemistry:elements",
+	"read_by_default": true,
+	"sortnum": 0,
+	"pages": [
+		{
+			"type": "text",
+			"text": "Hydrogen is the first element on the periodic table, and has an atomic mass of 1. Hydrogen is a gas at normal room temperature and pressure. As it is a gas, you will not be able to hold this gas for long with your bare hands, so you will have to use a closed test tube or jar to store this gas."
+		},
+		
+		{
+			"type": "text",
+			"title": "Obtainability",
+			"text": "There are multiple ways in which you can obtain hydrogen:$(li)Burning Fossil Fuels.$(br)This will release a small amount of hydrogen in which can be collected by something such as a Gas Extractor."
+		},
+		
+		{
+			"type": "text",
+			"text": "$(li)Bioreactor Photosynthesis(Biomass Gasification).$(br)This method requires you to put green algae into a bioreactor to release the product, that is hydrogen."
+		},
+		
+		{
+			"type": "text",
+			"text": "$(li)Electrolysis of Water$(br)This method will use an electrolizer to separate the hydrogen from the oxygen in water."
+		}
+	]
+}
