@@ -7,9 +7,9 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalBlock;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.state.BooleanProperty;
@@ -77,17 +77,23 @@ public class AutoclaveBlock extends HorizontalBlock {
 		return BlockRenderType.MODEL;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
 		if (state.getBlock() != newState.getBlock()) {
 			TileEntity tileentity = worldIn.getTileEntity(pos);
 			if (tileentity instanceof AutoclaveTileEntity) {
-				InventoryHelper.dropInventoryItems(worldIn, pos, (AutoclaveTileEntity) tileentity);
+				AutoclaveTileEntity tile = (AutoclaveTileEntity) worldIn.getTileEntity(pos);
+				for (int index = 0; index < tile.getInventory().getSlots(); index++) {
+					ItemEntity ie = new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(),
+							tile.getItemInSlot(index));
+					worldIn.addEntity(ie);
+				}
 				worldIn.updateComparatorOutputLevel(pos, this);
 			}
 
-			super.onReplaced(state, worldIn, pos, newState, isMoving);
+			if (state.hasTileEntity() && (state.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
+				worldIn.removeTileEntity(pos);
+			}
 		}
 	}
 

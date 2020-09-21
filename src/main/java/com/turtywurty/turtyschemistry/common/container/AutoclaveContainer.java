@@ -4,13 +4,13 @@ import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
+import com.turtywurty.turtyschemistry.common.container.slots.AutoclaveSlot;
 import com.turtywurty.turtyschemistry.common.tileentity.AutoclaveTileEntity;
 import com.turtywurty.turtyschemistry.core.init.BlockInit;
 import com.turtywurty.turtyschemistry.core.init.ContainerTypeInit;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
@@ -30,29 +30,11 @@ public class AutoclaveContainer extends Container {
 		this.canInteractWithCallable = IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos());
 
 		// Slots
-		this.addSlot(new Slot((IInventory) tileEntity, 0, 80, 54) {
+		this.addSlot(new AutoclaveSlot(tileEntity.getInventory(), 0, 80, 18));
 
-			@Override
-			public boolean isItemValid(ItemStack stack) {
-				return stack.isDamaged();
-			}
-		});
+		this.addSlot(new AutoclaveSlot(tileEntity.getInventory(), 1, 80, 36));
 
-		this.addSlot(new Slot((IInventory) tileEntity, 1, 80, 36) {
-
-			@Override
-			public boolean isItemValid(ItemStack stack) {
-				return stack.isDamaged();
-			}
-		});
-
-		this.addSlot(new Slot((IInventory) tileEntity, 2, 80, 18) {
-
-			@Override
-			public boolean isItemValid(ItemStack stack) {
-				return stack.isDamaged();
-			}
-		});
+		this.addSlot(new AutoclaveSlot(tileEntity.getInventory(), 2, 80, 54));
 
 		final int playerInventoryStartX = 8;
 		final int playerInventoryStartY = 84;

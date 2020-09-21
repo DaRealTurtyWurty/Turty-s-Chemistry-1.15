@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
-import net.minecraft.util.NonNullList;
 
 public class AutoclaveTileEntityRenderer extends TileEntityRenderer<AutoclaveTileEntity> {
 
@@ -27,16 +26,15 @@ public class AutoclaveTileEntityRenderer extends TileEntityRenderer<AutoclaveTil
 	public void render(AutoclaveTileEntity tileEntityIn, float partialTicks, MatrixStack matrixStackIn,
 			IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
 		Direction direction = tileEntityIn.getBlockState().get(AutoclaveBlock.HORIZONTAL_FACING);
-		NonNullList<ItemStack> nonnulllist = tileEntityIn.getItems();
-		for (int i = 0; i < nonnulllist.size(); ++i) {
-			ItemStack itemstack = nonnulllist.get(i);
+		for (int index = 0; index < tileEntityIn.size; ++index) {
+			ItemStack itemstack = tileEntityIn.getItemInSlot(index);
 			if (itemstack != ItemStack.EMPTY) {
 				matrixStackIn.push();
-				if (i == 0) {
+				if (index == 0) {
 					matrixStackIn.translate(0.5D, 0.26D, 0.5D);
-				} else if (i == 1) {
+				} else if (index == 1) {
 					matrixStackIn.translate(0.5D, 0.45D, 0.5D);
-				} else if (i == 2) {
+				} else if (index == 2) {
 					matrixStackIn.translate(0.5D, 0.637D, 0.5D);
 				} else {
 					matrixStackIn.translate(0.5D, 0.45D, 0.5D);
