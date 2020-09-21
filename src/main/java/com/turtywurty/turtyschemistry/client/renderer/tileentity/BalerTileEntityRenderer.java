@@ -133,7 +133,7 @@ public class BalerTileEntityRenderer extends TileEntityRenderer<BalerTileEntity>
 
 	private void renderItem(ItemStack stack, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn,
 			int combinedLightIn) {
-		ClientUtils.MC.getItemRenderer().renderItem(stack, TransformType.FIXED, 0xFF, OverlayTexture.NO_OVERLAY,
+		ClientUtils.MC.getItemRenderer().renderItem(stack, TransformType.FIXED, combinedLightIn, OverlayTexture.NO_OVERLAY,
 				matrixStackIn, bufferIn);
 	}
 }

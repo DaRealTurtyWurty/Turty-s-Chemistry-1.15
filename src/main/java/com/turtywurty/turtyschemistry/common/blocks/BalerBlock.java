@@ -99,6 +99,9 @@ public class BalerBlock extends BaseHorizontalBlock {
 		final TileEntity tile = worldIn.getTileEntity(pos);
 		if (tile instanceof BalerTileEntity && !worldIn.isRemote) {
 			InventoryHelper.dropItems(worldIn, pos, ((BalerTileEntity) tile).getItems());
+		}
+
+		if (state.hasTileEntity() && (state.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
 			worldIn.removeTileEntity(pos);
 		}
 	}
