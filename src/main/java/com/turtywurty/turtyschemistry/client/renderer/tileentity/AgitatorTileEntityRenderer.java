@@ -7,6 +7,7 @@ import com.turtywurty.turtyschemistry.client.util.ClientUtils;
 import com.turtywurty.turtyschemistry.common.tileentity.AgitatorTileEntity;
 import com.turtywurty.turtyschemistry.core.init.FluidInit;
 
+import com.turtywurty.turtyschemistry.core.util.FluidStackHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
@@ -28,8 +29,8 @@ public class AgitatorTileEntityRenderer extends TileEntityRenderer<AgitatorTileE
 	@Override
 	public void render(AgitatorTileEntity tileEntityIn, float partialTicks, MatrixStack matrixStackIn,
 			IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
-		FluidStack fluid = tileEntityIn.getFluidHandler().getFluidInTank(5);
-
+		FluidStackHandler fluidHandler = tileEntityIn.getFluidHandler();
+		FluidStack fluid = new FluidStack(FluidInit.BRINE_STILL.get(), 1000);
 		if (!fluid.isEmpty()) {
 			TextureAtlasSprite texture = Minecraft.getInstance()
 					.getAtlasSpriteGetter(PlayerContainer.LOCATION_BLOCKS_TEXTURE)
