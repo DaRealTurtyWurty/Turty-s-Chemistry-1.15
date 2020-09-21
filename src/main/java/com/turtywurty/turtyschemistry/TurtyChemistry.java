@@ -3,10 +3,10 @@ package com.turtywurty.turtyschemistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.turtywurty.turtyschemistry.client.util.ClientUtils;
 import com.turtywurty.turtyschemistry.common.blocks.BalerPart;
 import com.turtywurty.turtyschemistry.common.blocks.BriquettingPressPart;
 import com.turtywurty.turtyschemistry.common.blocks.GasBlock;
+import com.turtywurty.turtyschemistry.common.blocks.GasCanisterBlock;
 import com.turtywurty.turtyschemistry.core.init.BiomeInit;
 import com.turtywurty.turtyschemistry.core.init.BlockInit;
 import com.turtywurty.turtyschemistry.core.init.ContainerTypeInit;
@@ -17,11 +17,12 @@ import com.turtywurty.turtyschemistry.core.init.PotionInit;
 import com.turtywurty.turtyschemistry.core.init.RecipeSerializerInit;
 import com.turtywurty.turtyschemistry.core.init.StatsInit;
 import com.turtywurty.turtyschemistry.core.init.TileEntityTypeInit;
+import com.turtywurty.turtyschemistry.core.packets.AgitatorFluidPacket;
 import com.turtywurty.turtyschemistry.core.packets.BriquettingPressButtonPacket;
+import com.turtywurty.turtyschemistry.core.packets.SiloButtonPacket;
 import com.turtywurty.turtyschemistry.core.util.AgitatorData;
 import com.turtywurty.turtyschemistry.core.util.SimpleJsonDataManager;
-import com.turtywurty.turtyschemistry.core.world.features.HeliumGasPocket;
-import com.turtywurty.turtyschemistry.core.world.features.HeliumPocket;
+import com.turtywurty.turtyschemistry.core.world.features.FeatureGeneration;
 
 import net.minecraft.block.FlowingFluidBlock;
 import net.minecraft.client.Minecraft;
@@ -33,16 +34,8 @@ import net.minecraft.resources.IReloadableResourceManager;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.GenerationStage;
-import net.minecraft.world.gen.GenerationStage.Decoration;
-import net.minecraft.world.gen.blockplacer.SimpleBlockPlacer;
-import net.minecraft.world.gen.blockstateprovider.SimpleBlockStateProvider;
-import net.minecraft.world.gen.feature.BlockClusterFeatureConfig;
-import net.minecraft.world.gen.feature.BlockStateFeatureConfig;
-import net.minecraft.world.gen.feature.Feature;
-import net.minecraft.world.gen.placement.ChanceConfig;
-import net.minecraft.world.gen.placement.FrequencyConfig;
-import net.minecraft.world.gen.placement.Placement;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.common.BiomeManager;
@@ -53,6 +46,7 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DeferredWorkQueue;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
@@ -60,7 +54,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 
 @SuppressWarnings("deprecation")
@@ -79,6 +72,8 @@ public class TurtyChemistry {
 			"agitator", AgitatorData.class);
 
 	public static void onClientInit() {
+		ModelLoader.addSpecialModel(new ResourceLocation(TurtyChemistry.MOD_ID, "block/agitator_fluid"));
+
 		IResourceManager manager = Minecraft.getInstance().getResourceManager();
 		if (manager instanceof IReloadableResourceManager) {
 			IReloadableResourceManager reloader = (IReloadableResourceManager) manager;
@@ -98,8 +93,7 @@ public class TurtyChemistry {
 
 		modEventBus.addListener(this::commonSetup);
 
-		if (ClientUtils.getClientWorld() != null)
-			onClientInit();
+		DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> TurtyChemistry.onClientInit());
 
 		ParticleInit.PARTICLE_TYPES.register(modEventBus);
 		PotionInit.EFFECTS.register(modEventBus);
@@ -119,34 +113,15 @@ public class TurtyChemistry {
 		int index = 0;
 		packetHandler.registerMessage(index++, BriquettingPressButtonPacket.class, BriquettingPressButtonPacket::encode,
 				BriquettingPressButtonPacket::decode, BriquettingPressButtonPacket::onRecieved);
-	}
-
-	public void generateFeatures() {
-		DeferredWorkQueue.runLater(() -> {
-			for (Biome biome : ForgeRegistries.BIOMES) {
-				if (biome.getCategory().equals(Biome.Category.SWAMP)
-						|| biome.getCategory().equals(Biome.Category.RIVER)) {
-					biome.addFeature(GenerationStage.Decoration.VEGETAL_DECORATION,
-							Feature.RANDOM_PATCH
-									.withConfiguration((new BlockClusterFeatureConfig.Builder(
-											new SimpleBlockStateProvider(BlockInit.GREEN_ALGAE.get().getDefaultState()),
-											new SimpleBlockPlacer())).tries(20).build())
-									.withPlacement(Placement.COUNT_HEIGHTMAP_DOUBLE.configure(new FrequencyConfig(6))));
-				}
-
-				biome.addFeature(Decoration.LOCAL_MODIFICATIONS,
-						new HeliumGasPocket(BlockStateFeatureConfig::deserialize)
-								.withConfiguration(
-										new BlockStateFeatureConfig(BlockInit.HELIUM_GAS.get().getDefaultState()))
-								.withPlacement(
-										new HeliumPocket(ChanceConfig::deserialize).configure(new ChanceConfig(8))));
-			}
-		});
+		packetHandler.registerMessage(index++, SiloButtonPacket.class, SiloButtonPacket::encode,
+				SiloButtonPacket::decode, SiloButtonPacket::onRecieved);
+		packetHandler.registerMessage(index++, AgitatorFluidPacket.class, AgitatorFluidPacket::encode,
+				AgitatorFluidPacket::decode, AgitatorFluidPacket::onRecieved);
 	}
 
 	private void commonSetup(final FMLCommonSetupEvent event) {
-		this.generateFeatures();
-		this.registerPackets();
+		registerPackets();
+		DeferredWorkQueue.runLater(FeatureGeneration::addAllFeatures);
 	}
 
 	@SubscribeEvent
@@ -156,7 +131,7 @@ public class TurtyChemistry {
 		BlockInit.BLOCKS.getEntries().stream().map(RegistryObject::get)
 				.filter(block -> !block.equals(BlockInit.GREEN_ALGAE.get()) && !(block instanceof GasBlock)
 						&& !(block instanceof FlowingFluidBlock) && !(block instanceof BalerPart)
-						&& !(block instanceof BriquettingPressPart))
+						&& !(block instanceof BriquettingPressPart) && !(block instanceof GasCanisterBlock))
 				.forEach(block -> {
 					final Item.Properties properties = new Item.Properties().group(ChemistryItemGroup.instance);
 					final BlockItem blockItem = new BlockItem(block, properties);

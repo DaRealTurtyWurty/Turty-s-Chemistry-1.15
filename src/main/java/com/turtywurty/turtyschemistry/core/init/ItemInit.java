@@ -2,8 +2,10 @@ package com.turtywurty.turtyschemistry.core.init;
 
 import com.turtywurty.turtyschemistry.TurtyChemistry;
 import com.turtywurty.turtyschemistry.TurtyChemistry.ChemistryItemGroup;
+import com.turtywurty.turtyschemistry.common.items.GasCanisterItem;
 import com.turtywurty.turtyschemistry.common.items.GreenAlgaeItem;
 
+import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
@@ -160,4 +162,9 @@ public class ItemInit {
 	public static final RegistryObject<GreenAlgaeItem> GREEN_ALGAE = ITEMS.register("green_algae", () -> new GreenAlgaeItem(properties));
 	public static final RegistryObject<Item> SAWDUST = ITEMS.register("sawdust", () -> new Item(properties));
 	public static final RegistryObject<Item> BRIQUETTE = ITEMS.register("briquette", () -> new Item(properties));
+	
+	public static final RegistryObject<GasCanisterItem> GAS_CANISTER_S = ITEMS.register("gas_canister_small", () -> new GasCanisterItem(BlockInit.GAS_CANISTER_S.get(), properties, false));
+	public static final RegistryObject<GasCanisterItem> GAS_CANISTER_L = ITEMS.register("gas_canister_large", () -> new GasCanisterItem(BlockInit.GAS_CANISTER_L.get(), properties, true));
+
+	public static final RegistryObject<BucketItem> BRINE_BUCKET = ITEMS.register("brine_bucket", () -> new BucketItem(() -> FluidInit.BRINE_STILL.get(), properties.maxStackSize(16)));
 }

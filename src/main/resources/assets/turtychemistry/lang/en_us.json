@@ -141,6 +141,7 @@
     "item.turtychemistry.balloon": "Balloon",
     "item.turtychemistry.sawdust": "Sawdust",
     "item.turtychemistry.briquette": "Briquette",
+    "item.turtychemistry.brine_bucket": "Brine Bucket",
     
     "itemGroup.chemistrytab": "Turty's Chemistry",
     
@@ -165,12 +166,40 @@
     "block.turtychemistry.colemanite": "Colemanite",
     "block.turtychemistry.boracite": "Boracite",
     "block.turtychemistry.painite": "Painite",
+    "block.turtychemistry.gasifier": "Gasifier",
+    "block.turtychemistry.silo": "Silo",
+    "block.turtychemistry.ulexite": "Ulexite",
+    "block.turtychemistry.kernite": "Kernite",
+    "block.turtychemistry.borax": "Borax",
+    "block.turtychemistry.pegmatite": "Pegmatite",
+    "block.turtychemistry.almandine" : "Almandine",
+    "block.turtychemistry.columbite" : "Columbite",
+    "block.turtychemistry.spessartine" : "Spessartine",
+    "block.turtychemistry.tantalite" : "Tantalite",
+    "block.turtychemistry.cassiterite": "Cassiterite",
+    "block.turtychemistry.hiddenite": "Hiddenite",
+    "block.turtychemistry.kunzite": "Kunzite",
+    "block.turtychemistry.spodumene": "Spodumene",
+    "block.turtychemistry.triphane": "Triphane",
+    "block.turtychemistry.lepidolite": "Lepidolite",
+    "block.turtychemistry.tourmaline": "Tourmaline",
+    "block.turtychemistry.hopper": "Hopper",
+    "block.turtychemistry.electrolyzer": "Electrolyzer",
+    "block.turtychemistry.gas_canister_small": "Small Gas Canister",
+    "block.turtychemistry.gas_canister_large": "Large Gas Canister",
     
     "container.turtychemistry.gas_extractor": "Gas Extractor",
+    "container.turtychemistry.silo": "Silo",
+    "container.turtychemistry.hopper": "Hopper",
+    "container.turtychemistry.electrolyzer": "Electrolyzer",
+    "container.turtychemistry.agitator": "Agitator",
     
     "block.turtychemistry.green_algae": "Green Algae",
     "item.turtychemistry.green_algae": "Green Algae",
-    
     "biome.turtychemistry.brine_flats": "Brine Flats",
-    "effect.turtychemistry.suffocating": "Suffocating"
+    "effect.turtychemistry.suffocating": "Suffocating",
+    "gas_canister.no_gas.tooltip": "No Gas Stored",
+    "turtychemistry:hydrogen": "Hydrogen",
+    "turtychemistry:oxygen": "Oxygen",
+    "fluid.turtychemistry.brine_still": "Brine"    
 }

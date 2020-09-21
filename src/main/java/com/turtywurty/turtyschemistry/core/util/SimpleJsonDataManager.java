@@ -67,4 +67,6 @@ public class SimpleJsonDataManager<T> extends JsonReloadListener {
 	protected T getJsonAsData(JsonObject json) {
 		return GSON.fromJson(json, this.dataClass);
 	}
+	
+	
 }

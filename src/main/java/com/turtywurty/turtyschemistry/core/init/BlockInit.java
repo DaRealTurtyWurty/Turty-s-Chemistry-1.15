@@ -12,17 +12,23 @@ import com.turtywurty.turtyschemistry.common.blocks.BoilerBlock;
 import com.turtywurty.turtyschemistry.common.blocks.BriquettingPressBlock;
 import com.turtywurty.turtyschemistry.common.blocks.BriquettingPressPart;
 import com.turtywurty.turtyschemistry.common.blocks.ButaneTankBlock;
+import com.turtywurty.turtyschemistry.common.blocks.ElectrolyzerBlock;
 import com.turtywurty.turtyschemistry.common.blocks.FractionalDistillerBlock;
 import com.turtywurty.turtyschemistry.common.blocks.GasBlock;
+import com.turtywurty.turtyschemistry.common.blocks.GasCanisterBlock;
 import com.turtywurty.turtyschemistry.common.blocks.GasExtractorBlock;
+import com.turtywurty.turtyschemistry.common.blocks.GasifierBlock;
 import com.turtywurty.turtyschemistry.common.blocks.GreenAlgaeBlock;
-import com.turtywurty.turtyschemistry.common.blocks.PlainConveyorBlock;
+import com.turtywurty.turtyschemistry.common.blocks.HopperBlock;
 import com.turtywurty.turtyschemistry.common.blocks.PropaneTankBlock;
+import com.turtywurty.turtyschemistry.common.blocks.SiloBlock;
+import com.turtywurty.turtyschemistry.common.cables.CableBlock;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.material.MaterialColor;
 import net.minecraft.util.math.shapes.IBooleanFunction;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
@@ -47,43 +53,42 @@ public class BlockInit {
 	public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS,
 			TurtyChemistry.MOD_ID);
 
-	public static final RegistryObject<Block> FRACTIONAL_DISTILLER = BLOCKS.register("fractional_distiller",
-			() -> new FractionalDistillerBlock(makeMachineProperties()));
+	public static final RegistryObject<FractionalDistillerBlock> FRACTIONAL_DISTILLER = BLOCKS
+			.register("fractional_distiller", () -> new FractionalDistillerBlock(makeMachineProperties()));
 
-	public static final RegistryObject<Block> PROPANE_TANK = BLOCKS.register("propane", () -> new PropaneTankBlock(
-			Block.Properties.create(Material.IRON).hardnessAndResistance(0.6F).sound(SoundType.METAL).notSolid()));
+	public static final RegistryObject<PropaneTankBlock> PROPANE_TANK = BLOCKS.register("propane",
+			() -> new PropaneTankBlock(Block.Properties.create(Material.IRON).hardnessAndResistance(0.6F)
+					.sound(SoundType.METAL).notSolid()));
 
-	public static final RegistryObject<Block> BUTANE_TANK = BLOCKS.register("butane", () -> new ButaneTankBlock(
-			Block.Properties.create(Material.IRON).hardnessAndResistance(0.6F).sound(SoundType.METAL).notSolid()));
+	public static final RegistryObject<ButaneTankBlock> BUTANE_TANK = BLOCKS.register("butane",
+			() -> new ButaneTankBlock(Block.Properties.create(Material.IRON).hardnessAndResistance(0.6F)
+					.sound(SoundType.METAL).notSolid()));
 
-	public static final RegistryObject<Block> AGITATOR = BLOCKS.register("agitator",
+	public static final RegistryObject<AgitatorBlock> AGITATOR = BLOCKS.register("agitator",
 			() -> new AgitatorBlock(makeMachineProperties().notSolid()));
 
-	public static final RegistryObject<Block> AUTOCLAVE = BLOCKS.register("autoclave",
+	public static final RegistryObject<AutoclaveBlock> AUTOCLAVE = BLOCKS.register("autoclave",
 			() -> new AutoclaveBlock(makeMachineProperties().notSolid()));
 
-	public static final RegistryObject<Block> BALER = BLOCKS.register("baler",
+	public static final RegistryObject<BalerBlock> BALER = BLOCKS.register("baler",
 			() -> new BalerBlock(makeMachineProperties().notSolid()));
 
-	public static final RegistryObject<Block> BALER_ARM = BLOCKS.register("baler_arm",
+	public static final RegistryObject<BalerPart> BALER_ARM = BLOCKS.register("baler_arm",
 			() -> new BalerPart(makeMachineProperties().notSolid(), balerArmShape));
 
-	public static final RegistryObject<Block> BALER_PRESS = BLOCKS.register("baler_press",
+	public static final RegistryObject<BalerPart> BALER_PRESS = BLOCKS.register("baler_press",
 			() -> new BalerPart(makeMachineProperties().notSolid(), balerPressShape));
 
-	public static final RegistryObject<Block> BLOWER = BLOCKS.register("blower",
+	public static final RegistryObject<BlowerBlock> BLOWER = BLOCKS.register("blower",
 			() -> new BlowerBlock(makeMachineProperties().notSolid()));
 
-	public static final RegistryObject<Block> BOILER = BLOCKS.register("boiler",
+	public static final RegistryObject<BoilerBlock> BOILER = BLOCKS.register("boiler",
 			() -> new BoilerBlock(makeMachineProperties().notSolid()));
 
-	public static final RegistryObject<Block> CONVEYOR = BLOCKS.register("conveyor",
-			() -> new PlainConveyorBlock(makeMachineProperties().notSolid()));
-
-	public static final RegistryObject<Block> BRIQUETTING_PRESS = BLOCKS.register("briquetting_press",
+	public static final RegistryObject<BriquettingPressBlock> BRIQUETTING_PRESS = BLOCKS.register("briquetting_press",
 			() -> new BriquettingPressBlock(makeMachineProperties().notSolid()));
 
-	public static final RegistryObject<Block> BRIQUETTING_TURNER = BLOCKS.register("briquetting_turner",
+	public static final RegistryObject<BriquettingPressPart> BRIQUETTING_TURNER = BLOCKS.register("briquetting_turner",
 			() -> new BriquettingPressPart(makeMachineProperties().notSolid(), briquettingTurner));
 
 	/*
@@ -167,6 +172,75 @@ public class BlockInit {
 
 	public static final RegistryObject<Block> BORACITE = BLOCKS.register("boracite",
 			() -> new Block(Block.Properties.from(Blocks.IRON_ORE)));
+
+	public static final RegistryObject<Block> BORAX = BLOCKS.register("borax",
+			() -> new Block(Block.Properties.from(Blocks.IRON_ORE).hardnessAndResistance(0.5f, 15.0f)));
+
+	public static final RegistryObject<Block> ULEXITE = BLOCKS.register("ulexite",
+			() -> new Block(Block.Properties.create(Material.ROCK, MaterialColor.WHITE_TERRACOTTA)
+					.harvestTool(ToolType.PICKAXE).harvestLevel(1).hardnessAndResistance(3.0f).lightValue(5)
+					.sound(SoundType.GLASS).notSolid()));
+
+	public static final RegistryObject<Block> PEGMATITE = BLOCKS.register("pegmatite",
+			() -> new Block(Block.Properties.from(Blocks.DIORITE)));
+
+	public static final RegistryObject<Block> ALMANDINE = BLOCKS.register("almandine",
+			() -> new Block(Block.Properties.from(Blocks.DIORITE)));
+
+	public static final RegistryObject<Block> COLUMBITE = BLOCKS.register("columbite",
+			() -> new Block(Block.Properties.from(Blocks.DIORITE)));
+
+	public static final RegistryObject<Block> SPESSARTINE = BLOCKS.register("spessartine",
+			() -> new Block(Block.Properties.from(Blocks.DIORITE)));
+
+	public static final RegistryObject<Block> TANTALITE = BLOCKS.register("tantalite",
+			() -> new Block(Block.Properties.from(Blocks.DIORITE)));
+
+	public static final RegistryObject<Block> CASSITERITE = BLOCKS.register("cassiterite",
+			() -> new Block(Block.Properties.from(Blocks.DIORITE)));
+
+	public static final RegistryObject<Block> HIDDENITE = BLOCKS.register("hiddenite",
+			() -> new Block(Block.Properties.from(Blocks.DIORITE)));
+
+	public static final RegistryObject<Block> KUNZITE = BLOCKS.register("kunzite",
+			() -> new Block(Block.Properties.from(Blocks.DIORITE)));
+
+	public static final RegistryObject<Block> SPODUMENE = BLOCKS.register("spodumene",
+			() -> new Block(Block.Properties.from(Blocks.DIORITE).notSolid()));
+
+	public static final RegistryObject<Block> TRIPHANE = BLOCKS.register("triphane",
+			() -> new Block(Block.Properties.from(Blocks.DIORITE)));
+
+	public static final RegistryObject<Block> LEPIDOLITE = BLOCKS.register("lepidolite",
+			() -> new Block(Block.Properties.from(Blocks.DIORITE)));
+
+	public static final RegistryObject<Block> TOURMALINE = BLOCKS.register("tourmaline",
+			() -> new Block(Block.Properties.from(Blocks.DIORITE).notSolid()));
+
+	public static final RegistryObject<Block> KERNITE = BLOCKS.register("kernite",
+			() -> new Block(Block.Properties.create(Material.ROCK, MaterialColor.STONE).harvestTool(ToolType.PICKAXE)
+					.harvestLevel(1).hardnessAndResistance(5.0f).lightValue(1).sound(SoundType.GLASS).notSolid()));
+
+	public static final RegistryObject<GasifierBlock> GASIFIER = BLOCKS.register("gasifier",
+			() -> new GasifierBlock(makeMachineProperties().notSolid()));
+
+	public static final RegistryObject<SiloBlock> SILO = BLOCKS.register("silo",
+			() -> new SiloBlock(makeMachineProperties().notSolid()));
+
+	public static final RegistryObject<HopperBlock> HOPPER = BLOCKS.register("hopper",
+			() -> new HopperBlock(makeMachineProperties().notSolid()));
+
+	public static final RegistryObject<CableBlock> CABLE = BLOCKS.register("cable",
+			() -> new CableBlock(makeMachineProperties().notSolid()));
+
+	public static final RegistryObject<ElectrolyzerBlock> ELECTROLYZER = BLOCKS.register("electrolyzer",
+			() -> new ElectrolyzerBlock(makeMachineProperties().notSolid().variableOpacity()));
+
+	public static final RegistryObject<GasCanisterBlock> GAS_CANISTER_S = BLOCKS.register("gas_canister_small",
+			() -> new GasCanisterBlock(makeMachineProperties().notSolid(), false));
+
+	public static final RegistryObject<GasCanisterBlock> GAS_CANISTER_L = BLOCKS.register("gas_canister_large",
+			() -> new GasCanisterBlock(makeMachineProperties().notSolid(), true));
 
 	protected static Block.Properties makeMachineProperties() {
 		return Block.Properties.create(Material.IRON).hardnessAndResistance(1.2f).sound(SoundType.METAL).harvestLevel(2)
