@@ -11,6 +11,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
@@ -103,5 +104,17 @@ public class BriquettingPressBlock extends BaseHorizontalBlock {
 			}
 		}
 		return ActionResultType.SUCCESS;
+	}
+
+	@Override
+	public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+		final TileEntity tile = worldIn.getTileEntity(pos);
+		if (tile instanceof BriquettingPressTileEntity && !worldIn.isRemote) {
+			InventoryHelper.dropItems(worldIn, pos, ((BriquettingPressTileEntity) tile).getItems());
+		}
+
+		if (state.hasTileEntity() && (state.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
+			worldIn.removeTileEntity(pos);
+		}
 	}
 }
