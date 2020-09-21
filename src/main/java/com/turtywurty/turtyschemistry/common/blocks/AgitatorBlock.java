@@ -11,13 +11,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.EmptyFluid;
-import net.minecraft.item.BucketItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.StateContainer;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
@@ -30,18 +25,15 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
+import net.minecraftforge.fml.network.NetworkHooks;
 
 public class AgitatorBlock extends BaseHorizontalBlock {
 
-	public static final BooleanProperty PROCESSING = BooleanProperty.create("processing");
 	protected static final Map<Direction, VoxelShape> SHAPES = new HashMap<Direction, VoxelShape>();
 
 	public AgitatorBlock(Properties properties) {
 		super(properties);
-		this.setDefaultState(
-				this.stateContainer.getBaseState().with(HORIZONTAL_FACING, Direction.NORTH).with(PROCESSING, false));
+		this.setDefaultState(this.stateContainer.getBaseState().with(HORIZONTAL_FACING, Direction.NORTH));
 		runCalculation(Stream.of(Block.makeCuboidShape(7.5, 10, 8.5, 8.5, 11, 13),
 				Block.makeCuboidShape(4, 0, 0, 12, 1, 1), Block.makeCuboidShape(4, 0, 15, 12, 1, 16),
 				Block.makeCuboidShape(0, 0, 4, 16, 1, 12), Block.makeCuboidShape(3, 0, 14, 13, 1, 15),
@@ -109,6 +101,11 @@ public class AgitatorBlock extends BaseHorizontalBlock {
 	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
 		return SHAPES.get(state.get(HORIZONTAL_FACING));
 	}
+	
+	@Override
+	public BlockRenderType getRenderType(BlockState state) {
+		return BlockRenderType.MODEL;
+	}
 
 	@Override
 	public boolean hasTileEntity(BlockState state) {
@@ -120,73 +117,15 @@ public class AgitatorBlock extends BaseHorizontalBlock {
 		return TileEntityTypeInit.AGITATOR.get().create();
 	}
 
-	@SuppressWarnings("deprecation")
-	public int getLightValue(BlockState state) {
-		return state.get(PROCESSING) ? super.getLightValue(state) : 0;
-	}
-
-	@Override
-	protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
-		super.fillStateContainer(builder);
-		builder.add(PROCESSING);
-	}
-
-	@Override
-	public BlockRenderType getRenderType(BlockState state) {
-		return BlockRenderType.MODEL;
-	}
-
 	@Override
 	public ActionResultType onBlockActivated(final BlockState state, final World worldIn, final BlockPos pos,
 			final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
-		if (worldIn.getTileEntity(pos) instanceof AgitatorTileEntity) {
-			ItemStack stack = player.getHeldItem(handIn);
-			if (stack.getItem() instanceof BucketItem) {
-				BucketItem bucket = (BucketItem) stack.getItem();
-				AgitatorTileEntity tile = (AgitatorTileEntity) worldIn.getTileEntity(pos);
-				if (!(bucket.getFluid() instanceof EmptyFluid)) {
-					for (int tank = 0; tank < tile.getHandler().getTanks(); tank++) {
-						if (tile.getHandler().isFluidValid(tank, new FluidStack(bucket.getFluid(), 1000))) {
-							tile.getHandler().fill(tank, new FluidStack(bucket.getFluid(), 1000), FluidAction.EXECUTE);
-							if (!worldIn.isRemote && !player.abilities.isCreativeMode) {
-								player.setHeldItem(handIn, new ItemStack(Items.BUCKET));
-							}
-							System.out.println(tile.getHandler().getContents().get(tank).getFluid());
-							return ActionResultType.SUCCESS;
-						}
-					}
-				} else {
-					int fullSlots = 0;
-					int fluidSlot = 0;
-					for (FluidStack fluidstack : tile.getHandler().getContents()) {
-						if (!fluidstack.isEmpty()) {
-							fullSlots++;
-						} else {
-							fluidSlot = tile.getHandler().getContents().indexOf(fluidstack);
-						}
-					}
-
-					if (fullSlots == 1) {
-						System.out.println("1 full slot");
-						Item newBucket = tile.getHandler().getFluidInTank(fluidSlot - 1).getFluid().getFilledBucket();
-						if (!worldIn.isRemote && !player.abilities.isCreativeMode) {
-							stack.shrink(1);
-							if (stack.isEmpty()) {
-								player.setHeldItem(handIn, new ItemStack(newBucket));
-							} else if (!player.inventory.addItemStackToInventory(new ItemStack(newBucket))) {
-								player.dropItem(new ItemStack(newBucket), false);
-							}
-						}
-						tile.getHandler().drain(fluidSlot - 1, tile.getHandler().getTankCapacity(fluidSlot - 1),
-								FluidAction.EXECUTE);
-						return ActionResultType.SUCCESS;
-					} else {
-						return ActionResultType.FAIL;
-					}
-				}
-			}
+		if (worldIn.getTileEntity(pos) instanceof AgitatorTileEntity && !worldIn.isRemote) {
+			AgitatorTileEntity tile = (AgitatorTileEntity) worldIn.getTileEntity(pos);
+			NetworkHooks.openGui((ServerPlayerEntity) player, (INamedContainerProvider) tile, pos);
+			return ActionResultType.SUCCESS;
 		}
 
-		return ActionResultType.FAIL;
+		return ActionResultType.SUCCESS;
 	}
 }

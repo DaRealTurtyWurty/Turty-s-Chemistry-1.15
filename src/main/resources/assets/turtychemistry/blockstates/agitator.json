@@ -1,12 +1,19 @@
 {
-    "variants": {
-        "facing=north,processing=false": { "model": "turtychemistry:block/agitator" },
-        "facing=south,processing=false": { "model": "turtychemistry:block/agitator", "y": 180 },
-        "facing=west,processing=false":  { "model": "turtychemistry:block/agitator", "y": 270 },
-        "facing=east,processing=false":  { "model": "turtychemistry:block/agitator", "y": 90 },
-        "facing=north,processing=true": { "model": "turtychemistry:block/agitator" },
-        "facing=south,processing=true": { "model": "turtychemistry:block/agitator", "y": 180 },
-        "facing=west,processing=true":  { "model": "turtychemistry:block/agitator", "y": 270 },
-        "facing=east,processing=true":  { "model": "turtychemistry:block/agitator", "y": 90 }
-    }
+	"variants": {
+		"facing=north": {
+			"model": "turtychemistry:block/agitator"
+		},
+		"facing=south": {
+			"model": "turtychemistry:block/agitator",
+			"y": 180
+		},
+		"facing=west": {
+			"model": "turtychemistry:block/agitator",
+			"y": 270
+		},
+		"facing=east": {
+			"model": "turtychemistry:block/agitator",
+			"y": 90
+		}
+	}
 }
