@@ -1,0 +1,21 @@
+{
+    "variants": {
+        "facing=north,running=false,half=bottom": { "model": "turtychemistry:block/gasifier" },
+        "facing=south,running=false,half=bottom": { "model": "turtychemistry:block/gasifier", "y": 180 },
+        "facing=west,running=false,half=bottom":  { "model": "turtychemistry:block/gasifier", "y": 270 },
+        "facing=east,running=false,half=bottom":  { "model": "turtychemistry:block/gasifier", "y": 90 },
+        "facing=north,running=true,half=bottom": { "model": "turtychemistry:block/gasifier" },
+        "facing=south,running=true,half=bottom": { "model": "turtychemistry:block/gasifier", "y": 180 },
+        "facing=west,running=true,half=bottom":  { "model": "turtychemistry:block/gasifier", "y": 270 },
+        "facing=east,running=true,half=bottom":  { "model": "turtychemistry:block/gasifier", "y": 90 },
+        
+        "facing=north,running=false,half=top": { "model": "turtychemistry:block/gasifier" },
+        "facing=south,running=false,half=top": { "model": "turtychemistry:block/gasifier", "y": 180 },
+        "facing=west,running=false,half=top":  { "model": "turtychemistry:block/gasifier", "y": 270 },
+        "facing=east,running=false,half=top":  { "model": "turtychemistry:block/gasifier", "y": 90 },
+        "facing=north,running=true,half=top": { "model": "turtychemistry:block/gasifier" },
+        "facing=south,running=true,half=top": { "model": "turtychemistry:block/gasifier", "y": 180 },
+        "facing=west,running=true,half=top":  { "model": "turtychemistry:block/gasifier", "y": 270 },
+        "facing=east,running=true,half=top":  { "model": "turtychemistry:block/gasifier", "y": 90 }
+    }
+}
