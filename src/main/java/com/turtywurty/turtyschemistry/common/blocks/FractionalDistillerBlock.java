@@ -8,9 +8,9 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalBlock;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
@@ -53,7 +53,6 @@ public class FractionalDistillerBlock extends HorizontalBlock {
 		return state.get(PROCESSING) ? super.getLightValue(state) : 0;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public void onReplaced(BlockState oldState, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
 		if (oldState.getBlock() != newState.getBlock()) {
@@ -61,12 +60,16 @@ public class FractionalDistillerBlock extends HorizontalBlock {
 			if (tileEntity instanceof FractionalDistillerTileEntity) {
 				final ItemStackHandler inventory = ((FractionalDistillerTileEntity) tileEntity).inventory;
 				for (int slot = 0; slot < inventory.getSlots(); ++slot) {
-					InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(),
+					ItemEntity ie = new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(),
 							inventory.getStackInSlot(slot));
+					worldIn.addEntity(ie);
 				}
 			}
 		}
-		super.onReplaced(oldState, worldIn, pos, newState, isMoving);
+		
+		if (oldState.hasTileEntity() && (oldState.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
+			worldIn.removeTileEntity(pos);
+		}
 	}
 
 	@Override
