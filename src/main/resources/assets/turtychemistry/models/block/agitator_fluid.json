@@ -1,7 +1,7 @@
 {
 	"textures": {
-		"0": "turtychemistry:blocks/kernite",
-		"particle": "turtychemistry:blocks/kernite"
+		"0": "block/water_still",
+		"particle": "block/water_still"
 	},
 	"elements": [
 		{
