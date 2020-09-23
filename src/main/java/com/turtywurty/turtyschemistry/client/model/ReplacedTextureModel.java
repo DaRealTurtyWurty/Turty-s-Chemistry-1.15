@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2020.
+ * Author: Bernie G. (Gecko)
+ */
 package com.turtywurty.turtyschemistry.client.model;
 
 import net.minecraft.block.BlockState;
@@ -9,7 +13,7 @@ import net.minecraft.util.Direction;
 
 import java.util.*;
 
-public class ExistingModel implements IBakedModel
+public class ReplacedTextureModel implements IBakedModel
 {
 
 	private final IBakedModel model;
@@ -18,10 +22,10 @@ public class ExistingModel implements IBakedModel
 	private Map<Direction, List<BakedQuad>> sideQuads = new HashMap<>();
 
 
-	public ExistingModel(IBakedModel modelIn, TextureAtlasSprite textureIn)
+	public ReplacedTextureModel(IBakedModel modelIn, TextureAtlasSprite newTexture)
 	{
 		this.model = modelIn;
-		this.texture = textureIn;
+		this.texture = newTexture;
 
 		generalQuads = modelIn.getQuads(null, null, null);
 		Arrays.stream(Direction.values()).forEach(dir -> sideQuads.put(dir, modelIn.getQuads(null, dir, null)));
@@ -29,8 +33,9 @@ public class ExistingModel implements IBakedModel
 		for (int i = 0; i < generalQuads.size(); i++)
 		{
 			BakedQuad quad = generalQuads.get(i);
-			generalQuads.set(i, new BakedQuad(quad.getVertexData(), quad.getTintIndex(), quad.getFace(), textureIn,
-					quad.shouldApplyDiffuseLighting()));
+
+			generalQuads.set(i, replaceUV(newTexture, new BakedQuad(quad.getVertexData(), quad.getTintIndex(), quad.getFace(), quad.func_187508_a(),
+					quad.shouldApplyDiffuseLighting())));
 		}
 
 		for (Map.Entry<Direction, List<BakedQuad>> quadSide : sideQuads.entrySet())
@@ -39,11 +44,10 @@ public class ExistingModel implements IBakedModel
 			for (int i = 0; i < value.size(); i++)
 			{
 				BakedQuad quad = value.get(i);
-				value.set(i, new BakedQuad(quad.getVertexData(), quad.getTintIndex(), quad.getFace(), textureIn,
-						quad.shouldApplyDiffuseLighting()));
+				value.set(i, replaceUV(newTexture, new BakedQuad(quad.getVertexData(), quad.getTintIndex(), quad.getFace(), quad.func_187508_a(),
+						quad.shouldApplyDiffuseLighting())));
 			}
 		}
-		int i = 34;
 	}
 
 	@Override
@@ -83,10 +87,35 @@ public class ExistingModel implements IBakedModel
 		return model.getOverrides();
 	}
 
-	//isSideLit
 	@Override
 	public boolean func_230044_c_()
 	{
 		return model.func_230044_c_();
+	}
+
+
+	private static BakedQuad replaceUV(TextureAtlasSprite newTexture, BakedQuad oldQuad)
+	{
+		if (newTexture.equals(oldQuad.func_187508_a()))
+		{
+			return oldQuad;
+		}
+		int[] vertexData = oldQuad.getVertexData();
+		int j = 8;
+		int k = vertexData.length / j;
+
+		TextureAtlasSprite oldTexture = oldQuad.func_187508_a();
+
+		for (int i = 0; i < k; i++)
+		{
+			float oldU = Float.intBitsToFloat(vertexData[4 + i * 8]);
+			float oldV = Float.intBitsToFloat(vertexData[5 + i * 8]);
+			float newUnscaledU = oldU - oldTexture.getMinU();
+			float newUnscaledV = oldV - oldTexture.getMinV();
+			vertexData[4 + i * 8] = Float.floatToIntBits(newTexture.getMinU() + newUnscaledU);
+			vertexData[5 + i * 8] = Float.floatToIntBits(newTexture.getMinV() + newUnscaledV);
+		}
+
+		return new BakedQuad(vertexData, oldQuad.getTintIndex(), oldQuad.getFace(), newTexture);
 	}
 }

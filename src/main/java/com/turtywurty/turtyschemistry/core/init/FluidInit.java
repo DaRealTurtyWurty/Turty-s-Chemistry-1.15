@@ -41,6 +41,6 @@ public class FluidInit {
 	public static final ForgeFlowingFluid.Properties BRINE_PROPERTIES = new ForgeFlowingFluid.Properties(
 			() -> BRINE_STILL.get(), () -> BRINE_FLOWING.get(),
 			FluidAttributes.builder(BRINE_STILL_RL, BRINE_FLOWING_RL).density(50).rarity(Rarity.RARE)
-					.sound(SoundEvents.AMBIENT_UNDERWATER_ENTER).overlay(BRINE_OVERLAY_RL))
+					.sound(SoundEvents.AMBIENT_UNDERWATER_ENTER).color(3093151).overlay(BRINE_OVERLAY_RL))
 							.block(() -> FluidInit.BRINE_BLOCK.get()).bucket(() -> ItemInit.BRINE_BUCKET.get());
 }
