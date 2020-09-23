@@ -1,6 +1,7 @@
 package com.turtywurty.turtyschemistry.common.tileentity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +12,6 @@ import com.google.common.collect.Maps;
 import com.turtywurty.turtyschemistry.TurtyChemistry;
 import com.turtywurty.turtyschemistry.common.container.AgitatorContainer;
 import com.turtywurty.turtyschemistry.common.fluidhandlers.AgitatorFluidStackHandler;
-import com.turtywurty.turtyschemistry.core.init.ItemInit;
 import com.turtywurty.turtyschemistry.core.init.TileEntityTypeInit;
 import com.turtywurty.turtyschemistry.core.util.AgitatorData;
 import com.turtywurty.turtyschemistry.core.util.FluidStackHandler;
@@ -34,8 +34,10 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
+import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class AgitatorTileEntity extends InventoryTile implements INamedContainerProvider {
@@ -119,7 +121,10 @@ public class AgitatorTileEntity extends InventoryTile implements INamedContainer
 						tankFluidMap.put(tank, this.getFluidHandler().getFluidInTank(tank).getFluid());
 					}
 
-					if (tankFluidMap.equals(recipeMap)) {
+					boolean contentsEqual = recipeMap.keySet().equals(tankFluidMap.keySet())
+							&& new HashSet(recipeMap.values()).equals(new HashSet(tankFluidMap.values()));
+
+					if (contentsEqual) {
 						// System.out.println(this.runningTime);
 						if (this.runningTime < this.maxRunningTime) {
 							this.runningTime++;
@@ -133,13 +138,23 @@ public class AgitatorTileEntity extends InventoryTile implements INamedContainer
 									new FluidStack(ForgeRegistries.FLUIDS
 											.getValue(new ResourceLocation(recipe.getOutputfluid())), 1000),
 									FluidAction.EXECUTE);
-							this.getInventory().setStackInSlot(7, new ItemStack(ItemInit.BRINE_BUCKET.get()));
-							dirty = true;
 						}
 					} else {
 						this.runningTime = 0;
 					}
 				}
+			}
+
+			if (!this.getFluidHandler().getFluidInTank(5).isEmpty()
+					&& this.getItemInSlot(7).getItem() instanceof BucketItem) {
+				System.out.println("helo");
+				ItemStack stack = FluidUtil.getFluidHandler(this.getItemInSlot(7)).map((handler) -> {
+					handler.fill(this.getFluidHandler().getFluidInTank(5), FluidAction.EXECUTE);
+					return handler.getContainer();
+				}).orElse(this.getItemInSlot(7));
+				this.getInventory().setStackInSlot(7, stack);
+				this.getFluidHandler().drain(this.getFluidHandler().getFluidInTank(5), FluidAction.EXECUTE);
+				dirty = true;
 			}
 
 			if (this.runningTime < 0) {
@@ -151,10 +166,11 @@ public class AgitatorTileEntity extends InventoryTile implements INamedContainer
 				this.runningTime = this.maxRunningTime;
 				dirty = true;
 			}
-		} 
+		}
 
 		if (dirty)
 			this.markDirty();
+
 	}
 
 	private List<AgitatorData> getRecipes() {
