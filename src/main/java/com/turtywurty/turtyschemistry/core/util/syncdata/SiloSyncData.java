@@ -1,4 +1,4 @@
-package com.turtywurty.turtyschemistry.core.util;
+package com.turtywurty.turtyschemistry.core.util.syncdata;
 
 import com.turtywurty.turtyschemistry.common.tileentity.SiloTileEntity;
 

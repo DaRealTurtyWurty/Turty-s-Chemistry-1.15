@@ -7,9 +7,9 @@ import net.minecraft.nbt.ListNBT;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.FluidStack;
 
-public class AgitatorFluidStackHandler extends FluidStackHandler {
+public class TankFluidStackHandler extends FluidStackHandler {
 
-	public AgitatorFluidStackHandler(int tanks, int capacity) {
+	public TankFluidStackHandler(int tanks, int capacity) {
 		super(tanks, capacity);
 	}
 
