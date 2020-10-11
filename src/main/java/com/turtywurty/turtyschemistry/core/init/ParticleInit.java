@@ -1,6 +1,7 @@
 package com.turtywurty.turtyschemistry.core.init;
 
 import com.turtywurty.turtyschemistry.TurtyChemistry;
+import com.turtywurty.turtyschemistry.client.particle.FireParticle;
 import com.turtywurty.turtyschemistry.client.particle.GasParticle;
 import com.turtywurty.turtyschemistry.client.util.ClientUtils;
 
@@ -24,8 +25,13 @@ public class ParticleInit {
 	public static final RegistryObject<BasicParticleType> GAS_PARTICLE = PARTICLE_TYPES.register("gas_particle",
 			() -> (BasicParticleType) new BasicParticleType(true));
 
+	public static final RegistryObject<ParticleType<FireParticle.FireColourData>> FIRE_PARTICLE = PARTICLE_TYPES
+			.register("fire", () -> new ParticleType<FireParticle.FireColourData>(true,
+					FireParticle.FireColourData.DESERIALIZER));
+
 	@SubscribeEvent
 	public static void registerParticles(ParticleFactoryRegisterEvent event) {
 		ClientUtils.MC.particles.registerFactory(ParticleInit.GAS_PARTICLE.get(), GasParticle.Factory::new);
+		ClientUtils.MC.particles.registerFactory(ParticleInit.FIRE_PARTICLE.get(), FireParticle.Factory::new);
 	}
 }

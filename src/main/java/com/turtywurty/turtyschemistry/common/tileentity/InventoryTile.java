@@ -149,11 +149,13 @@ public class InventoryTile extends TileEntity implements ITickableTileEntity {
 	@Override
 	@Nonnull
 	public CompoundNBT getUpdateTag() {
+		System.out.println("serialize");
 		return this.serializeNBT();
 	}
 
 	@Override
 	public void handleUpdateTag(CompoundNBT tag) {
 		deserializeNBT(tag);
+		System.out.println("deserialize");
 	}
 }

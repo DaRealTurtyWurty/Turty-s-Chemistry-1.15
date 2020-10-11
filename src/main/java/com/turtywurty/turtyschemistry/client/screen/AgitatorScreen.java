@@ -5,8 +5,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.turtywurty.turtyschemistry.TurtyChemistry;
 import com.turtywurty.turtyschemistry.client.util.ClientUtils;
 import com.turtywurty.turtyschemistry.common.container.AgitatorContainer;
+import com.turtywurty.turtyschemistry.common.tileentity.AgitatorTileEntity;
+import com.turtywurty.turtyschemistry.common.tileentity.AgitatorType;
 
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
+import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Tessellator;
@@ -69,7 +72,6 @@ public class AgitatorScreen extends ContainerScreen<AgitatorContainer> {
 
 		RenderSystem.pushMatrix();
 		int scaledHeight = (int) (57 * ((float) fluid.getAmount() / 1000));
-		// System.out.println(fluid.getAmount());
 		RenderType renderType = ClientUtils.getGui(TEXTURE);
 		IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer());
 		MatrixStack transform = new MatrixStack();
@@ -84,6 +86,40 @@ public class AgitatorScreen extends ContainerScreen<AgitatorContainer> {
 		if (mouseX > this.guiLeft + xLeft && mouseX < this.guiLeft + xRight && mouseY > this.guiTop + yTop
 				&& mouseY < this.guiTop + yBottom) {
 			this.renderTooltip(tooltip, mouseX, mouseY);
+		}
+	}
+
+	@Override
+	protected void init() {
+		super.init();
+
+		this.addButton(new ChangeModeButton(this, this.guiLeft + 115, this.guiTop + 4, 19, 19));
+	}
+
+	public static class ChangeModeButton extends Button {
+
+		private AgitatorScreen screen;
+
+		public ChangeModeButton(AgitatorScreen screen, int x, int y, int width, int height) {
+			super(x, y, width, height, "", (pressable) -> {
+				AgitatorTileEntity tile = screen.container.getTile();
+				AgitatorType currentType = tile.getAgitatorType();
+				AgitatorType[] types = AgitatorType.values();
+				int newType = currentType.ordinal() + 1 >= types.length ? 0 : currentType.ordinal() + 1;
+				tile.setAgitatorType(AgitatorType.values()[newType]);
+			});
+
+			this.screen = screen;
+		}
+
+		@Override
+		public void renderButton(int mouseY, int mouseX, float partialTicks) {
+			int offsetY = 17;
+			if (this.isHovered())
+				offsetY += this.height;
+			ClientUtils.renderButton(TEXTURE, this, partialTicks, this.alpha,
+					199 + (this.screen.container.getTile().getAgitatorType().ordinal() * 19), offsetY, this.width,
+					this.height, 256, 256);
 		}
 	}
 }

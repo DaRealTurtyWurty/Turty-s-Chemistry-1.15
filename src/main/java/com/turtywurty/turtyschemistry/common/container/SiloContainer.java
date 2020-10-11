@@ -4,7 +4,7 @@ import com.turtywurty.turtyschemistry.common.container.slots.SiloSlotItemHandler
 import com.turtywurty.turtyschemistry.common.tileentity.SiloTileEntity;
 import com.turtywurty.turtyschemistry.core.init.BlockInit;
 import com.turtywurty.turtyschemistry.core.init.ContainerTypeInit;
-import com.turtywurty.turtyschemistry.core.util.SiloSyncData;
+import com.turtywurty.turtyschemistry.core.util.syncdata.SiloSyncData;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;

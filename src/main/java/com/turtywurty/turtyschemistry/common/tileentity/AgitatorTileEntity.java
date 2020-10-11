@@ -10,18 +10,13 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.Maps;
 import com.turtywurty.turtyschemistry.TurtyChemistry;
-import com.turtywurty.turtyschemistry.common.container.AgitatorContainer;
-import com.turtywurty.turtyschemistry.common.fluidhandlers.AgitatorFluidStackHandler;
+import com.turtywurty.turtyschemistry.common.fluidhandlers.TankFluidStackHandler;
 import com.turtywurty.turtyschemistry.core.init.TileEntityTypeInit;
 import com.turtywurty.turtyschemistry.core.util.AgitatorData;
 import com.turtywurty.turtyschemistry.core.util.FluidStackHandler;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -32,6 +27,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
@@ -39,16 +35,17 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public class AgitatorTileEntity extends InventoryTile implements INamedContainerProvider {
+public class AgitatorTileEntity extends InventoryTile {
 
 	private int runningTime;
 	private final int maxRunningTime = 250;
+	private AgitatorType type = AgitatorType.LIQUID_ONLY;
 
-	public AgitatorFluidStackHandler fluidHandler = new AgitatorFluidStackHandler(6, 1000) {
+	public TankFluidStackHandler fluidHandler = new TankFluidStackHandler(8, 1000) {
 		@Override
 		public void onContentsChanged() {
 			super.onContentsChanged();
-			markDirty();
+			AgitatorTileEntity.this.markDirty();
 		}
 	};
 
@@ -68,9 +65,10 @@ public class AgitatorTileEntity extends InventoryTile implements INamedContainer
 
 	@Override
 	public void read(CompoundNBT compound) {
-		loadRestorable(compound);
+		this.loadRestorable(compound);
 		super.read(compound);
 		this.runningTime = compound.getInt("RunningTime");
+		this.type = AgitatorType.byName(compound.getString("Type"));
 	}
 
 	@Nonnull
@@ -79,6 +77,7 @@ public class AgitatorTileEntity extends InventoryTile implements INamedContainer
 		CompoundNBT tanks = this.fluidHandler.serializeNBT();
 		compound.put("fluidinv", tanks);
 		compound.putInt("RunningTime", this.runningTime);
+		compound.putString("Type", this.type.getName());
 		return super.write(compound);
 	}
 
@@ -101,6 +100,8 @@ public class AgitatorTileEntity extends InventoryTile implements INamedContainer
 							&& this.getFluidHandler().getFluidInTank(slot).isEmpty()) {
 						this.getFluidHandler().fill(slot, new FluidStack(bucket.getFluid(), 1000), FluidAction.EXECUTE);
 						this.getInventory().setStackInSlot(slot, new ItemStack(Items.BUCKET));
+						this.world.notifyBlockUpdate(this.getPos(), this.getBlockState(), this.getBlockState(),
+								Constants.BlockFlags.BLOCK_UPDATE);
 					}
 				}
 			}
@@ -124,7 +125,6 @@ public class AgitatorTileEntity extends InventoryTile implements INamedContainer
 							&& new HashSet(recipeMap.values()).equals(new HashSet(tankFluidMap.values()));
 
 					if (contentsEqual) {
-						// System.out.println(this.runningTime);
 						if (this.runningTime < this.maxRunningTime) {
 							this.runningTime++;
 							dirty = true;
@@ -137,6 +137,8 @@ public class AgitatorTileEntity extends InventoryTile implements INamedContainer
 									new FluidStack(ForgeRegistries.FLUIDS
 											.getValue(new ResourceLocation(recipe.getOutputfluid())), 1000),
 									FluidAction.EXECUTE);
+							this.world.notifyBlockUpdate(this.getPos(), this.getBlockState(), this.getBlockState(),
+									Constants.BlockFlags.BLOCK_UPDATE);
 						}
 					} else {
 						this.runningTime = 0;
@@ -146,13 +148,14 @@ public class AgitatorTileEntity extends InventoryTile implements INamedContainer
 
 			if (!this.getFluidHandler().getFluidInTank(5).isEmpty()
 					&& this.getItemInSlot(7).getItem() instanceof BucketItem) {
-				System.out.println("helo");
 				ItemStack stack = FluidUtil.getFluidHandler(this.getItemInSlot(7)).map((handler) -> {
 					handler.fill(this.getFluidHandler().getFluidInTank(5), FluidAction.EXECUTE);
 					return handler.getContainer();
 				}).orElse(this.getItemInSlot(7));
 				this.getInventory().setStackInSlot(7, stack);
 				this.getFluidHandler().drain(this.getFluidHandler().getFluidInTank(5), FluidAction.EXECUTE);
+				this.world.notifyBlockUpdate(this.getPos(), this.getBlockState(), this.getBlockState(),
+						Constants.BlockFlags.BLOCK_UPDATE);
 				dirty = true;
 			}
 
@@ -200,15 +203,8 @@ public class AgitatorTileEntity extends InventoryTile implements INamedContainer
 		this.optional.invalidate();
 	}
 
-	@Override
 	public ITextComponent getDisplayName() {
 		return new TranslationTextComponent("container." + TurtyChemistry.MOD_ID + ".agitator");
-	}
-
-	@Nullable
-	@Override
-	public Container createMenu(int windowID, PlayerInventory playerInventory, PlayerEntity playerEntity) {
-		return new AgitatorContainer(windowID, playerInventory, this);
 	}
 
 	public int getMaxRunningTime() {
@@ -221,5 +217,13 @@ public class AgitatorTileEntity extends InventoryTile implements INamedContainer
 
 	public void setRunningTime(int runningTime) {
 		this.runningTime = runningTime;
+	}
+
+	public AgitatorType getAgitatorType() {
+		return this.type;
+	}
+
+	public void setAgitatorType(AgitatorType type) {
+		this.type = type;
 	}
 }

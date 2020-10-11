@@ -4,11 +4,14 @@ import com.turtywurty.turtyschemistry.TurtyChemistry;
 import com.turtywurty.turtyschemistry.client.renderer.tileentity.AgitatorTileEntityRenderer;
 import com.turtywurty.turtyschemistry.client.renderer.tileentity.AutoclaveTileEntityRenderer;
 import com.turtywurty.turtyschemistry.client.renderer.tileentity.BalerTileEntityRenderer;
+import com.turtywurty.turtyschemistry.client.renderer.tileentity.BoilerTileEntityRenderer;
 import com.turtywurty.turtyschemistry.client.renderer.tileentity.BriquettingPressTileEntityRenderer;
+import com.turtywurty.turtyschemistry.client.renderer.tileentity.BunsenBurnerTileEntityRenderer;
 import com.turtywurty.turtyschemistry.client.renderer.tileentity.HopperTileEntityRenderer;
 import com.turtywurty.turtyschemistry.client.screen.AgitatorScreen;
 import com.turtywurty.turtyschemistry.client.screen.AutoclaveScreen;
 import com.turtywurty.turtyschemistry.client.screen.BalerScreen;
+import com.turtywurty.turtyschemistry.client.screen.BoilerScreen;
 import com.turtywurty.turtyschemistry.client.screen.BriquettingPressScreen;
 import com.turtywurty.turtyschemistry.client.screen.ElectrolyzerScreen;
 import com.turtywurty.turtyschemistry.client.screen.FractionalDistillerScreen;
@@ -34,7 +37,13 @@ public final class ClientModEventSubscriber {
 
 	@SubscribeEvent
 	public static void onFMLClientSetupEvent(final FMLClientSetupEvent event) {
-		// Register ContainerType Screens
+		setupScreens();
+		setupRenderTypes();
+		bindTERs();
+
+	}
+
+	public static void setupScreens() {
 		ScreenManager.registerFactory(ContainerTypeInit.FRACTIONAL_DISTILLER.get(), FractionalDistillerScreen::new);
 		ScreenManager.registerFactory(ContainerTypeInit.AUTOCLAVE.get(), AutoclaveScreen::new);
 		ScreenManager.registerFactory(ContainerTypeInit.GAS_EXTRACTOR.get(), GasExtractorScreen::new);
@@ -44,8 +53,10 @@ public final class ClientModEventSubscriber {
 		ScreenManager.registerFactory(ContainerTypeInit.HOPPER.get(), HopperScreen::new);
 		ScreenManager.registerFactory(ContainerTypeInit.ELECTROLYZER.get(), ElectrolyzerScreen::new);
 		ScreenManager.registerFactory(ContainerTypeInit.AGITATOR.get(), AgitatorScreen::new);
+		ScreenManager.registerFactory(ContainerTypeInit.BOILER.get(), BoilerScreen::new);
+	}
 
-		// Set Render Types
+	public static void setupRenderTypes() {
 		RenderTypeLookup.setRenderLayer(BlockInit.AUTOCLAVE.get(),
 				layer -> layer == RenderType.getSolid() || layer == RenderType.getTranslucent());
 		RenderTypeLookup.setRenderLayer(BlockInit.AGITATOR.get(),
@@ -65,13 +76,17 @@ public final class ClientModEventSubscriber {
 		RenderTypeLookup.setRenderLayer(BlockInit.SPESSARTINE.get(), type -> type.equals(RenderType.getTranslucent()));
 		RenderTypeLookup.setRenderLayer(BlockInit.TOURMALINE.get(), type -> type.equals(RenderType.getTranslucent()));
 		RenderTypeLookup.setRenderLayer(BlockInit.SPODUMENE.get(), type -> type.equals(RenderType.getTranslucent()));
+	}
 
-		// Bind TileEntity to TileEntityRenderer
+	public static void bindTERs() {
 		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.AUTOCLAVE.get(), AutoclaveTileEntityRenderer::new);
 		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.BALER.get(), BalerTileEntityRenderer::new);
 		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.BRIQUETTING_PRESS.get(),
 				BriquettingPressTileEntityRenderer::new);
 		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.AGITATOR.get(), AgitatorTileEntityRenderer::new);
 		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.HOPPER.get(), HopperTileEntityRenderer::new);
+		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.BOILER.get(), BoilerTileEntityRenderer::new);
+		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.BUNSEN_BURNER.get(),
+				BunsenBurnerTileEntityRenderer::new);
 	}
 }

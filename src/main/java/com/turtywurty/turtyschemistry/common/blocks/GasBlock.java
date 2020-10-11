@@ -12,6 +12,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.potion.EffectInstance;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
@@ -21,9 +22,12 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
 public class GasBlock extends Block {
+	
+	private ResourceLocation guiTexture;
 
-	public GasBlock(Block.Properties properties) {
+	public GasBlock(Block.Properties properties, ResourceLocation guiTextureIn) {
 		super(properties);
+		this.guiTexture = guiTextureIn;
 	}
 
 	@Override
@@ -62,5 +66,9 @@ public class GasBlock extends Block {
 			worldIn.setBlockState(pos.up(), state);
 			worldIn.setBlockState(pos, Blocks.AIR.getDefaultState());
 		}
+	}
+
+	public ResourceLocation getGuiTexture() {
+		return this.guiTexture;
 	}
 }

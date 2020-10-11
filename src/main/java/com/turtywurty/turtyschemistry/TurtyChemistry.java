@@ -18,9 +18,12 @@ import com.turtywurty.turtyschemistry.core.init.RecipeSerializerInit;
 import com.turtywurty.turtyschemistry.core.init.StatsInit;
 import com.turtywurty.turtyschemistry.core.init.TileEntityTypeInit;
 import com.turtywurty.turtyschemistry.core.packets.AgitatorFluidPacket;
+import com.turtywurty.turtyschemistry.core.packets.AgitatorTypePacket;
+import com.turtywurty.turtyschemistry.core.packets.BoilerFluidPacket;
 import com.turtywurty.turtyschemistry.core.packets.BriquettingPressButtonPacket;
 import com.turtywurty.turtyschemistry.core.packets.SiloButtonPacket;
 import com.turtywurty.turtyschemistry.core.util.AgitatorData;
+import com.turtywurty.turtyschemistry.core.util.BoilerRecipe;
 import com.turtywurty.turtyschemistry.core.util.SimpleJsonDataManager;
 import com.turtywurty.turtyschemistry.core.world.features.FeatureGeneration;
 
@@ -71,6 +74,9 @@ public class TurtyChemistry {
 	public static final SimpleJsonDataManager<AgitatorData> AGITATOR_DATA = new SimpleJsonDataManager<AgitatorData>(
 			"agitator", AgitatorData.class);
 
+	public static final SimpleJsonDataManager<BoilerRecipe> BOILER_RECIPE = new SimpleJsonDataManager<BoilerRecipe>(
+			"boiler", BoilerRecipe.class);
+
 	public static void onClientInit() {
 		ModelLoader.addSpecialModel(new ResourceLocation(TurtyChemistry.MOD_ID, "block/agitator_fluid"));
 
@@ -78,6 +84,7 @@ public class TurtyChemistry {
 		if (manager instanceof IReloadableResourceManager) {
 			IReloadableResourceManager reloader = (IReloadableResourceManager) manager;
 			reloader.addReloadListener(AGITATOR_DATA);
+			reloader.addReloadListener(BOILER_RECIPE);
 		}
 	}
 
@@ -117,6 +124,10 @@ public class TurtyChemistry {
 				SiloButtonPacket::decode, SiloButtonPacket::onRecieved);
 		packetHandler.registerMessage(index++, AgitatorFluidPacket.class, AgitatorFluidPacket::encode,
 				AgitatorFluidPacket::decode, AgitatorFluidPacket::onRecieved);
+		packetHandler.registerMessage(index++, AgitatorTypePacket.class, AgitatorTypePacket::encode,
+				AgitatorTypePacket::decode, AgitatorTypePacket::onRecieved);
+		packetHandler.registerMessage(index++, BoilerFluidPacket.class, BoilerFluidPacket::encode,
+				BoilerFluidPacket::decode, BoilerFluidPacket::onRecieved);
 	}
 
 	private void commonSetup(final FMLCommonSetupEvent event) {

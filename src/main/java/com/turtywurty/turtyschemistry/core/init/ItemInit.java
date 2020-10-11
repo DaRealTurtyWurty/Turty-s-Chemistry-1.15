@@ -167,4 +167,8 @@ public class ItemInit {
 	public static final RegistryObject<GasCanisterItem> GAS_CANISTER_L = ITEMS.register("gas_canister_large", () -> new GasCanisterItem(BlockInit.GAS_CANISTER_L.get(), properties, true));
 
 	public static final RegistryObject<BucketItem> BRINE_BUCKET = ITEMS.register("brine_bucket", () -> new BucketItem(() -> FluidInit.BRINE_STILL.get(), properties.maxStackSize(16)));
+	
+	public static final RegistryObject<Item> BUNSEN_FRAME = ITEMS.register("bunsen_frame", () -> new Item(properties));
+	public static final RegistryObject<Item> WIRE_GAUZE = ITEMS.register("wire_gauze", () -> new Item(properties));
+	public static final RegistryObject<Item> CRUCIBLE = ITEMS.register("crucible", () -> new Item(properties));
 }

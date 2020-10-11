@@ -4,6 +4,7 @@ import com.turtywurty.turtyschemistry.TurtyChemistry;
 import com.turtywurty.turtyschemistry.common.container.AgitatorContainer;
 import com.turtywurty.turtyschemistry.common.container.AutoclaveContainer;
 import com.turtywurty.turtyschemistry.common.container.BalerContainer;
+import com.turtywurty.turtyschemistry.common.container.BoilerContainer;
 import com.turtywurty.turtyschemistry.common.container.BriquettingPressContainer;
 import com.turtywurty.turtyschemistry.common.container.ElectrolyzerContainer;
 import com.turtywurty.turtyschemistry.common.container.FractionalDistillerContainer;
@@ -32,7 +33,7 @@ public class ContainerTypeInit {
 			.register("gas_extractor", () -> IForgeContainerType.create(GasExtractorContainer::new));
 
 	public static final RegistryObject<ContainerType<AgitatorContainer>> AGITATOR = CONTAINER_TYPES.register("agitator",
-			() -> IForgeContainerType.create(AgitatorContainer::new));
+			() -> new ContainerType(AgitatorContainer::getClientContainer));
 
 	public static final RegistryObject<ContainerType<BalerContainer>> BALER = CONTAINER_TYPES.register("baler",
 			() -> IForgeContainerType.create(BalerContainer::new));
@@ -48,4 +49,7 @@ public class ContainerTypeInit {
 
 	public static final RegistryObject<ContainerType<ElectrolyzerContainer>> ELECTROLYZER = CONTAINER_TYPES
 			.register("electrolyzer", () -> IForgeContainerType.create(ElectrolyzerContainer::new));
+
+	public static final RegistryObject<ContainerType<BoilerContainer>> BOILER = CONTAINER_TYPES.register("boiler",
+			() -> new ContainerType(BoilerContainer::getClientContainer));
 }

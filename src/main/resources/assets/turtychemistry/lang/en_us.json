@@ -142,6 +142,9 @@
     "item.turtychemistry.sawdust": "Sawdust",
     "item.turtychemistry.briquette": "Briquette",
     "item.turtychemistry.brine_bucket": "Brine Bucket",
+    "item.turtychemistry.bunsen_frame": "Bunsen Burner Frame",
+    "item.turtychemistry.wire_gauze": "Wire Gauze",
+    "item.turtychemistry.crucible": "Crucible",
     
     "itemGroup.chemistrytab": "Turty's Chemistry",
     
@@ -187,12 +190,23 @@
     "block.turtychemistry.electrolyzer": "Electrolyzer",
     "block.turtychemistry.gas_canister_small": "Small Gas Canister",
     "block.turtychemistry.gas_canister_large": "Large Gas Canister",
+    "block.turtychemistry.boron_block": "Block of Boron",
+    "block.turtychemistry.cadmium_block": "Block of Cadmium",
+    "block.turtychemistry.gadolinium_block": "Block of Gadoliumium",
+    "block.turtychemistry.hafnium_block": "Block of Hafnium",
+    "block.turtychemistry.indium_block": "Block of Indium",
+    "block.turtychemistry.lead_block": "Block of Lead",
+    "block.turtychemistry.osmium_block": "Block of Osmium",
+    "block.turtychemistry.palladium_block": "Palladium Block",
+    "block.turtychemistry.ruthenium_block": "Ruthenium Block",
+    "block.turtychemistry.bunsen_burner": "Bunsen Burner",
     
     "container.turtychemistry.gas_extractor": "Gas Extractor",
     "container.turtychemistry.silo": "Silo",
     "container.turtychemistry.hopper": "Hopper",
     "container.turtychemistry.electrolyzer": "Electrolyzer",
     "container.turtychemistry.agitator": "Agitator",
+    "container.turtychemistry.boiler": "Boiler",
     
     "block.turtychemistry.green_algae": "Green Algae",
     "item.turtychemistry.green_algae": "Green Algae",

@@ -1,40 +1,47 @@
 package com.turtywurty.turtyschemistry.common.container;
 
-import java.util.Objects;
-
 import com.turtywurty.turtyschemistry.TurtyChemistry;
 import com.turtywurty.turtyschemistry.common.container.slots.AgitatorSlot;
 import com.turtywurty.turtyschemistry.common.tileentity.AgitatorTileEntity;
+import com.turtywurty.turtyschemistry.common.tileentity.AgitatorType;
 import com.turtywurty.turtyschemistry.core.init.BlockInit;
 import com.turtywurty.turtyschemistry.core.init.ContainerTypeInit;
 import com.turtywurty.turtyschemistry.core.packets.AgitatorFluidPacket;
-import com.turtywurty.turtyschemistry.core.util.FunctionalIntReferenceHolder;
+import com.turtywurty.turtyschemistry.core.packets.AgitatorTypePacket;
+import com.turtywurty.turtyschemistry.core.util.syncdata.AgitatorSyncData;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.IContainerListener;
+import net.minecraft.inventory.container.IContainerProvider;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.IIntArray;
 import net.minecraft.util.IWorldPosCallable;
+import net.minecraft.util.IntArray;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 public class AgitatorContainer extends Container {
 
 	private final IWorldPosCallable callable;
-	public final AgitatorTileEntity tileEntity;
+	public static AgitatorTileEntity tile;
 	private FluidStack outputFluid = FluidStack.EMPTY;
+	public AgitatorType type;
+	public final IIntArray data;
 
-	public AgitatorContainer(int id, final PlayerInventory playerInventory, AgitatorTileEntity tileEntityIn) {
+	public AgitatorContainer(int id, final PlayerInventory playerInventory, IItemHandler slots, BlockPos pos,
+			IIntArray data, AgitatorType type) {
 		super(ContainerTypeInit.AGITATOR.get(), id);
-		this.tileEntity = tileEntityIn;
-		this.callable = IWorldPosCallable.of(tileEntityIn.getWorld(), tileEntityIn.getPos());
+		this.callable = IWorldPosCallable.of(playerInventory.player.getEntityWorld(), pos);
+		this.data = data;
 
 		final int slotSizePlus2 = 18;
 
@@ -44,11 +51,11 @@ public class AgitatorContainer extends Container {
 		final int invStartY = 17;
 		for (int row = 0; row < 2; row++) {
 			for (int column = 0; column < 3; column++) {
-				this.addSlot(new AgitatorSlot(this.tileEntity.getInventory(), (row * 3) + column,
-						invStartX + (column * slotSizePlus2), invStartY + (row * topToBottom)));
+				this.addSlot(new AgitatorSlot(slots, (row * 3) + column, invStartX + (column * slotSizePlus2),
+						invStartY + (row * topToBottom)));
 			}
 		}
-		this.addSlot(new AgitatorSlot(this.tileEntity.getInventory(), 7, 133, 55));
+		this.addSlot(new AgitatorSlot(slots, 7, 133, 55));
 
 		// Main Inventory
 		final int startX = 8;
@@ -66,23 +73,20 @@ public class AgitatorContainer extends Container {
 			this.addSlot(new Slot(playerInventory, column, startX + column * slotSizePlus2, hotbarY));
 		}
 
-		this.trackInt(new FunctionalIntReferenceHolder(() -> this.tileEntity.getRunningTime(),
-				this.tileEntity::setRunningTime));
+		this.trackIntArray(data);
+		this.type = type;
 	}
 
-	public AgitatorContainer(final int windowId, final PlayerInventory playerInv, final PacketBuffer data) {
-		this(windowId, playerInv, getTileEntity(playerInv, data));
+	public static IContainerProvider getServerContainerProvider(AgitatorTileEntity te, BlockPos activationPos,
+			AgitatorType type) {
+		tile = te;
+		return (id, playerInventory, serverPlayer) -> new AgitatorContainer(id, playerInventory, te.getInventory(),
+				activationPos, new AgitatorSyncData(te), type);
 	}
 
-	public static AgitatorTileEntity getTileEntity(final PlayerInventory playerInv, final PacketBuffer data) {
-		Objects.requireNonNull(playerInv, "playerInv cannot be null");
-		Objects.requireNonNull(data, "data cannot be null");
-		final TileEntity tile = playerInv.player.world.getTileEntity(data.readBlockPos());
-		if (tile instanceof AgitatorTileEntity) {
-			return (AgitatorTileEntity) tile;
-		}
-
-		throw new IllegalStateException("Tile entity is not correct! " + tile);
+	public static AgitatorContainer getClientContainer(int id, PlayerInventory playerInventory) {
+		return new AgitatorContainer(id, playerInventory, new ItemStackHandler(8), BlockPos.ZERO, new IntArray(1),
+				AgitatorType.LIQUID_ONLY);
 	}
 
 	@Override
@@ -121,8 +125,8 @@ public class AgitatorContainer extends Container {
 
 	@OnlyIn(Dist.CLIENT)
 	public int getScaledProgress() {
-		return this.tileEntity.getRunningTime() != 0 && this.tileEntity.getMaxRunningTime() != 0
-				? this.tileEntity.getRunningTime() * 24 / this.tileEntity.getMaxRunningTime()
+		return tile.getRunningTime() != 0 && tile.getMaxRunningTime() != 0
+				? tile.getRunningTime() * 24 / tile.getMaxRunningTime()
 				: 0;
 	}
 
@@ -134,22 +138,40 @@ public class AgitatorContainer extends Container {
 		return this.outputFluid;
 	}
 
+	public void recieveType(AgitatorType type) {
+		this.type = type;
+	}
+
 	@SuppressWarnings("resource")
 	@Override
 	public void detectAndSendChanges() {
 		super.detectAndSendChanges();
-		if (!this.tileEntity.getWorld().isRemote) {
-			if (!this.outputFluid.isFluidStackIdentical(this.tileEntity.getFluidHandler().getFluidInTank(5))) {
-				this.outputFluid = this.tileEntity.getFluidHandler().getFluidInTank(5);
+		if (!tile.getWorld().isRemote) {
+			if (!this.outputFluid.isFluidStackIdentical(tile.getFluidHandler().getFluidInTank(5))) {
+				this.outputFluid = tile.getFluidHandler().getFluidInTank(5);
 				for (IContainerListener listener : this.listeners) {
 					if (listener instanceof ServerPlayerEntity) {
 						TurtyChemistry.packetHandler.send(
 								PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) listener),
-								new AgitatorFluidPacket(this.tileEntity.getFluidHandler().getFluidInTank(5),
-										this.windowId));
+								new AgitatorFluidPacket(tile.getFluidHandler().getFluidInTank(5), this.windowId));
+					}
+				}
+			}
+
+			if (!this.type.equals(tile.getAgitatorType())) {
+				this.type = tile.getAgitatorType();
+				for (IContainerListener listener : this.listeners) {
+					if (listener instanceof ServerPlayerEntity) {
+						TurtyChemistry.packetHandler.send(
+								PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) listener),
+								new AgitatorTypePacket(tile.getAgitatorType(), this.windowId));
 					}
 				}
 			}
 		}
+	}
+
+	public AgitatorTileEntity getTile() {
+		return tile;
 	}
 }

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import com.turtywurty.turtyschemistry.common.container.AgitatorContainer;
 import com.turtywurty.turtyschemistry.common.tileentity.AgitatorTileEntity;
 import com.turtywurty.turtyschemistry.core.init.TileEntityTypeInit;
 
@@ -12,7 +13,9 @@ import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.IContainerProvider;
 import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.inventory.container.SimpleNamedContainerProvider;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
@@ -101,7 +104,7 @@ public class AgitatorBlock extends BaseHorizontalBlock {
 	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
 		return SHAPES.get(state.get(HORIZONTAL_FACING));
 	}
-	
+
 	@Override
 	public BlockRenderType getRenderType(BlockState state) {
 		return BlockRenderType.MODEL;
@@ -122,7 +125,12 @@ public class AgitatorBlock extends BaseHorizontalBlock {
 			final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
 		if (worldIn.getTileEntity(pos) instanceof AgitatorTileEntity && !worldIn.isRemote) {
 			AgitatorTileEntity tile = (AgitatorTileEntity) worldIn.getTileEntity(pos);
-			NetworkHooks.openGui((ServerPlayerEntity) player, (INamedContainerProvider) tile, pos);
+			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+			IContainerProvider provider = AgitatorContainer.getServerContainerProvider((AgitatorTileEntity) tile, pos,
+					tile.getAgitatorType());
+			INamedContainerProvider namedProvider = new SimpleNamedContainerProvider(provider,
+					((AgitatorTileEntity) tile).getDisplayName());
+			NetworkHooks.openGui(serverPlayer, namedProvider, pos);
 			return ActionResultType.SUCCESS;
 		}
 

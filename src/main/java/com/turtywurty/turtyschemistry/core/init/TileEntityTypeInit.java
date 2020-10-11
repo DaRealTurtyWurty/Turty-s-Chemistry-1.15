@@ -1,10 +1,12 @@
 package com.turtywurty.turtyschemistry.core.init;
 
 import com.turtywurty.turtyschemistry.TurtyChemistry;
+import com.turtywurty.turtyschemistry.common.blocks.bunsen_burner.BunsenBurnerTileEntity;
 import com.turtywurty.turtyschemistry.common.cables.CableTileEntity;
 import com.turtywurty.turtyschemistry.common.tileentity.AgitatorTileEntity;
 import com.turtywurty.turtyschemistry.common.tileentity.AutoclaveTileEntity;
 import com.turtywurty.turtyschemistry.common.tileentity.BalerTileEntity;
+import com.turtywurty.turtyschemistry.common.tileentity.BoilerTileEntity;
 import com.turtywurty.turtyschemistry.common.tileentity.BriquettingPressTileEntity;
 import com.turtywurty.turtyschemistry.common.tileentity.ElectrolyzerTileEntity;
 import com.turtywurty.turtyschemistry.common.tileentity.FractionalDistillerTileEntity;
@@ -65,11 +67,18 @@ public class TileEntityTypeInit {
 			.register("electrolyzer", () -> TileEntityType.Builder
 					.create(ElectrolyzerTileEntity::new, BlockInit.ELECTROLYZER.get()).build(null));
 
-	public static final RegistryObject<TileEntityType<GasCanisterLargeTE>> GAS_CANISTER_L = TILE_ENTITY_TYPES
-			.register("gas_canister_large", () -> TileEntityType.Builder
-					.create(GasCanisterLargeTE::new, BlockInit.GAS_CANISTER_L.get()).build(null));
+	public static final RegistryObject<TileEntityType<GasCanisterLargeTE>> GAS_CANISTER_L = TILE_ENTITY_TYPES.register(
+			"gas_canister_large",
+			() -> TileEntityType.Builder.create(GasCanisterLargeTE::new, BlockInit.GAS_CANISTER_L.get()).build(null));
 
-	public static final RegistryObject<TileEntityType<GasCanisterSmallTE>> GAS_CANISTER_S = TILE_ENTITY_TYPES
-			.register("gas_canister_small", () -> TileEntityType.Builder
-					.create(GasCanisterSmallTE::new, BlockInit.GAS_CANISTER_S.get()).build(null));
+	public static final RegistryObject<TileEntityType<GasCanisterSmallTE>> GAS_CANISTER_S = TILE_ENTITY_TYPES.register(
+			"gas_canister_small",
+			() -> TileEntityType.Builder.create(GasCanisterSmallTE::new, BlockInit.GAS_CANISTER_S.get()).build(null));
+
+	public static final RegistryObject<TileEntityType<BoilerTileEntity>> BOILER = TILE_ENTITY_TYPES.register("boiler",
+			() -> TileEntityType.Builder.create(BoilerTileEntity::new, BlockInit.BOILER.get()).build(null));
+
+	public static final RegistryObject<TileEntityType<BunsenBurnerTileEntity>> BUNSEN_BURNER = TILE_ENTITY_TYPES
+			.register("bunsen_burner", () -> TileEntityType.Builder
+					.create(BunsenBurnerTileEntity::new, BlockInit.BUNSEN_BURNER.get()).build(null));
 }

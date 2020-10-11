@@ -1,8 +1,0 @@
-{
-	"name": "Encyclopedia",
-	"landing_text": "Welcome to Turty's Chemistry. A mod which expands Minecraft by adding, you guessed it, chemistry. As a strong lover of chemistry, I thought this mod would be fun to make. This mod adds elements, compounds, and mixtures. All of these have cool properties such as half life, combustion, radioactivity and more. This mod also makes normal minecraft processes, much more realistic!",
-	"version": 1,
-	"show_progress": false,
-	"show_toasts": false,
-	"creative_tab": "turtychemistry:chemistrytab"
-}

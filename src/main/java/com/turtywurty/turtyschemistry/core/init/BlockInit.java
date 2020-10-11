@@ -22,6 +22,7 @@ import com.turtywurty.turtyschemistry.common.blocks.GreenAlgaeBlock;
 import com.turtywurty.turtyschemistry.common.blocks.HopperBlock;
 import com.turtywurty.turtyschemistry.common.blocks.PropaneTankBlock;
 import com.turtywurty.turtyschemistry.common.blocks.SiloBlock;
+import com.turtywurty.turtyschemistry.common.blocks.bunsen_burner.BunsenBurnerBlock;
 import com.turtywurty.turtyschemistry.common.cables.CableBlock;
 
 import net.minecraft.block.Block;
@@ -29,6 +30,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.shapes.IBooleanFunction;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
@@ -155,7 +157,8 @@ public class BlockInit {
 			() -> new GreenAlgaeBlock(Block.Properties.from(Blocks.LILY_PAD)));
 
 	public static final RegistryObject<GasBlock> HELIUM_GAS = BLOCKS.register("helium_gas",
-			() -> new GasBlock(Block.Properties.from(Blocks.AIR).tickRandomly()));
+			() -> new GasBlock(Block.Properties.from(Blocks.AIR).tickRandomly(),
+					new ResourceLocation("turtychemistry:textures/gui/hydrogen.png")));
 
 	public static final RegistryObject<GasExtractorBlock> GAS_EXTRACTOR = BLOCKS.register("gas_extractor",
 			() -> new GasExtractorBlock(makeMachineProperties().notSolid()));
@@ -241,6 +244,36 @@ public class BlockInit {
 
 	public static final RegistryObject<GasCanisterBlock> GAS_CANISTER_L = BLOCKS.register("gas_canister_large",
 			() -> new GasCanisterBlock(makeMachineProperties().notSolid(), true));
+
+	public static final RegistryObject<Block> BORON_BLOCK = BLOCKS.register("boron_block",
+			() -> new Block(Block.Properties.from(Blocks.COBBLESTONE)));
+
+	public static final RegistryObject<Block> CADMIUM_BLOCK = BLOCKS.register("cadmium_block",
+			() -> new Block(Block.Properties.from(Blocks.COBBLESTONE).hardnessAndResistance(1.0f, 4.5f)));
+
+	public static final RegistryObject<Block> GADOLINIUM_BLOCK = BLOCKS.register("gadolinium_block",
+			() -> new Block(Block.Properties.from(Blocks.IRON_BLOCK)));
+
+	public static final RegistryObject<Block> HAFNIUM_BLOCK = BLOCKS.register("hafnium_block",
+			() -> new Block(Block.Properties.from(Blocks.DIAMOND_BLOCK)));
+
+	public static final RegistryObject<Block> INDIUM_BLOCK = BLOCKS.register("indium_block",
+			() -> new Block(Block.Properties.from(Blocks.COBBLESTONE).hardnessAndResistance(0.5f, 2.5f)));
+
+	public static final RegistryObject<Block> LEAD_BLOCK = BLOCKS.register("lead_block",
+			() -> new Block(Block.Properties.from(Blocks.COBBLESTONE).hardnessAndResistance(5f, 7f)));
+
+	public static final RegistryObject<Block> OSMIUM_BLOCK = BLOCKS.register("osmium_block",
+			() -> new Block(Block.Properties.from(Blocks.IRON_BLOCK).hardnessAndResistance(10f, 2f)));
+
+	public static final RegistryObject<Block> PALLADIUM_BLOCK = BLOCKS.register("palladium_block",
+			() -> new Block(Block.Properties.from(Blocks.COBBLESTONE).hardnessAndResistance(5f, 7f)));
+
+	public static final RegistryObject<Block> RUTHENIUM_BLOCK = BLOCKS.register("ruthenium_block",
+			() -> new Block(Block.Properties.from(Blocks.DIAMOND_BLOCK)));
+
+	public static final RegistryObject<BunsenBurnerBlock> BUNSEN_BURNER = BLOCKS.register("bunsen_burner",
+			() -> new BunsenBurnerBlock(makeMachineProperties().notSolid()));
 
 	protected static Block.Properties makeMachineProperties() {
 		return Block.Properties.create(Material.IRON).hardnessAndResistance(1.2f).sound(SoundType.METAL).harvestLevel(2)

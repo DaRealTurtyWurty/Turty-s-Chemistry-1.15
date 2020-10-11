@@ -25,6 +25,7 @@ import net.minecraft.client.renderer.Quaternion;
 import net.minecraft.client.renderer.RenderState.AlphaState;
 import net.minecraft.client.renderer.RenderState.TextureState;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -250,11 +251,41 @@ public class ClientUtils {
 			newQuads.add(new BakedQuad(quad.getVertexData(), quad.getTintIndex(), quad.getFace(), newTexture,
 					quad.shouldApplyDiffuseLighting()));
 		}
-		
+
 		for (BakedQuad quad : existingModel.getQuads(state, null, rand, EmptyModelData.INSTANCE)) {
 			newQuads.add(new BakedQuad(quad.getVertexData(), quad.getTintIndex(), quad.getFace(), newTexture,
 					quad.shouldApplyDiffuseLighting()));
 		}
 		return newQuads;
+	}
+
+	public static void drawFluid(final ResourceLocation TEXTURE, final FluidStack fluid, final int x, final int y,
+			final int w, final int h) {
+		RenderSystem.pushMatrix();
+		int scaledHeight = (int) (h * ((float) fluid.getAmount() / 1000));
+		RenderType renderType = ClientUtils.getGui(TEXTURE);
+		IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer());
+		MatrixStack transform = new MatrixStack();
+		ClientUtils.drawRepeatedFluidSpriteGui(buffer, transform, fluid, x, y + h - scaledHeight, w, scaledHeight);
+		RenderSystem.color3f(1.0f, 1.0f, 1.0f);
+		ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, x, y, w, h, 256f, 0, 0, 0, 0);
+		buffer.finish(renderType);
+		RenderSystem.popMatrix();
+	}
+
+	public static void drawTexture(final ResourceLocation TEXTURE, final int x, final int y, final int w, final int h,
+			final float storedAmount, final float maxStoredAmount) {
+		RenderType renderType = ClientUtils.getGui(TEXTURE);
+
+		RenderSystem.pushMatrix();
+		int scaledHeight = (int) (h * (storedAmount / maxStoredAmount));
+		IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer());
+		MatrixStack transform = new MatrixStack();
+		ClientUtils.drawRepeatedFluidSpriteGui(buffer, transform, TEXTURE, 0xEFEFEF, x, y + h - scaledHeight, w,
+				scaledHeight);
+		RenderSystem.color3f(1.0f, 1.0f, 1.0f);
+		ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, x, y, w, h, 256f, 0, 0, 0, 0);
+		buffer.finish(renderType);
+		RenderSystem.popMatrix();
 	}
 }

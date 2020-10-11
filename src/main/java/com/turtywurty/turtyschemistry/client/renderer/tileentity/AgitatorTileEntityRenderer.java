@@ -6,7 +6,6 @@ import com.turtywurty.turtyschemistry.TurtyChemistry;
 import com.turtywurty.turtyschemistry.client.model.ReplacedTextureModel;
 import com.turtywurty.turtyschemistry.client.util.ClientUtils;
 import com.turtywurty.turtyschemistry.common.tileentity.AgitatorTileEntity;
-import com.turtywurty.turtyschemistry.core.init.FluidInit;
 import com.turtywurty.turtyschemistry.core.util.FluidStackHandler;
 
 import net.minecraft.client.Minecraft;
@@ -23,6 +22,8 @@ import net.minecraftforge.fluids.FluidStack;
 
 public class AgitatorTileEntityRenderer extends TileEntityRenderer<AgitatorTileEntity> {
 
+	private FluidStack fluid;
+
 	public AgitatorTileEntityRenderer(TileEntityRendererDispatcher rendererDispatcherIn) {
 		super(rendererDispatcherIn);
 	}
@@ -30,22 +31,31 @@ public class AgitatorTileEntityRenderer extends TileEntityRenderer<AgitatorTileE
 	@Override
 	public void render(AgitatorTileEntity tileEntityIn, float partialTicks, MatrixStack matrixStackIn,
 			IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
-		IVertexBuilder buffer = bufferIn.getBuffer(RenderType.getSolid());
-		matrixStackIn.push();
+		IVertexBuilder buffer = bufferIn.getBuffer(RenderType.getTranslucent());
 		FluidStackHandler fluidHandler = tileEntityIn.getFluidHandler();
-		FluidStack fluid = fluidHandler.getFluidInTank(5);
-		if (!fluid.isEmpty()) {
-			TextureAtlasSprite texture = Minecraft.getInstance()
-					.getAtlasSpriteGetter(PlayerContainer.LOCATION_BLOCKS_TEXTURE)
-					.apply(fluid.getFluid().getAttributes().getStillTexture());
-			IBakedModel model = ClientUtils.MC.getBlockRendererDispatcher().getBlockModelShapes().getModelManager()
-					.getModel(new ResourceLocation(TurtyChemistry.MOD_ID, "block/agitator_fluid"));
-			
-			ClientUtils.MC.getBlockRendererDispatcher().getBlockModelRenderer().renderModel(tileEntityIn.getWorld(),
-					new ReplacedTextureModel(model, texture), FluidInit.BRINE_BLOCK.get().getDefaultState(),
-					tileEntityIn.getPos(), matrixStackIn, buffer, true, tileEntityIn.getWorld().getRandom(),
-					tileEntityIn.getWorld().getSeed(), combinedOverlayIn, EmptyModelData.INSTANCE);
+
+		double index = 0;
+		for (FluidStack fluid : fluidHandler.getContents()) {
+			if (!fluid.isEmpty()) {
+				matrixStackIn.push();
+				TextureAtlasSprite texture = Minecraft.getInstance()
+						.getAtlasSpriteGetter(PlayerContainer.LOCATION_BLOCKS_TEXTURE)
+						.apply(fluid.getFluid().getAttributes().getStillTexture());
+
+				IBakedModel model = ClientUtils.MC.getModelManager()
+						.getModel(new ResourceLocation(TurtyChemistry.MOD_ID, "block/agitator_fluid"));
+				int fluidColor = fluid.getFluid().getAttributes().getColor(tileEntityIn.getWorld(), tileEntityIn.getPos());
+
+				matrixStackIn.scale(1.0f, 0.5f, 1.0f);
+				matrixStackIn.translate(0.0D, (index++ / 4) + 0.1D, 0.0D);
+
+				ClientUtils.MC.getBlockRendererDispatcher().getBlockModelRenderer().renderModel(tileEntityIn.getWorld(),
+						new ReplacedTextureModel(model, texture),
+						fluid.getFluid().getFluid().getDefaultState().getBlockState(), tileEntityIn.getPos(),
+						matrixStackIn, buffer, true, tileEntityIn.getWorld().getRandom(),
+						tileEntityIn.getWorld().getSeed(), combinedOverlayIn, EmptyModelData.INSTANCE);
+				matrixStackIn.pop();
+			}
 		}
-		matrixStackIn.pop();
 	}
 }
