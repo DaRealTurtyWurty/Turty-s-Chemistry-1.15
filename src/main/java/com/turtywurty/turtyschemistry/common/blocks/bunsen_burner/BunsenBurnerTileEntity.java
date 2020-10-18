@@ -48,8 +48,6 @@ public class BunsenBurnerTileEntity extends InventoryTile {
 				this.maxTime = this.getRecipe(this.getItemInSlot(0)).getProcessTime();
 
 				if (this.isBurning()) {
-					// System.out.println("time: " + this.completionTime + ", max time: " +
-					// this.maxTime);
 					if (this.completionTime >= this.maxTime) {
 						System.out.println("done");
 						ItemStack output = this.getRecipe(this.getItemInSlot(0)).getRecipeOutput().copy();
@@ -70,8 +68,6 @@ public class BunsenBurnerTileEntity extends InventoryTile {
 				}
 			}
 		}
-
-		System.out.println(this.getItemInSlot(0));
 	}
 
 	public int getCompletionTime() {

@@ -98,7 +98,7 @@ public class InventoryTile extends TileEntity implements ITickableTileEntity {
 			handler.ifPresent(inventory -> {
 				int invslots = inventory.getSlots();
 				if (r >= 0 && r < invslots) {
-					inventory.insertItem(r, ItemStack.read(nbt), false);
+					inventory.setStackInSlot(r, ItemStack.read(nbt));
 				}
 			});
 		}
@@ -149,13 +149,11 @@ public class InventoryTile extends TileEntity implements ITickableTileEntity {
 	@Override
 	@Nonnull
 	public CompoundNBT getUpdateTag() {
-		System.out.println("serialize");
 		return this.serializeNBT();
 	}
 
 	@Override
 	public void handleUpdateTag(CompoundNBT tag) {
 		deserializeNBT(tag);
-		System.out.println("deserialize");
 	}
 }

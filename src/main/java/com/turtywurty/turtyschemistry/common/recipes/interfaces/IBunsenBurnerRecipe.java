@@ -26,6 +26,6 @@ public interface IBunsenBurnerRecipe extends IRecipe<RecipeWrapper> {
 	}
 	
 	Ingredient getInput();
-	
 	int getProcessTime();
+	String getSpecialEffect();
 }

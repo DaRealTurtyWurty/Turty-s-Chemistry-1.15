@@ -4,6 +4,7 @@ import com.turtywurty.turtyschemistry.TurtyChemistry;
 import com.turtywurty.turtyschemistry.TurtyChemistry.ChemistryItemGroup;
 import com.turtywurty.turtyschemistry.common.items.GasCanisterItem;
 import com.turtywurty.turtyschemistry.common.items.GreenAlgaeItem;
+import com.turtywurty.turtyschemistry.common.items.GuideBookItem;
 
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;
@@ -121,7 +122,8 @@ public class ItemInit {
 	public static final RegistryObject<Item> MENDELEVIUM = ITEMS.register("mendelevium", () -> new Item(properties));
 	public static final RegistryObject<Item> NOBELLIUM = ITEMS.register("nobellium", () -> new Item(properties));
 	public static final RegistryObject<Item> LAWRENCIUM = ITEMS.register("lawrencium", () -> new Item(properties));
-	public static final RegistryObject<Item> RUTHERFORDIUM = ITEMS.register("rutherfordium", () -> new Item(properties));
+	public static final RegistryObject<Item> RUTHERFORDIUM = ITEMS.register("rutherfordium",
+			() -> new Item(properties));
 	public static final RegistryObject<Item> DUBNIUM = ITEMS.register("dubnium", () -> new Item(properties));
 	public static final RegistryObject<Item> SEABROGIUM = ITEMS.register("seabrogium", () -> new Item(properties));
 	public static final RegistryObject<Item> BOHRIUM = ITEMS.register("bohrium", () -> new Item(properties));
@@ -142,33 +144,46 @@ public class ItemInit {
 	public static final RegistryObject<Item> NAPHTHA = ITEMS.register("naphtha", () -> new Item(properties));
 	public static final RegistryObject<Item> KEROSINE = ITEMS.register("kerosine", () -> new Item(properties));
 	public static final RegistryObject<Item> DIESEL = ITEMS.register("diesel", () -> new Item(properties));
-	public static final RegistryObject<Item> LUBRICATING_OIL = ITEMS.register("lubricating_oil", () -> new Item(properties));
+	public static final RegistryObject<Item> LUBRICATING_OIL = ITEMS.register("lubricating_oil",
+			() -> new Item(properties));
 	public static final RegistryObject<Item> FUEL_OIL = ITEMS.register("fuel_oil", () -> new Item(properties));
 	public static final RegistryObject<Item> BITUMEN = ITEMS.register("bitumen", () -> new Item(properties));
-	
+
 	public static final RegistryObject<Item> AMMONIA = ITEMS.register("ammonia", () -> new Item(properties));
-	public static final RegistryObject<Item> HYDROCHLORIC_ACID = ITEMS.register("hydrochloric_acid", () -> new Item(properties));
-	public static final RegistryObject<Item> ISOPROPYL_ALCOHOL = ITEMS.register("isopropyl_alcohol", () -> new Item(properties));
-	public static final RegistryObject<Item> SULFURIC_ACID = ITEMS.register("sulfuric_acid", () -> new Item(properties));
+	public static final RegistryObject<Item> HYDROCHLORIC_ACID = ITEMS.register("hydrochloric_acid",
+			() -> new Item(properties));
+	public static final RegistryObject<Item> ISOPROPYL_ALCOHOL = ITEMS.register("isopropyl_alcohol",
+			() -> new Item(properties));
+	public static final RegistryObject<Item> SULFURIC_ACID = ITEMS.register("sulfuric_acid",
+			() -> new Item(properties));
 	public static final RegistryObject<Item> NITRIC_ACID = ITEMS.register("nitric_acid", () -> new Item(properties));
-	public static final RegistryObject<Item> SODIUM_HYDROXIDE = ITEMS.register("sodium_hydroxide", () -> new Item(properties));
+	public static final RegistryObject<Item> SODIUM_HYDROXIDE = ITEMS.register("sodium_hydroxide",
+			() -> new Item(properties));
 	public static final RegistryObject<Item> METHANE = ITEMS.register("methane", () -> new Item(properties));
-	public static final RegistryObject<Item> CARBON_MONOXIDE = ITEMS.register("carbon_monoxide", () -> new Item(properties));
-	public static final RegistryObject<Item> PHOSPHORIC_ACID = ITEMS.register("phosphoric_acid", () -> new Item(properties));
+	public static final RegistryObject<Item> CARBON_MONOXIDE = ITEMS.register("carbon_monoxide",
+			() -> new Item(properties));
+	public static final RegistryObject<Item> PHOSPHORIC_ACID = ITEMS.register("phosphoric_acid",
+			() -> new Item(properties));
 	public static final RegistryObject<Item> CHRYSOBERYL = ITEMS.register("chrysoberyl", () -> new Item(properties));
-	
+
 	public static final RegistryObject<Item> BALLOON = ITEMS.register("balloon", () -> new Item(properties));
 	public static final RegistryObject<Item> TEST_TUBE = ITEMS.register("test_tube", () -> new Item(properties));
-	public static final RegistryObject<GreenAlgaeItem> GREEN_ALGAE = ITEMS.register("green_algae", () -> new GreenAlgaeItem(properties));
+	public static final RegistryObject<GreenAlgaeItem> GREEN_ALGAE = ITEMS.register("green_algae",
+			() -> new GreenAlgaeItem(properties));
 	public static final RegistryObject<Item> SAWDUST = ITEMS.register("sawdust", () -> new Item(properties));
 	public static final RegistryObject<Item> BRIQUETTE = ITEMS.register("briquette", () -> new Item(properties));
-	
-	public static final RegistryObject<GasCanisterItem> GAS_CANISTER_S = ITEMS.register("gas_canister_small", () -> new GasCanisterItem(BlockInit.GAS_CANISTER_S.get(), properties, false));
-	public static final RegistryObject<GasCanisterItem> GAS_CANISTER_L = ITEMS.register("gas_canister_large", () -> new GasCanisterItem(BlockInit.GAS_CANISTER_L.get(), properties, true));
 
-	public static final RegistryObject<BucketItem> BRINE_BUCKET = ITEMS.register("brine_bucket", () -> new BucketItem(() -> FluidInit.BRINE_STILL.get(), properties.maxStackSize(16)));
-	
+	public static final RegistryObject<GasCanisterItem> GAS_CANISTER_S = ITEMS.register("gas_canister_small",
+			() -> new GasCanisterItem(BlockInit.GAS_CANISTER_S.get(), properties, false));
+	public static final RegistryObject<GasCanisterItem> GAS_CANISTER_L = ITEMS.register("gas_canister_large",
+			() -> new GasCanisterItem(BlockInit.GAS_CANISTER_L.get(), properties, true));
+
+	public static final RegistryObject<BucketItem> BRINE_BUCKET = ITEMS.register("brine_bucket",
+			() -> new BucketItem(() -> FluidInit.BRINE_STILL.get(), properties.maxStackSize(16)));
+
 	public static final RegistryObject<Item> BUNSEN_FRAME = ITEMS.register("bunsen_frame", () -> new Item(properties));
 	public static final RegistryObject<Item> WIRE_GAUZE = ITEMS.register("wire_gauze", () -> new Item(properties));
 	public static final RegistryObject<Item> CRUCIBLE = ITEMS.register("crucible", () -> new Item(properties));
+	public static final RegistryObject<GuideBookItem> GUIDE_BOOK = ITEMS.register("guide_book",
+			() -> new GuideBookItem(properties.maxStackSize(1)));
 }

@@ -3,6 +3,9 @@ package com.turtywurty.turtyschemistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.turtywurty.turtyschemistry.client.screen.book.GuideBookData;
+import com.turtywurty.turtyschemistry.client.screen.book.GuideBookDataCap;
+import com.turtywurty.turtyschemistry.client.screen.book.IGuideBookData;
 import com.turtywurty.turtyschemistry.common.blocks.BalerPart;
 import com.turtywurty.turtyschemistry.common.blocks.BriquettingPressPart;
 import com.turtywurty.turtyschemistry.common.blocks.GasBlock;
@@ -45,6 +48,7 @@ import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.common.BiomeManager.BiomeEntry;
 import net.minecraftforge.common.BiomeManager.BiomeType;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -133,6 +137,8 @@ public class TurtyChemistry {
 	private void commonSetup(final FMLCommonSetupEvent event) {
 		registerPackets();
 		DeferredWorkQueue.runLater(FeatureGeneration::addAllFeatures);
+		CapabilityManager.INSTANCE.register(IGuideBookData.class, new GuideBookDataCap.Storage(),
+				() -> new GuideBookData());
 	}
 
 	@SubscribeEvent

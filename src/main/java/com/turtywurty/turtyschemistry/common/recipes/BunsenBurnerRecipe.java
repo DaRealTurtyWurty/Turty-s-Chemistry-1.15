@@ -17,12 +17,15 @@ public class BunsenBurnerRecipe implements IBunsenBurnerRecipe {
 	private Ingredient input;
 	private final ItemStack output;
 	private final int processTime;
+	private final String specialEffect;
 
-	public BunsenBurnerRecipe(ResourceLocation id, Ingredient input, ItemStack output, int processTime) {
+	public BunsenBurnerRecipe(ResourceLocation id, Ingredient input, ItemStack output, int processTime,
+			String specialEffect) {
 		this.id = id;
 		this.output = output;
 		this.input = input;
 		this.processTime = processTime;
+		this.specialEffect = specialEffect;
 	}
 
 	@Override
@@ -63,5 +66,10 @@ public class BunsenBurnerRecipe implements IBunsenBurnerRecipe {
 	@Override
 	public int getProcessTime() {
 		return this.processTime;
+	}
+
+	@Override
+	public String getSpecialEffect() {
+		return this.specialEffect;
 	}
 }

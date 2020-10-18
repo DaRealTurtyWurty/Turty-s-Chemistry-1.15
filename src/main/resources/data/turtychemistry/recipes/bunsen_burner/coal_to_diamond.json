@@ -8,5 +8,6 @@
 		"item": "minecraft:diamond"
 	},
 	
-	"process_time": 80
+	"process_time": 800,
+	"special_effect": "darken"
 }

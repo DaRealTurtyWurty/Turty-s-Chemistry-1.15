@@ -11,8 +11,7 @@ import com.turtywurty.turtyschemistry.core.init.TileEntityTypeInit;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
@@ -164,7 +163,8 @@ public class BunsenBurnerBlock extends Block {
 			worldIn.setBlockState(pos, state.with(CRUCIBLE, true), BlockFlags.BLOCK_UPDATE);
 			if (!player.abilities.isCreativeMode)
 				player.getHeldItemMainhand().shrink(1);
-		} else if (state.get(CRUCIBLE) && state.get(FRAME) && state.get(MESH)) {
+		} else if (state.get(CRUCIBLE) && state.get(FRAME) && state.get(MESH)
+				&& !player.getHeldItemMainhand().isEmpty()) {
 			TileEntity tile = worldIn.getTileEntity(pos);
 			if (tile instanceof BunsenBurnerTileEntity) {
 				ItemStack heldStack = player.getHeldItemMainhand().copy();
@@ -173,9 +173,33 @@ public class BunsenBurnerBlock extends Block {
 				BunsenBurnerRecipe recipe = bunsenBurner.getRecipe(heldStack);
 				if (recipe != null && bunsenBurner.getItemInSlot(0).isEmpty()) {
 					bunsenBurner.getInventory().setStackInSlot(0, heldStack);
-					if (!player.abilities.isCreativeMode)
-						heldStack.shrink(1);
-					worldIn.notifyBlockUpdate(pos, state, state, BlockFlags.BLOCK_UPDATE);
+					if (!player.abilities.isCreativeMode) {
+						player.getHeldItemMainhand().shrink(1);
+					}
+				}
+			}
+		} else if (player.getHeldItemMainhand().isEmpty()) {
+			TileEntity tile = worldIn.getTileEntity(pos);
+			if (tile instanceof BunsenBurnerTileEntity) {
+				BunsenBurnerTileEntity bunsenBurner = (BunsenBurnerTileEntity) tile;
+				if (!bunsenBurner.getItemInSlot(0).isEmpty()) {
+					player.addItemStackToInventory(bunsenBurner.getItemInSlot(0));
+					bunsenBurner.getItemInSlot(0).shrink(1);
+				} else if (state.get(CRUCIBLE)) {
+					if (!player.abilities.isCreativeMode) {
+						player.addItemStackToInventory(new ItemStack(ItemInit.CRUCIBLE.get()));
+					}
+					worldIn.setBlockState(pos, state.with(CRUCIBLE, false), BlockFlags.BLOCK_UPDATE);
+				} else if (state.get(MESH)) {
+					if (!player.abilities.isCreativeMode) {
+						player.addItemStackToInventory(new ItemStack(ItemInit.WIRE_GAUZE.get()));
+					}
+					worldIn.setBlockState(pos, state.with(MESH, false), BlockFlags.BLOCK_UPDATE);
+				} else if (state.get(FRAME)) {
+					if (!player.abilities.isCreativeMode) {
+						player.addItemStackToInventory(new ItemStack(ItemInit.BUNSEN_FRAME.get()));
+					}
+					worldIn.setBlockState(pos, state.with(FRAME, false), BlockFlags.BLOCK_UPDATE);
 				}
 			}
 		}
@@ -200,12 +224,24 @@ public class BunsenBurnerBlock extends Block {
 	@Override
 	public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
 		TileEntity tile = worldIn.getTileEntity(pos);
-		if (tile instanceof BunsenBurnerTileEntity) {
+		if (tile instanceof BunsenBurnerTileEntity && state.getBlock() != newState.getBlock()) {
 			BunsenBurnerTileEntity bunsenBurner = (BunsenBurnerTileEntity) tile;
 			for (int index = 0; index < bunsenBurner.getInventory().getSlots(); index++) {
-				EntityType.ITEM.spawn(worldIn, bunsenBurner.getItemInSlot(index), null, pos, SpawnReason.TRIGGERED,
-						false, false);
+				worldIn.addEntity(
+						new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(), bunsenBurner.getItemInSlot(0)));
 			}
+
+			if (state.get(FRAME))
+				worldIn.addEntity(new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(),
+						new ItemStack(ItemInit.BUNSEN_FRAME.get())));
+
+			if (state.get(MESH))
+				worldIn.addEntity(new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(),
+						new ItemStack(ItemInit.WIRE_GAUZE.get())));
+
+			if (state.get(CRUCIBLE))
+				worldIn.addEntity(new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(),
+						new ItemStack(ItemInit.CRUCIBLE.get())));
 		}
 
 		if (state.hasTileEntity() && (state.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {

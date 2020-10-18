@@ -20,8 +20,9 @@ public class BunsenBurnerRecipeSerializer extends ForgeRegistryEntry<IRecipeSeri
 		Ingredient input = Ingredient.deserialize(JSONUtils.getJsonObject(json, "input"));
 		ItemStack output = CraftingHelper.getItemStack(JSONUtils.getJsonObject(json, "output"), true);
 		int processTime = JSONUtils.getInt(json, "process_time");
+		String specialEffect = JSONUtils.getString(json, "special_effect");
 
-		return new BunsenBurnerRecipe(recipeId, input, output, processTime);
+		return new BunsenBurnerRecipe(recipeId, input, output, processTime, specialEffect);
 	}
 
 	@Override
@@ -29,8 +30,9 @@ public class BunsenBurnerRecipeSerializer extends ForgeRegistryEntry<IRecipeSeri
 		Ingredient input = Ingredient.read(buffer);
 		ItemStack output = buffer.readItemStack();
 		int processTime = buffer.readInt();
+		String specialEffect = buffer.readString();
 
-		return new BunsenBurnerRecipe(recipeId, input, output, processTime);
+		return new BunsenBurnerRecipe(recipeId, input, output, processTime, specialEffect);
 	}
 
 	@Override
@@ -39,5 +41,6 @@ public class BunsenBurnerRecipeSerializer extends ForgeRegistryEntry<IRecipeSeri
 		input.write(buffer);
 		buffer.writeItemStack(recipe.getRecipeOutput(), false);
 		buffer.writeInt(recipe.getProcessTime());
+		buffer.writeString(recipe.getSpecialEffect());
 	}
 }
