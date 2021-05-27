@@ -15,8 +15,8 @@ import net.minecraft.world.gen.placement.Placement;
 
 public class HeliumPocket extends Placement<ChanceConfig> {
 
-	public HeliumPocket(Function<Dynamic<?>, ? extends ChanceConfig> p_i51367_1_) {
-		super(p_i51367_1_);
+	public HeliumPocket(Function<Dynamic<?>, ? extends ChanceConfig> config) {
+		super(config);
 	}
 
 	public Stream<BlockPos> getPositions(IWorld worldIn, ChunkGenerator<? extends GenerationSettings> generatorIn,

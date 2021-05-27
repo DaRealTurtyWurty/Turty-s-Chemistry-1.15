@@ -6,7 +6,9 @@ import net.minecraft.item.Item;
 import net.minecraft.tags.Tag;
 import net.minecraft.util.ResourceLocation;
 
-public class ModTags {
+public final class ModTags {
+	
+	private ModTags() {}
 
-	public static final Tag<Item> SAWDUST = new Tag<Item>(new ResourceLocation(TurtyChemistry.MOD_ID, "sawdust"));
+	public static final Tag<Item> SAWDUST = new Tag<>(new ResourceLocation(TurtyChemistry.MOD_ID, "sawdust"));
 }

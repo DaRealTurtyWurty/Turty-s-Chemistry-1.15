@@ -20,7 +20,7 @@ public class GasParticle extends SpriteTexturedParticle {
 		this.particleBlue = 1.0F;
 		this.setSize(0.01F, 0.01F);
 		this.particleScale *= this.rand.nextFloat() * 0.6F + 0.2F;
-		this.maxAge = (int) (16.0D / (Math.random() * 0.8D + 0.2D));
+		this.maxAge = (int) (16.0D / (this.rand.nextInt() * 0.8D + 0.2D));
 	}
 
 	@Override
@@ -40,7 +40,6 @@ public class GasParticle extends SpriteTexturedParticle {
 		}
 	}
 
-	@OnlyIn(Dist.CLIENT)
 	public static class Factory implements IParticleFactory<BasicParticleType> {
 		private final IAnimatedSprite spriteSet;
 

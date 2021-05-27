@@ -17,13 +17,15 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
 @Mod.EventBusSubscriber(modid = TurtyChemistry.MOD_ID, bus = Bus.MOD, value = Dist.CLIENT)
-public class ParticleInit {
+public final class ParticleInit {
+	
+	private ParticleInit() {}
 
 	public static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES = DeferredRegister
 			.create(ForgeRegistries.PARTICLE_TYPES, TurtyChemistry.MOD_ID);
 
 	public static final RegistryObject<BasicParticleType> GAS_PARTICLE = PARTICLE_TYPES.register("gas_particle",
-			() -> (BasicParticleType) new BasicParticleType(true));
+			() -> new BasicParticleType(true));
 
 	public static final RegistryObject<ParticleType<FireParticle.FireColourData>> FIRE_PARTICLE = PARTICLE_TYPES
 			.register("fire", () -> new ParticleType<FireParticle.FireColourData>(true,

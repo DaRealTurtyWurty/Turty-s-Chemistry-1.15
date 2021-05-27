@@ -3,7 +3,7 @@
   "minVersion": "0.8",
   "package": "com.turtywurty.turtyschemistry.mixins",
   "compatibilityLevel": "JAVA_8",
-  "mixins": [ "AirBlockToGas" ],
+  "mixins": [],
   "client": [],
   "server": [],
   "injectors": {

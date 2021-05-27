@@ -6,10 +6,12 @@ import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 
-public class GuideBookDataCap {
+public final class GuideBookDataCap {
+	
+	private GuideBookDataCap() {}
 
 	@CapabilityInject(IGuideBookData.class)
-	public static Capability<IGuideBookData> INSTANCE = null;
+	public static final Capability<IGuideBookData> INSTANCE = null;
 
 	public static class Storage implements Capability.IStorage<IGuideBookData> {
 		public static final String UUID = "uuid";

@@ -52,8 +52,8 @@ public class SimpleJsonDataManager<T> extends JsonReloadListener {
 	 * Converts all the values in a map to new values; the new map uses the same
 	 * keys as the old map
 	 **/
-	public static <Key, In, Out> Map<Key, Out> mapValues(Map<Key, In> inputs, Function<In, Out> mapper) {
-		Map<Key, Out> newMap = new HashMap<>();
+	public static <KEY, IN, OUT> Map<KEY, OUT> mapValues(Map<KEY, IN> inputs, Function<IN, OUT> mapper) {
+		Map<KEY, OUT> newMap = new HashMap<>();
 
 		inputs.forEach((key, input) -> newMap.put(key, mapper.apply(input)));
 

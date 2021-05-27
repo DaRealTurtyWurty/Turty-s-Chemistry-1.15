@@ -23,8 +23,8 @@ import net.minecraft.world.gen.feature.Feature;
 public class HeliumGasPocket extends Feature<BlockStateFeatureConfig> {
 	private static final BlockState GAS = BlockInit.HELIUM_GAS.get().getDefaultState();
 
-	public HeliumGasPocket(Function<Dynamic<?>, ? extends BlockStateFeatureConfig> p_i51485_1_) {
-		super(p_i51485_1_);
+	public HeliumGasPocket(Function<Dynamic<?>, ? extends BlockStateFeatureConfig> configFactoryIn) {
+		super(configFactoryIn);
 	}
 
 	@Override

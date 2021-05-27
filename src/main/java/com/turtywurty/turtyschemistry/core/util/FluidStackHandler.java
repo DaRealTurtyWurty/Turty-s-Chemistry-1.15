@@ -295,7 +295,7 @@ public class FluidStackHandler implements IMultiTank, INBTSerializable<CompoundN
 
 	protected void validateSlotIndex(int tank) {
 		if (tank < 0 || tank >= stacks.size()) {
-			throw new RuntimeException("Tank " + tank + " not in valid range - [0," + stacks.size() + ")");
+			throw new IndexOutOfBoundsException("Tank " + tank + " not in valid range - [0," + stacks.size() + ")");
 		}
 	}
 

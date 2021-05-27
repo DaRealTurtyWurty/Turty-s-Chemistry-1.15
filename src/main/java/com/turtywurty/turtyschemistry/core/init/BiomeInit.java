@@ -14,7 +14,9 @@ import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public class BiomeInit {
+public final class BiomeInit {
+	
+	private BiomeInit() {}
 
 	public static final DeferredRegister<Biome> BIOMES = DeferredRegister.create(ForgeRegistries.BIOMES,
 			TurtyChemistry.MOD_ID);
@@ -24,7 +26,7 @@ public class BiomeInit {
 					() -> new BrineFlatsBiome(new Biome.Builder().category(Category.PLAINS).depth(0.0F).scale(0.025F)
 							.downfall(0.02f).parent((String) null).precipitation(RainType.RAIN).temperature(0.5f)
 							.waterColor(0x6DBBFF).waterFogColor(0x6DA1DE)
-							.surfaceBuilder(new ConfiguredSurfaceBuilder(SurfaceBuilder.DEFAULT,
+							.surfaceBuilder(new ConfiguredSurfaceBuilder<>(SurfaceBuilder.DEFAULT,
 									new SurfaceBuilderConfig(BlockInit.BRINE_BLOCK.get().getDefaultState(),
 											Blocks.STONE.getDefaultState(),
 											BlockInit.BRINE_BLOCK.get().getDefaultState())))));

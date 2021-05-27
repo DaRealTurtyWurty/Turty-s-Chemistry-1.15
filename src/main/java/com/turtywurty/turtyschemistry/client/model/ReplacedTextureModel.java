@@ -5,10 +5,11 @@
 package com.turtywurty.turtyschemistry.client.model;
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.model.BakedQuad;
@@ -22,15 +23,15 @@ public class ReplacedTextureModel implements IBakedModel {
 	private final IBakedModel model;
 	private final TextureAtlasSprite texture;
 	private List<BakedQuad> generalQuads;
-	private Map<Direction, List<BakedQuad>> sideQuads = new HashMap<>();
+	private Map<Direction, List<BakedQuad>> sideQuads = new EnumMap<>(Direction.class);
 
 	@SuppressWarnings("deprecation")
 	public ReplacedTextureModel(IBakedModel modelIn, TextureAtlasSprite newTexture) {
 		this.model = modelIn;
 		this.texture = newTexture;
 
-		generalQuads = modelIn.getQuads(null, null, null);
-		Arrays.stream(Direction.values()).forEach(dir -> sideQuads.put(dir, modelIn.getQuads(null, dir, null)));
+		generalQuads = modelIn.getQuads(null, null, ThreadLocalRandom.current());
+		Arrays.stream(Direction.values()).forEach(dir -> sideQuads.put(dir, modelIn.getQuads(null, dir, ThreadLocalRandom.current())));
 
 		for (int i = 0; i < generalQuads.size(); i++) {
 			BakedQuad quad = generalQuads.get(i);
@@ -43,8 +44,8 @@ public class ReplacedTextureModel implements IBakedModel {
 			List<BakedQuad> value = quadSide.getValue();
 			for (int i = 0; i < value.size(); i++) {
 				BakedQuad quad = value.get(i);
-				value.set(i, replaceUV(newTexture, new BakedQuad(quad.getVertexData(), quad.getTintIndex(),
-						quad.getFace(), quad.func_187508_a(), quad.shouldApplyDiffuseLighting())));
+				value.set(i, replaceUV(newTexture, new BakedQuad(quad.getVertexData(), quad.getTintIndex(), quad.getFace(),
+						quad.func_187508_a(), quad.shouldApplyDiffuseLighting())));
 			}
 		}
 	}

@@ -1,5 +1,6 @@
 package com.turtywurty.turtyschemistry.common.blocks.bunsen_burner;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,8 +23,6 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.Constants.BlockFlags;
 
 public class BunsenBurnerTileEntity extends InventoryTile {
@@ -46,10 +45,8 @@ public class BunsenBurnerTileEntity extends InventoryTile {
 		if (!this.world.isRemote) {
 			if (this.getRecipe(this.getItemInSlot(0)) != null) {
 				this.maxTime = this.getRecipe(this.getItemInSlot(0)).getProcessTime();
-
 				if (this.isBurning()) {
 					if (this.completionTime >= this.maxTime) {
-						System.out.println("done");
 						ItemStack output = this.getRecipe(this.getItemInSlot(0)).getRecipeOutput().copy();
 						this.getInventory().setStackInSlot(0, output);
 						this.world.notifyBlockUpdate(this.getPos(), this.getBlockState(), this.getBlockState(),
@@ -113,27 +110,22 @@ public class BunsenBurnerTileEntity extends InventoryTile {
 	}
 
 	public static Set<IRecipe<?>> findRecipesByType(IRecipeType<?> typeIn, World world) {
-		return world != null ? world.getRecipeManager().getRecipes().stream()
-				.filter(recipe -> recipe.getType() == typeIn).collect(Collectors.toSet()) : Collections.emptySet();
+		return world != null ? world.getRecipeManager().getRecipes().stream().filter(recipe -> recipe.getType() == typeIn)
+				.collect(Collectors.toSet()) : Collections.emptySet();
 	}
 
-	@OnlyIn(Dist.CLIENT)
 	public static Set<IRecipe<?>> findRecipesByType(IRecipeType<?> typeIn) {
 		ClientWorld world = ClientUtils.getClientWorld();
-		return world != null ? world.getRecipeManager().getRecipes().stream()
-				.filter(recipe -> recipe.getType() == typeIn).collect(Collectors.toSet()) : Collections.emptySet();
+		return world != null ? world.getRecipeManager().getRecipes().stream().filter(recipe -> recipe.getType() == typeIn)
+				.collect(Collectors.toSet()) : Collections.emptySet();
 	}
 
 	public static Set<ItemStack> getAllRecipeInputs(IRecipeType<?> typeIn, World worldIn) {
-		Set<ItemStack> inputs = new HashSet<ItemStack>();
+		Set<ItemStack> inputs = new HashSet<>();
 		Set<IRecipe<?>> recipes = findRecipesByType(typeIn, worldIn);
 		for (IRecipe<?> recipe : recipes) {
 			NonNullList<Ingredient> ingredients = recipe.getIngredients();
-			ingredients.forEach(ingredient -> {
-				for (ItemStack stack : ingredient.getMatchingStacks()) {
-					inputs.add(stack);
-				}
-			});
+			ingredients.forEach(ingredient -> inputs.addAll(Arrays.asList(ingredient.getMatchingStacks())));
 		}
 		return inputs;
 	}

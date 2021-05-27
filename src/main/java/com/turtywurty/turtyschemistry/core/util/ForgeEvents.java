@@ -1,77 +1,26 @@
 package com.turtywurty.turtyschemistry.core.util;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.turtywurty.turtyschemistry.TurtyChemistry;
 import com.turtywurty.turtyschemistry.client.screen.book.GuideBookData;
-import com.turtywurty.turtyschemistry.client.screen.book.GuideBookDataCap;
-import com.turtywurty.turtyschemistry.client.util.ClientUtils;
-import com.turtywurty.turtyschemistry.common.blocks.GasifierBlock;
 
-import net.minecraft.block.Block;
-import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.DrawHighlightEvent.HighlightBlock;
-import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 
 @Mod.EventBusSubscriber(modid = TurtyChemistry.MOD_ID, bus = Bus.FORGE)
-public class ForgeEvents {
-
-	@OnlyIn(Dist.CLIENT)
-	@SubscribeEvent
-	public static void renderBlockPlacement(HighlightBlock event) {
-		Item heldItem = ClientUtils.getClientPlayer().getHeldItemMainhand().getItem();
-		Block block = heldItem instanceof BlockItem ? ((BlockItem) heldItem).getBlock() : null;
-
-		if (block instanceof GasifierBlock) {
-			// IRenderTypeBuffer buffer = event.getBuffers();
-			MatrixStack stack = event.getMatrix();
-			CustomBuffer buffer = new CustomBuffer();
-
-			stack.push();
-
-			BlockRendererDispatcher renderer = ClientUtils.MC.getBlockRendererDispatcher();
-			renderer.renderModel(block.getDefaultState(), event.getTarget().getPos().up(), ClientUtils.getClientWorld(),
-					stack, buffer.getBuffer(RenderTypeLookup.getRenderType(block.getDefaultState())),
-					EmptyModelData.INSTANCE);
-
-			stack.pop();
-
-			for (CustomBuffer.CustomVertexBuilder builder : buffer.builders) {
-				// System.out.println(buffer.builders.size());
-				IVertexBuilder builder1 = event.getBuffers().getBuffer(builder.type);
-				for (CustomBuffer.Vertex vert : builder.vertices) {
-					// System.out.println(builder.vertices.size());
-					builder1.addVertex((float) vert.x + 0, (float) vert.y + 0, (float) vert.z + 0, vert.r / 255f,
-							vert.g / 255f, vert.b / 255f, 0.5f, vert.u + 0, vert.v + 0, 15728640, 15728640, 0, 0, 0);
-				}
-			}
-
-			event.setCanceled(true);
-		}
-	}
-
-	@SubscribeEvent
-	public static void something(PlayerEvent.ItemPickupEvent event) {
-		event.getPlayer().getCapability(GuideBookDataCap.INSTANCE)
-				.ifPresent(data -> data.setPlayerUUID(event.getPlayer().getUniqueID()));
-	}
+public final class ForgeEvents {
+	
+	private ForgeEvents() {}
 
 	@SubscribeEvent
 	public static void onAttachPlayerCapabilities(AttachCapabilitiesEvent<Entity> event) {
@@ -81,7 +30,7 @@ public class ForgeEvents {
 	}
 
 	public static class CustomBuffer implements IRenderTypeBuffer {
-		public ArrayList<CustomVertexBuilder> builders = new ArrayList<>();
+		public List<CustomVertexBuilder> builders = new ArrayList<>();
 
 		@Override
 		public IVertexBuilder getBuffer(RenderType renderType) {
@@ -91,7 +40,7 @@ public class ForgeEvents {
 		}
 
 		public static class CustomVertexBuilder implements IVertexBuilder {
-			public ArrayList<Vertex> vertices = new ArrayList<>();
+			public List<Vertex> vertices = new ArrayList<>();
 			public Vertex vertex = new Vertex();
 			public RenderType type;
 

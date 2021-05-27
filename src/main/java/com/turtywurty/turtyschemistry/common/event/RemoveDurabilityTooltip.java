@@ -12,7 +12,9 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 
 @Mod.EventBusSubscriber(modid = TurtyChemistry.MOD_ID, bus = Bus.FORGE, value = Dist.CLIENT)
-public class RemoveDurabilityTooltip {
+public final class RemoveDurabilityTooltip {
+	
+	private RemoveDurabilityTooltip() {}
 
 	@SubscribeEvent
 	public static void removeDurability(ItemTooltipEvent event) {

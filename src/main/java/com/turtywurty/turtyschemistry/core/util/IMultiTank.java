@@ -45,5 +45,4 @@ public interface IMultiTank extends IFluidHandler {
 	 */
 	@Nonnull
 	FluidStack drain(int tank, int maxDrain, FluidAction action);
-
 }

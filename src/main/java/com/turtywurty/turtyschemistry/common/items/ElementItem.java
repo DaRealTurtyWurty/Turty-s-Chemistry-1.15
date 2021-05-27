@@ -1,35 +1,56 @@
 package com.turtywurty.turtyschemistry.common.items;
 
+import java.util.List;
+
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.MoverType;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class ElementItem extends Item {
+	
+	private static final String TICKS = "Ticks";
 
-	private int ticks = 0;
-
-	private HalfLife life;
-	private RoomTempState state;
+	private HalfLife halfLife;
+	private RoomTempState roomTempState;
 	private float radioactivity;
+	private int magnetism;
 
-	public ElementItem(Properties properties, HalfLife lifeIn, RoomTempState stateIn, float radioactivityIn) {
+	public ElementItem(ElementProperties properties) {
 		super(properties);
-		this.life = lifeIn;
-		this.state = stateIn;
-		this.radioactivity = radioactivityIn;
+		this.halfLife = properties.getHalfLife();
+		this.roomTempState = properties.getRoomTempState();
+		this.radioactivity = properties.getRadioactivity();
+		this.magnetism = properties.getMagnetism();
 	}
 
 	@Override
 	public void inventoryTick(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
-		super.inventoryTick(stack, worldIn, entityIn, itemSlot, isSelected);
+		if (this.magnetism > 0.0f) {
+			if (entityIn != null && worldIn != null && isSelected) {
+				List<ItemEntity> nearbyItems = worldIn.getEntitiesWithinAABB(ItemEntity.class, new AxisAlignedBB(
+						new BlockPos(entityIn.getPosition().add(-this.magnetism, -this.magnetism, -this.magnetism)),
+						new BlockPos(entityIn.getPosition().add(this.magnetism, this.magnetism, this.magnetism))));
+				for (ItemEntity item : nearbyItems) {
+					item.move(MoverType.SELF, entityIn.getPositionVector());
+				}
+			}
+		}
 
-		if (this.life.getTime() == 0) {
-			return;
-		} else if (this.ticks != this.life.getTime() * 1200) {
-			this.ticks++;
-		} else if (this.ticks == this.life.getTime() * 1200) {
-			this.ticks = 0;
+		if (!stack.getOrCreateTag().contains(TICKS)) {
+			stack.getOrCreateTag().putInt(TICKS, 0);
+		}
+
+		if (this.halfLife.getTime() == 0) {
+			//return;
+		} else if (stack.getOrCreateTag().getInt(TICKS) != this.halfLife.getTime() * 1200) {
+			stack.getOrCreateTag().putInt(TICKS, stack.getOrCreateTag().getInt(TICKS) + 1);
+		} else if (stack.getOrCreateTag().getInt(TICKS) == this.halfLife.getTime() * 1200) {
+			stack.getOrCreateTag().putInt(TICKS, 0);
 			stack.setCount(0);
 		}
 	}
@@ -51,5 +72,44 @@ public class ElementItem extends Item {
 
 	public enum RoomTempState {
 		SOLID(), LIQUID(), GAS();
+	}
+
+	public static class ElementProperties extends Properties {
+		private int magnetism;
+		private RoomTempState roomTempState;
+		private HalfLife halfLife;
+		private float radioactivity;
+
+		public void setMagnetic(int magnetismIn) {
+			this.magnetism = magnetismIn;
+		}
+
+		public void setRoomTempState(RoomTempState stateIn) {
+			this.roomTempState = stateIn;
+		}
+
+		public void setHalfLife(HalfLife lifeIn) {
+			this.halfLife = lifeIn;
+		}
+
+		public void setRadioactivity(float amount) {
+			this.radioactivity = amount;
+		}
+
+		public int getMagnetism() {
+			return this.magnetism;
+		}
+
+		public RoomTempState getRoomTempState() {
+			return this.roomTempState;
+		}
+
+		public HalfLife getHalfLife() {
+			return this.halfLife;
+		}
+
+		public float getRadioactivity() {
+			return this.radioactivity;
+		}
 	}
 }

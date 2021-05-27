@@ -9,7 +9,9 @@ import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public class PotionInit {
+public final class PotionInit {
+	
+	private PotionInit() {}
 
 	public static final DeferredRegister<Effect> EFFECTS = DeferredRegister.create(ForgeRegistries.POTIONS,
 			TurtyChemistry.MOD_ID);

@@ -16,7 +16,9 @@ import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public class RecipeSerializerInit {
+public final class RecipeSerializerInit {
+	
+	private RecipeSerializerInit() {}
 
 	public static final IRecipeSerializer<BunsenBurnerRecipe> B_RECIPE_SERIALIZER = new BunsenBurnerRecipeSerializer();
 
@@ -26,7 +28,7 @@ public class RecipeSerializerInit {
 			.create(ForgeRegistries.RECIPE_SERIALIZERS, TurtyChemistry.MOD_ID);
 
 	public static final RegistryObject<IRecipeSerializer<AutoclaveRecipe>> AUTOCLAVE_RECIPE_SERIALIZER = SERIALIZERS
-			.register("autoclave_recipe", () -> new AutoclaveRecipeSerializer());
+			.register("autoclave_recipe", AutoclaveRecipeSerializer::new);
 
 	public static final RegistryObject<IRecipeSerializer<BunsenBurnerRecipe>> BUNSEN_BURNER_RECIPE = SERIALIZERS
 			.register("bunsen_burner", () -> B_RECIPE_SERIALIZER);

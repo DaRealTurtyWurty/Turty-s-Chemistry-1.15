@@ -16,7 +16,9 @@ import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public class FluidInit {
+public final class FluidInit {
+	
+	private FluidInit() {}
 
 	public static final ResourceLocation BRINE_STILL_RL = new ResourceLocation(TurtyChemistry.MOD_ID,
 			"blocks/brine_still");
@@ -35,12 +37,12 @@ public class FluidInit {
 			() -> new ForgeFlowingFluid.Flowing(FluidInit.BRINE_PROPERTIES));
 
 	public static final RegistryObject<FlowingFluidBlock> BRINE_BLOCK = BlockInit.BLOCKS.register("brine",
-			() -> new FlowingFluidBlock(() -> FluidInit.BRINE_STILL.get(), Block.Properties.create(Material.WATER)
+			() -> new FlowingFluidBlock(BRINE_STILL::get, Block.Properties.create(Material.WATER)
 					.doesNotBlockMovement().hardnessAndResistance(100.0f).noDrops()));
 
 	public static final ForgeFlowingFluid.Properties BRINE_PROPERTIES = new ForgeFlowingFluid.Properties(
-			() -> BRINE_STILL.get(), () -> BRINE_FLOWING.get(),
+			BRINE_STILL::get, BRINE_FLOWING::get,
 			FluidAttributes.builder(BRINE_STILL_RL, BRINE_FLOWING_RL).density(50).rarity(Rarity.RARE)
 					.sound(SoundEvents.AMBIENT_UNDERWATER_ENTER).overlay(BRINE_OVERLAY_RL))
-							.block(() -> FluidInit.BRINE_BLOCK.get()).bucket(() -> ItemInit.BRINE_BUCKET.get());
+							.block(BRINE_BLOCK::get).bucket(ItemInit.BRINE_BUCKET::get);
 }

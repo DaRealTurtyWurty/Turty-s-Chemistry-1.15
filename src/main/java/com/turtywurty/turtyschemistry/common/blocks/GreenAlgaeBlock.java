@@ -23,6 +23,7 @@ public class GreenAlgaeBlock extends BushBlock {
 		super(builder);
 	}
 
+	@Override
 	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
 		return GREEB_ALGAE_SHAPE;
 	}
@@ -45,6 +46,7 @@ public class GreenAlgaeBlock extends BushBlock {
 		return VoxelShapes.empty();
 	}
 
+	@Override
 	public ItemStack getItem(IBlockReader worldIn, BlockPos pos, BlockState state) {
 		return new ItemStack(ItemInit.GREEN_ALGAE.get());
 	}

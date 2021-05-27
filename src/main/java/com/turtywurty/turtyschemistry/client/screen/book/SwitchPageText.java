@@ -21,7 +21,7 @@ public class SwitchPageText extends Widget {
 			this.active = false;
 			this.visible = false;
 		} else {
-			this.width = (int) (ClientUtils.MC.fontRenderer.getStringWidth(this.getMessage()));
+			this.width = ClientUtils.MC.fontRenderer.getStringWidth(this.getMessage());
 		}
 	}
 

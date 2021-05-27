@@ -1,6 +1,7 @@
 package com.turtywurty.turtyschemistry.common.blocks.bunsen_burner;
 
 import java.awt.Color;
+import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Stream;
 
@@ -46,6 +47,16 @@ public class BunsenBurnerBlock extends Block {
 	public static final BooleanProperty MESH = BooleanProperty.create("mesh");
 	public static final BooleanProperty CRUCIBLE = BooleanProperty.create("crucible");
 
+	private static final Optional<VoxelShape> SHAPE = Stream
+			.of(Block.makeCuboidShape(7.5, 3, 7, 8.5, 4, 7), Block.makeCuboidShape(5, 0, 5, 11, 1, 11),
+					Block.makeCuboidShape(6, 1, 6, 10, 2, 10), Block.makeCuboidShape(7, 4, 7, 9, 9, 9),
+					Block.makeCuboidShape(7, 2, 7, 9, 3, 9), Block.makeCuboidShape(7, 3, 8, 9, 4, 9),
+					Block.makeCuboidShape(7, 3, 7, 7.5, 4, 8), Block.makeCuboidShape(8.5, 3, 7, 9, 4, 8),
+					Block.makeCuboidShape(7.625, 2.2, 9, 8.375, 2.95, 9.75), Block.makeCuboidShape(7, 9, 7, 7.25, 9.75, 9),
+					Block.makeCuboidShape(7.25, 9, 8.75, 8.75, 9.75, 9), Block.makeCuboidShape(7.25, 9, 7, 8.75, 9.75, 7.25),
+					Block.makeCuboidShape(7.75, 9, 7.75, 8.25, 9.25, 8.25), Block.makeCuboidShape(8.75, 9, 7, 9, 9.75, 9))
+			.reduce((v1, v2) -> VoxelShapes.combineAndSimplify(v1, v2, IBooleanFunction.OR));
+
 	public BunsenBurnerBlock(Properties properties) {
 		super(properties);
 		this.setDefaultState(this.stateContainer.getBaseState().with(FACING, Direction.NORTH).with(STRENGTH, 0)
@@ -85,8 +96,7 @@ public class BunsenBurnerBlock extends Block {
 			case 2:
 				// yellow
 				addFireParticles(worldIn, pos, 15,
-						new Color(Color.YELLOW.getRed(), Color.YELLOW.getGreen() - 15, Color.YELLOW.getBlue(), 80),
-						0.05);
+						new Color(Color.YELLOW.getRed(), Color.YELLOW.getGreen() - 15, Color.YELLOW.getBlue(), 80), 0.05);
 				break;
 			case 3:
 				// yellow
@@ -107,9 +117,9 @@ public class BunsenBurnerBlock extends Block {
 				break;
 			case 7:
 				// blue
-				addFireParticles(worldIn, pos, 12, new Color(Color.MAGENTA.getRed() - 200, Color.MAGENTA.getGreen(),
-						Color.MAGENTA.getBlue() - 50, 80), 0.007D);
-				System.out.println(Color.MAGENTA.getRed());
+				addFireParticles(worldIn, pos, 12,
+						new Color(Color.MAGENTA.getRed() - 200, Color.MAGENTA.getGreen(), Color.MAGENTA.getBlue() - 50, 80),
+						0.007D);
 				break;
 			case 8:
 				// blue
@@ -144,8 +154,8 @@ public class BunsenBurnerBlock extends Block {
 	}
 
 	@Override
-	public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
-			Hand handIn, BlockRayTraceResult hit) {
+	public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn,
+			BlockRayTraceResult hit) {
 		if (player.isCrouching() && player.getHeldItemMainhand().isEmpty()) {
 			worldIn.setBlockState(pos, state.with(STRENGTH, state.get(STRENGTH) + 1 >= 9 ? 0 : state.get(STRENGTH) + 1),
 					BlockFlags.BLOCK_UPDATE);
@@ -163,8 +173,7 @@ public class BunsenBurnerBlock extends Block {
 			worldIn.setBlockState(pos, state.with(CRUCIBLE, true), BlockFlags.BLOCK_UPDATE);
 			if (!player.abilities.isCreativeMode)
 				player.getHeldItemMainhand().shrink(1);
-		} else if (state.get(CRUCIBLE) && state.get(FRAME) && state.get(MESH)
-				&& !player.getHeldItemMainhand().isEmpty()) {
+		} else if (state.get(CRUCIBLE) && state.get(FRAME) && state.get(MESH) && !player.getHeldItemMainhand().isEmpty()) {
 			TileEntity tile = worldIn.getTileEntity(pos);
 			if (tile instanceof BunsenBurnerTileEntity) {
 				ItemStack heldStack = player.getHeldItemMainhand().copy();
@@ -208,17 +217,9 @@ public class BunsenBurnerBlock extends Block {
 
 	@Override
 	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
-		return Stream.of(Block.makeCuboidShape(7.5, 3, 7, 8.5, 4, 7), Block.makeCuboidShape(5, 0, 5, 11, 1, 11),
-				Block.makeCuboidShape(6, 1, 6, 10, 2, 10), Block.makeCuboidShape(7, 4, 7, 9, 9, 9),
-				Block.makeCuboidShape(7, 2, 7, 9, 3, 9), Block.makeCuboidShape(7, 3, 8, 9, 4, 9),
-				Block.makeCuboidShape(7, 3, 7, 7.5, 4, 8), Block.makeCuboidShape(8.5, 3, 7, 9, 4, 8),
-				Block.makeCuboidShape(7.625, 2.2, 9, 8.375, 2.95, 9.75), Block.makeCuboidShape(7, 9, 7, 7.25, 9.75, 9),
-				Block.makeCuboidShape(7.25, 9, 8.75, 8.75, 9.75, 9),
-				Block.makeCuboidShape(7.25, 9, 7, 8.75, 9.75, 7.25),
-				Block.makeCuboidShape(7.75, 9, 7.75, 8.25, 9.25, 8.25), Block.makeCuboidShape(8.75, 9, 7, 9, 9.75, 9))
-				.reduce((v1, v2) -> {
-					return VoxelShapes.combineAndSimplify(v1, v2, IBooleanFunction.OR);
-				}).get();
+		if (SHAPE.isPresent())
+			return SHAPE.get();
+		return null;
 	}
 
 	@Override
@@ -240,8 +241,8 @@ public class BunsenBurnerBlock extends Block {
 						new ItemStack(ItemInit.WIRE_GAUZE.get())));
 
 			if (state.get(CRUCIBLE))
-				worldIn.addEntity(new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(),
-						new ItemStack(ItemInit.CRUCIBLE.get())));
+				worldIn.addEntity(
+						new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(ItemInit.CRUCIBLE.get())));
 		}
 
 		if (state.hasTileEntity() && (state.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {

@@ -13,6 +13,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.Constants.BlockFlags;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
@@ -24,68 +25,76 @@ public class InventoryTile extends TileEntity implements ITickableTileEntity {
 	public int timer;
 	public boolean requiresUpdate = true;
 
-	protected LazyOptional<IItemHandlerModifiable> handler = LazyOptional.of(this::createHandler);
+	public final IItemHandlerModifiable inventory;
+	protected LazyOptional<IItemHandlerModifiable> handler;
 
 	public InventoryTile(TileEntityType<?> tileEntityTypeIn, int size) {
 		super(tileEntityTypeIn);
 		this.size = size;
+		inventory = this.createHandler();
+		handler = LazyOptional.of(() -> inventory);
 	}
 
 	@Override
 	public void tick() {
-		timer++;
-		if (world != null) {
-			if (requiresUpdate) {
-				updateTile();
-				requiresUpdate = false;
-			}
+		this.timer++;
+		if (this.world != null && this.requiresUpdate) {
+			updateTile();
+			this.requiresUpdate = false;
 		}
 	}
 
 	@Override
 	public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
 		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-			return handler.cast();
+			return this.handler.cast();
 		}
 		return super.getCapability(cap, side);
 	}
 
 	public LazyOptional<IItemHandlerModifiable> getHandler() {
-		return handler;
+		return this.handler;
 	}
 
 	public IItemHandlerModifiable getInventory() {
-		return handler.orElse(createHandler());
+		return this.inventory;
 	}
 
 	public IItemHandlerModifiable createHandler() {
-		return new ItemStackHandler(size) {
+		return new ItemStackHandler(this.size) {
 			@Override
-			protected void onContentsChanged(int slot) {
-				markDirty();
+			public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+				world.notifyBlockUpdate(pos, getBlockState(), getBlockState(), BlockFlags.BLOCK_UPDATE);
+				return super.insertItem(slot, stack, simulate);
+			}
+
+			@Override
+			public ItemStack extractItem(int slot, int amount, boolean simulate) {
+				world.notifyBlockUpdate(pos, getBlockState(), getBlockState(), BlockFlags.BLOCK_UPDATE);
+				return super.extractItem(slot, amount, simulate);
 			}
 		};
 	}
 
 	public ItemStack getItemInSlot(int slot) {
-		return handler.map(inventory -> inventory.getStackInSlot(slot)).orElse(ItemStack.EMPTY);
+		return this.handler.map(inv -> inv.getStackInSlot(slot)).orElse(ItemStack.EMPTY);
 	}
 
 	public ItemStack insertItem(int slot, ItemStack stack) {
 		ItemStack itemIn = stack.copy();
 		stack.shrink(itemIn.getCount());
-		requiresUpdate = true;
-		return handler.map(inventory -> inventory.insertItem(slot, itemIn, false)).orElse(ItemStack.EMPTY);
+		this.requiresUpdate = true;
+		return this.handler.map(inv -> inv.insertItem(slot, itemIn, false)).orElse(ItemStack.EMPTY);
 	}
 
 	public ItemStack extractItem(int slot) {
 		int count = getItemInSlot(slot).getCount();
-		requiresUpdate = true;
-		return handler.map(inventory -> inventory.extractItem(slot, count, false)).orElse(ItemStack.EMPTY);
+		this.requiresUpdate = true;
+		return this.handler.map(inv -> inv.extractItem(slot, count, false)).orElse(ItemStack.EMPTY);
 	}
 
 	public int getSize() {
-		return size;
+		return this.size;
 	}
 
 	@Override
@@ -95,40 +104,35 @@ public class InventoryTile extends TileEntity implements ITickableTileEntity {
 		for (int x = 0; x < list.size(); ++x) {
 			CompoundNBT nbt = list.getCompound(x);
 			int r = nbt.getByte("Slot") & 255;
-			handler.ifPresent(inventory -> {
-				int invslots = inventory.getSlots();
+			this.handler.ifPresent(inv -> {
+				int invslots = inv.getSlots();
 				if (r >= 0 && r < invslots) {
-					inventory.setStackInSlot(r, ItemStack.read(nbt));
+					inv.setStackInSlot(r, ItemStack.read(nbt));
 				}
 			});
 		}
-		requiresUpdate = true;
+		this.requiresUpdate = true;
 	}
 
 	@Override
 	public CompoundNBT write(CompoundNBT compound) {
 		super.write(compound);
 		ListNBT list = new ListNBT();
-		handler.ifPresent(inventory -> {
-			int slots = inventory.getSlots();
-			for (int x = 0; x < slots; ++x) {
-				ItemStack stack = inventory.getStackInSlot(x);
-				if (!stack.isEmpty()) {
-					CompoundNBT nbt = new CompoundNBT();
-					nbt.putByte("Slot", (byte) x);
-					stack.write(nbt);
-					list.add(nbt);
-				}
-			}
-		});
-		if (!list.isEmpty()) {
-			compound.put("Items", list);
+		int slots = inventory.getSlots();
+		for (int x = 0; x < slots; ++x) {
+			ItemStack stack = inventory.getStackInSlot(x);
+			CompoundNBT nbt = new CompoundNBT();
+			nbt.putByte("Slot", (byte) x);
+			stack.write(nbt);
+			list.add(nbt);
 		}
+
+		compound.put("Items", list);
 		return compound;
 	}
 
 	public void updateTile() {
-		requestModelDataUpdate();
+		this.requestModelDataUpdate();
 		this.markDirty();
 		if (this.getWorld() != null) {
 			this.getWorld().notifyBlockUpdate(pos, this.getBlockState(), this.getBlockState(), 3);
@@ -143,7 +147,7 @@ public class InventoryTile extends TileEntity implements ITickableTileEntity {
 
 	@Override
 	public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
-		handleUpdateTag(pkt.getNbtCompound());
+		this.handleUpdateTag(pkt.getNbtCompound());
 	}
 
 	@Override
@@ -154,6 +158,6 @@ public class InventoryTile extends TileEntity implements ITickableTileEntity {
 
 	@Override
 	public void handleUpdateTag(CompoundNBT tag) {
-		deserializeNBT(tag);
+		this.deserializeNBT(tag);
 	}
 }

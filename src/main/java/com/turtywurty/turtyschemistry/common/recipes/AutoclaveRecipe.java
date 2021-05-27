@@ -25,10 +25,7 @@ public class AutoclaveRecipe implements IAutoclaveRecipe {
 
 	@Override
 	public boolean matches(RecipeWrapper inv, @Nullable World worldIn) {
-		if (this.input.test(inv.getStackInSlot(0))) {
-			return true;
-		}
-		return false;
+		return this.input.test(inv.getStackInSlot(0));
 	}
 
 	@Override
@@ -53,7 +50,7 @@ public class AutoclaveRecipe implements IAutoclaveRecipe {
 
 	@Override
 	public NonNullList<Ingredient> getIngredients() {
-		return NonNullList.from(null, this.input);
+		return NonNullList.from(Ingredient.EMPTY, this.input);
 	}
 
 	public Ingredient getInput() {

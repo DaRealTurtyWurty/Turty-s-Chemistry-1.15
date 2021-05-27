@@ -11,7 +11,9 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraftforge.client.model.data.ModelProperty;
 
-public class ModBlockProperties {
+public final class ModBlockProperties {
+	
+	private ModBlockProperties() {} 
 
 	public static final PropertyBoolInverted MULTIBLOCKSLAVE = PropertyBoolInverted.create("multiblockslave");
 	public static final PropertyBoolInverted MIRRORED = PropertyBoolInverted.create("mirrored");

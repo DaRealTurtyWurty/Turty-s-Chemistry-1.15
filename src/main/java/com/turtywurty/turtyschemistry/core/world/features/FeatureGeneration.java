@@ -24,7 +24,9 @@ import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public class FeatureGeneration {
+public final class FeatureGeneration {
+	
+	private FeatureGeneration() {}
 
 	private static final FillerBlockType STONE = FillerBlockType.NATURAL_STONE;
 	private static final FillerBlockType RIVER_LAKE = FillerBlockType.create("river", "river",
@@ -129,7 +131,7 @@ public class FeatureGeneration {
 					new HeliumGasPocket(BlockStateFeatureConfig::deserialize)
 							.withConfiguration(
 									new BlockStateFeatureConfig(BlockInit.HELIUM_GAS.get().getDefaultState()))
-							.withPlacement(new HeliumPocket(ChanceConfig::deserialize).configure(new ChanceConfig(8))));
+							.withPlacement(new HeliumPocket(ChanceConfig::deserialize).configure(new ChanceConfig(3))));
 		}
 	}
 
@@ -139,7 +141,7 @@ public class FeatureGeneration {
 					Feature.ORE
 							.withConfiguration(new OreFeatureConfig(OreFeatureConfig.FillerBlockType.NATURAL_STONE,
 									BlockInit.PEGMATITE.get().getDefaultState(), 33))
-							.withPlacement(Placement.COUNT_RANGE.configure(new CountRangeConfig(3, 0, 0, 80))));
+							.withPlacement(Placement.COUNT_RANGE.configure(new CountRangeConfig(1, 0, 0, 80))));
 		}
 	}
 

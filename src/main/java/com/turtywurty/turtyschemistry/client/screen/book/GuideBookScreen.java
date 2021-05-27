@@ -1,7 +1,5 @@
 package com.turtywurty.turtyschemistry.client.screen.book;
 
-import java.util.UUID;
-
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.turtywurty.turtyschemistry.TurtyChemistry;
 import com.turtywurty.turtyschemistry.client.util.ClientUtils;
@@ -16,13 +14,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.Style;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 
-@OnlyIn(Dist.CLIENT)
 public class GuideBookScreen extends Screen {
-
-	private UUID playerUUID;
 
 	private static final ResourceLocation PAGE_TEXTURE = new ResourceLocation(TurtyChemistry.MOD_ID,
 			"textures/gui/encyclopedia/page.png");
@@ -93,15 +86,13 @@ public class GuideBookScreen extends Screen {
 		float startX = this.guiLeft + 11;
 		float startY = this.guiTop + 11;
 		int defaultColor = 0x404040;
-		String title = new StringTextComponent("Table Of Contents")
-				.setStyle(new Style().setUnderlined(true).setBold(true)).getFormattedText();
+		String title = new StringTextComponent("Table Of Contents").setStyle(new Style().setUnderlined(true).setBold(true))
+				.getFormattedText();
 		this.font.drawString(title, startX, startY, defaultColor);
 		if (ClientUtils.isMouseInArea((int) mouseX, (int) mouseY, this.guiLeft + 11, this.guiTop + 21, 50, 5)) {
-			this.font
-					.drawString(
-							new StringTextComponent("• Elements")
-									.setStyle(new Style().setUnderlined(true).setBold(true)).getFormattedText(),
-							startX, startY + 10, defaultColor);
+			this.font.drawString(new StringTextComponent("• Elements")
+					.setStyle(new Style().setUnderlined(true).setBold(true)).getFormattedText(), startX, startY + 10,
+					defaultColor);
 		} else {
 			this.font.drawString("• Elements", startX, startY + 10, defaultColor);
 		}
@@ -358,7 +349,7 @@ public class GuideBookScreen extends Screen {
 		this.font.drawString("Actinium", startX, startY + 52, defaultColor);
 		this.renderItem(new ItemStack(ItemInit.ACTINIUM.get()), itemStartX, itemStartY + 43);
 		this.font.drawString("Thorium", startX, startY + 67, defaultColor);
-		this.renderItem(new ItemStack(ItemInit.THROIUM.get()), itemStartX, itemStartY + 58);
+		this.renderItem(new ItemStack(ItemInit.THORIUM.get()), itemStartX, itemStartY + 58);
 		this.font.drawString("Protactinium", startX, startY + 82, defaultColor);
 		this.renderItem(new ItemStack(ItemInit.PROTACTINIUM.get()), itemStartX, itemStartY + 73);
 		this.font.drawString("Uranium", startX, startY + 97, defaultColor);
@@ -464,7 +455,7 @@ public class GuideBookScreen extends Screen {
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int partialTicks) {
-		//Elements
+		// Elements
 		if (ClientUtils.isMouseInArea((int) mouseX, (int) mouseY, this.guiLeft + 11, this.guiTop + 21, 50, 5)) {
 			this.currentPage = 2;
 		}
@@ -511,8 +502,7 @@ public class GuideBookScreen extends Screen {
 					this.y = (this.screen.height - 175) / 2 + 151;
 				}
 
-				ClientUtils.renderButton(PAGE_TEXTURE, this, partialTicks, 1.0f, this.texX, this.texY, 18, 10, 256,
-						256);
+				ClientUtils.renderButton(PAGE_TEXTURE, this, partialTicks, 1.0f, this.texX, this.texY, 18, 10, 256, 256);
 			}
 		}
 	}
@@ -534,15 +524,14 @@ public class GuideBookScreen extends Screen {
 			if (isHovered()) {
 				if (this.screen.currentPage != 0) {
 					this.active = true;
-					ClientUtils.renderButton(PAGE_TEXTURE, this, partialTicks, 1.0f, this.texX + 23, this.texY, 18, 10,
-							256, 256);
+					ClientUtils.renderButton(PAGE_TEXTURE, this, partialTicks, 1.0f, this.texX + 23, this.texY, 18, 10, 256,
+							256);
 				} else {
 					this.active = false;
 				}
 			} else {
 				if (this.screen.currentPage != 0) {
-					ClientUtils.renderButton(PAGE_TEXTURE, this, partialTicks, 1.0f, this.texX, this.texY, 18, 10, 256,
-							256);
+					ClientUtils.renderButton(PAGE_TEXTURE, this, partialTicks, 1.0f, this.texX, this.texY, 18, 10, 256, 256);
 				}
 			}
 		}

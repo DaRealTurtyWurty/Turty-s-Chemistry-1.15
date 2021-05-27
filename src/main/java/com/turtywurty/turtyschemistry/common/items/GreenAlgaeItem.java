@@ -31,10 +31,12 @@ public class GreenAlgaeItem extends Item {
 		super(properties);
 	}
 
+	@Override
 	public ActionResultType onItemUse(ItemUseContext context) {
 		return ActionResultType.PASS;
 	}
 
+	@Override
 	public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
 		ItemStack itemstack = playerIn.getHeldItem(handIn);
 		RayTraceResult raytraceresult = rayTrace(worldIn, playerIn, RayTraceContext.FluidMode.SOURCE_ONLY);

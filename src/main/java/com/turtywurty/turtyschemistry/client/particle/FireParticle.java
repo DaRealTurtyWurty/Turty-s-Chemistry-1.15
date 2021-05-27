@@ -32,27 +32,30 @@ public class FireParticle extends SpriteTexturedParticle {
 		this.posY += (double) ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.05F);
 		this.posZ += (double) ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.05F);
 		float f = (float) Math.random() * 0.4F + 0.6F;
-		this.particleRed = ((float) (Math.random() * (double) 0.2F) + 0.8F) * data.getRed() * f;
-		this.particleGreen = ((float) (Math.random() * (double) 0.2F) + 0.8F) * data.getGreen() * f;
-		this.particleBlue = ((float) (Math.random() * (double) 0.2F) + 0.8F) * data.getBlue() * f;
+		this.particleRed = ((float) (this.rand.nextInt() * (double) 0.2F) + 0.8F) * data.getRed() * f;
+		this.particleGreen = ((float) (this.rand.nextInt() * (double) 0.2F) + 0.8F) * data.getGreen() * f;
+		this.particleBlue = ((float) (this.rand.nextInt() * (double) 0.2F) + 0.8F) * data.getBlue() * f;
 		this.particleAlpha = data.getAlpha();
-		this.maxAge = (int) (8.0D / (Math.random() * 0.8D + 0.2D)) + 4;
+		this.maxAge = (int) (8.0D / (this.rand.nextInt() * 0.8D + 0.2D)) + 4;
 	}
 
 	public IParticleRenderType getRenderType() {
 		return IParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
 	}
 
+	@Override
 	public void move(double x, double y, double z) {
 		this.setBoundingBox(this.getBoundingBox().offset(x, y, z));
 		this.resetPositionToBB();
 	}
 
+	@Override
 	public float getScale(float scaleFactor) {
 		float f = ((float) this.age + scaleFactor) / (float) this.maxAge;
 		return this.particleScale * (1.0F - f * f * 0.2F);
 	}
 
+	@Override
 	public int getBrightnessForRender(float partialTick) {
 		float f = ((float) this.age + partialTick) / (float) this.maxAge;
 		f = MathHelper.clamp(f, 0.0F, 1.0F);
@@ -67,6 +70,7 @@ public class FireParticle extends SpriteTexturedParticle {
 		return j | k << 16;
 	}
 
+	@Override
 	public void tick() {
 		this.prevPosX = this.posX;
 		this.prevPosY = this.posY;
@@ -86,7 +90,6 @@ public class FireParticle extends SpriteTexturedParticle {
 		}
 	}
 
-	@OnlyIn(Dist.CLIENT)
 	public static class Factory implements IParticleFactory<FireColourData> {
 		private final IAnimatedSprite spriteSet;
 
@@ -112,14 +115,14 @@ public class FireParticle extends SpriteTexturedParticle {
 			public FireColourData deserialize(ParticleType<FireColourData> particleTypeIn, StringReader reader)
 					throws CommandSyntaxException {
 				reader.expect(' ');
-				float red = (float) reader.readDouble();
+				float r = (float) reader.readDouble();
 				reader.expect(' ');
-				float green = (float) reader.readDouble();
+				float g = (float) reader.readDouble();
 				reader.expect(' ');
-				float blue = (float) reader.readDouble();
+				float b = (float) reader.readDouble();
 				reader.expect(' ');
-				float alpha = (float) reader.readDouble();
-				return new FireColourData(red, green, blue, alpha);
+				float a = (float) reader.readDouble();
+				return new FireColourData(r, g, b, a);
 			}
 
 			public FireColourData read(ParticleType<FireColourData> particleTypeIn, PacketBuffer buffer) {
