@@ -9,7 +9,7 @@ import net.minecraftforge.fluids.FluidStack;
 
 public class TankFluidStackHandler extends FluidStackHandler {
 
-	public TankFluidStackHandler(int tanks, int capacity) {
+	public TankFluidStackHandler(int tanks, int... capacity) {
 		super(tanks, capacity);
 	}
 
@@ -27,15 +27,12 @@ public class TankFluidStackHandler extends FluidStackHandler {
 		CompoundNBT nbt = new CompoundNBT();
 		nbt.put("Fluids", nbtTagList);
 		nbt.putInt("Size", stacks.size());
-		nbt.putInt("Capacity", capacity);
+		nbt.putIntArray("Capacity", capacity);
 		return nbt;
 	}
 
 	@Override
 	public void deserializeNBT(CompoundNBT nbt) {
-		setCapacity(
-				nbt.contains("Capacity", Constants.NBT.TAG_INT) && nbt.getInt("Capacity") > 0 ? nbt.getInt("Capacity")
-						: capacity);
 		setSize(nbt.contains("Size", Constants.NBT.TAG_INT) && nbt.getInt("Size") > 0 ? nbt.getInt("Size")
 				: stacks.size());
 		ListNBT tagList = nbt.getList("Fluids", Constants.NBT.TAG_COMPOUND);
@@ -45,6 +42,9 @@ public class TankFluidStackHandler extends FluidStackHandler {
 			if (tank >= 0 && tank < stacks.size()) {
 				stacks.set(tank, FluidStack.loadFluidStackFromNBT(fluidTags));
 			}
+			setCapacity(
+					nbt.contains("Capacity", Constants.NBT.TAG_INT) && nbt.getInt("Capacity") > 0 ? nbt.getInt("Capacity")
+							: capacity[tank], tank);
 		}
 		onLoad();
 	}

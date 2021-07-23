@@ -14,16 +14,16 @@ import net.minecraftforge.items.wrapper.RecipeWrapper;
 public interface IAutoclaveRecipe extends IRecipe<RecipeWrapper> {
 	ResourceLocation TYPE_ID = new ResourceLocation(TurtyChemistry.MOD_ID, "autoclave");
 
-	@Nonnull
 	@Override
-	default IRecipeType<?> getType() {
-		return Registry.RECIPE_TYPE.getValue(TYPE_ID).get();
-	}
-
-	@Override
-	default boolean canFit(int width, int height) {
+	default boolean canFit(final int width, final int height) {
 		return false;
 	}
 
 	Ingredient getInput();
+
+	@Nonnull
+	@Override
+	default IRecipeType<?> getType() {
+		return Registry.RECIPE_TYPE.getOrDefault(TYPE_ID);
+	}
 }

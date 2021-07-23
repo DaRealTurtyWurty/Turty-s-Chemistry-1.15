@@ -14,6 +14,7 @@ import com.turtywurty.turtyschemistry.common.tileentity.InventoryTile;
 import com.turtywurty.turtyschemistry.core.init.RecipeSerializerInit;
 import com.turtywurty.turtyschemistry.core.init.TileEntityTypeInit;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
@@ -27,44 +28,41 @@ import net.minecraftforge.common.util.Constants.BlockFlags;
 
 public class BunsenBurnerTileEntity extends InventoryTile {
 
-	private int completionTime;
-	private int maxTime;
-
-	public BunsenBurnerTileEntity(TileEntityType<?> tileEntityTypeIn) {
-		super(tileEntityTypeIn, 1);
+	public static Set<IRecipe<?>> findRecipesByType(final IRecipeType<?> typeIn) {
+		ClientWorld world = ClientUtils.getClientWorld();
+		return world != null ? world.getRecipeManager().getRecipes().stream()
+				.filter(recipe -> recipe.getType() == typeIn).collect(Collectors.toSet()) : Collections.emptySet();
 	}
+
+	public static Set<IRecipe<?>> findRecipesByType(final IRecipeType<?> typeIn, final World world) {
+		return world != null ? world.getRecipeManager().getRecipes().stream()
+				.filter(recipe -> recipe.getType() == typeIn).collect(Collectors.toSet()) : Collections.emptySet();
+	}
+
+	public static Set<ItemStack> getAllRecipeInputs(final IRecipeType<?> typeIn, final World worldIn) {
+		Set<ItemStack> inputs = new HashSet<>();
+		Set<IRecipe<?>> recipes = findRecipesByType(typeIn, worldIn);
+		for (IRecipe<?> recipe : recipes) {
+			NonNullList<Ingredient> ingredients = recipe.getIngredients();
+			ingredients.forEach(ingredient -> inputs.addAll(Arrays.asList(ingredient.getMatchingStacks())));
+		}
+		return inputs;
+	}
+
+	private int completionTime;
+
+	private int maxTime;
 
 	public BunsenBurnerTileEntity() {
 		this(TileEntityTypeInit.BUNSEN_BURNER.get());
 	}
 
-	@Override
-	public void tick() {
-		super.tick();
+	public BunsenBurnerTileEntity(final TileEntityType<?> tileEntityTypeIn) {
+		super(tileEntityTypeIn, 1);
+	}
 
-		if (!this.world.isRemote) {
-			if (this.getRecipe(this.getItemInSlot(0)) != null) {
-				this.maxTime = this.getRecipe(this.getItemInSlot(0)).getProcessTime();
-				if (this.isBurning()) {
-					if (this.completionTime >= this.maxTime) {
-						ItemStack output = this.getRecipe(this.getItemInSlot(0)).getRecipeOutput().copy();
-						this.getInventory().setStackInSlot(0, output);
-						this.world.notifyBlockUpdate(this.getPos(), this.getBlockState(), this.getBlockState(),
-								BlockFlags.BLOCK_UPDATE);
-						this.completionTime = 0;
-						this.maxTime = 0;
-					} else {
-						this.completionTime++;
-					}
-					this.markDirty();
-				} else {
-					if (this.canStartBurning()) {
-						this.completionTime++;
-						this.markDirty();
-					}
-				}
-			}
-		}
+	public boolean canStartBurning() {
+		return !getBlockState().get(BunsenBurnerBlock.HAS_GAS) && this.completionTime < this.maxTime;
 	}
 
 	public int getCompletionTime() {
@@ -75,69 +73,66 @@ public class BunsenBurnerTileEntity extends InventoryTile {
 		return this.maxTime;
 	}
 
-	public void setMaxTime(int maxTime) {
-		this.maxTime = maxTime;
-	}
-
-	public void setCompletionTime(int completionTime) {
-		this.completionTime = completionTime;
-	}
-
-	public boolean isBurning() {
-		return !this.getBlockState().get(BunsenBurnerBlock.HAS_GAS) && this.completionTime != 0
-				&& this.completionTime <= this.maxTime;
-	}
-
-	public boolean canStartBurning() {
-		return !this.getBlockState().get(BunsenBurnerBlock.HAS_GAS) && this.completionTime < this.maxTime;
-	}
-
 	@Nullable
-	public BunsenBurnerRecipe getRecipe(ItemStack stack) {
-		if (stack == null) {
+	public BunsenBurnerRecipe getRecipe(final ItemStack stack) {
+		if (stack == null)
 			return null;
-		}
 
 		Set<IRecipe<?>> recipes = findRecipesByType(RecipeSerializerInit.BUNSEN_TYPE, this.world);
 		for (IRecipe<?> iRecipe : recipes) {
 			BunsenBurnerRecipe recipe = (BunsenBurnerRecipe) iRecipe;
-			if (recipe.getInput().test(stack)) {
+			if (recipe.getInput().test(stack))
 				return recipe;
-			}
 		}
 
 		return null;
 	}
 
-	public static Set<IRecipe<?>> findRecipesByType(IRecipeType<?> typeIn, World world) {
-		return world != null ? world.getRecipeManager().getRecipes().stream().filter(recipe -> recipe.getType() == typeIn)
-				.collect(Collectors.toSet()) : Collections.emptySet();
-	}
-
-	public static Set<IRecipe<?>> findRecipesByType(IRecipeType<?> typeIn) {
-		ClientWorld world = ClientUtils.getClientWorld();
-		return world != null ? world.getRecipeManager().getRecipes().stream().filter(recipe -> recipe.getType() == typeIn)
-				.collect(Collectors.toSet()) : Collections.emptySet();
-	}
-
-	public static Set<ItemStack> getAllRecipeInputs(IRecipeType<?> typeIn, World worldIn) {
-		Set<ItemStack> inputs = new HashSet<>();
-		Set<IRecipe<?>> recipes = findRecipesByType(typeIn, worldIn);
-		for (IRecipe<?> recipe : recipes) {
-			NonNullList<Ingredient> ingredients = recipe.getIngredients();
-			ingredients.forEach(ingredient -> inputs.addAll(Arrays.asList(ingredient.getMatchingStacks())));
-		}
-		return inputs;
+	public boolean isBurning() {
+		return !getBlockState().get(BunsenBurnerBlock.HAS_GAS) && this.completionTime != 0
+				&& this.completionTime <= this.maxTime;
 	}
 
 	@Override
-	public void read(CompoundNBT compound) {
-		super.read(compound);
+	public void read(final BlockState state, final CompoundNBT compound) {
+		super.read(state, compound);
 		this.completionTime = compound.getInt("CompletionTime");
 	}
 
+	public void setCompletionTime(final int completionTime) {
+		this.completionTime = completionTime;
+	}
+
+	public void setMaxTime(final int maxTime) {
+		this.maxTime = maxTime;
+	}
+
 	@Override
-	public CompoundNBT write(CompoundNBT compound) {
+	public void tick() {
+		super.tick();
+
+		if (!this.world.isRemote && (getRecipe(getItemInSlot(0)) != null)) {
+			this.maxTime = getRecipe(getItemInSlot(0)).getProcessTime();
+			if (isBurning()) {
+				if (this.completionTime >= this.maxTime) {
+					ItemStack output = getRecipe(getItemInSlot(0)).getRecipeOutput().copy();
+					getInventory().setStackInSlot(0, output);
+					this.world.notifyBlockUpdate(getPos(), getBlockState(), getBlockState(), BlockFlags.BLOCK_UPDATE);
+					this.completionTime = 0;
+					this.maxTime = 0;
+				} else {
+					this.completionTime++;
+				}
+				markDirty();
+			} else if (canStartBurning()) {
+				this.completionTime++;
+				markDirty();
+			}
+		}
+	}
+
+	@Override
+	public CompoundNBT write(final CompoundNBT compound) {
 		compound.putInt("CompletionTime", this.completionTime);
 		return super.write(compound);
 	}

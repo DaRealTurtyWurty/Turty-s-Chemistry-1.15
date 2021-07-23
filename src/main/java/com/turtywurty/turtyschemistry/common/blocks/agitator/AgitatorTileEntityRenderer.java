@@ -16,19 +16,20 @@ import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.fluids.FluidStack;
 
 public class AgitatorTileEntityRenderer extends TileEntityRenderer<AgitatorTileEntity> {
 
-	public AgitatorTileEntityRenderer(TileEntityRendererDispatcher rendererDispatcherIn) {
+	public AgitatorTileEntityRenderer(final TileEntityRendererDispatcher rendererDispatcherIn) {
 		super(rendererDispatcherIn);
 	}
 
 	@SuppressWarnings("unused")
 	@Override
-	public void render(AgitatorTileEntity tileEntityIn, float partialTicks, MatrixStack matrixStackIn,
-			IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
+	public void render(final AgitatorTileEntity tileEntityIn, final float partialTicks, final MatrixStack matrixStackIn,
+			final IRenderTypeBuffer bufferIn, final int combinedLightIn, final int combinedOverlayIn) {
 		IVertexBuilder buffer = bufferIn.getBuffer(RenderType.getTranslucent());
 		FluidStackHandler fluidHandler = tileEntityIn.getFluidHandler();
 
@@ -42,17 +43,18 @@ public class AgitatorTileEntityRenderer extends TileEntityRenderer<AgitatorTileE
 
 				IBakedModel model = ClientUtils.MC.getModelManager()
 						.getModel(new ResourceLocation(TurtyChemistry.MOD_ID, "block/agitator_fluid"));
-				int fluidColor = fluid.getFluid().getAttributes().getColor(tileEntityIn.getWorld(), tileEntityIn.getPos());
-				//TODO: Color the fluid
-				
+				int fluidColor = fluid.getFluid().getAttributes().getColor(tileEntityIn.getWorld(),
+						tileEntityIn.getPos());
+				// TODO: Color the fluid
+
 				matrixStackIn.scale(1.0f, 0.5f, 1.0f);
-				matrixStackIn.translate(0.0D, (index++ / 4) + 0.1D, 0.0D);
+				matrixStackIn.translate(0.0D, index++ / 4 + 0.1D, 0.0D);
 
 				ClientUtils.MC.getBlockRendererDispatcher().getBlockModelRenderer().renderModel(tileEntityIn.getWorld(),
 						new ReplacedTextureModel(model, texture),
 						fluid.getFluid().getFluid().getDefaultState().getBlockState(), tileEntityIn.getPos(),
 						matrixStackIn, buffer, true, tileEntityIn.getWorld().getRandom(),
-						tileEntityIn.getWorld().getSeed(), combinedOverlayIn, EmptyModelData.INSTANCE);
+						((ServerWorld) tileEntityIn.getWorld()).getSeed(), combinedOverlayIn, EmptyModelData.INSTANCE);
 				matrixStackIn.pop();
 			}
 		}

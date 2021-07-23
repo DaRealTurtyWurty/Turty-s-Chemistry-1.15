@@ -1,5 +1,6 @@
 package com.turtywurty.turtyschemistry.common.blocks.boiler;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.turtywurty.turtyschemistry.TurtyChemistry;
 import com.turtywurty.turtyschemistry.client.util.ClientUtils;
@@ -16,7 +17,8 @@ public class BoilerScreen extends ContainerScreen<BoilerContainer> {
 	private static final ResourceLocation TEXTURE = new ResourceLocation(TurtyChemistry.MOD_ID,
 			"textures/gui/boiler.png");
 
-	public BoilerScreen(BoilerContainer screenContainer, PlayerInventory inv, ITextComponent titleIn) {
+	public BoilerScreen(final BoilerContainer screenContainer, final PlayerInventory inv,
+			final ITextComponent titleIn) {
 		super(screenContainer, inv, titleIn);
 		this.guiLeft = 0;
 		this.guiTop = 0;
@@ -25,19 +27,20 @@ public class BoilerScreen extends ContainerScreen<BoilerContainer> {
 	}
 
 	@Override
-	protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
+	protected void drawGuiContainerBackgroundLayer(final MatrixStack stack, final float partialTicks, final int mouseX,
+			final int mouseY) {
 		RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
 		getMinecraft().getTextureManager().bindTexture(TEXTURE);
 
-		ClientUtils.blit(this, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
+		ClientUtils.blit(stack, this, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
 	}
 
 	@Override
-	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+	protected void drawGuiContainerForegroundLayer(final MatrixStack stack, final int mouseX, final int mouseY) {
+		super.drawGuiContainerForegroundLayer(stack, mouseX, mouseY);
 
-		this.font.drawString(this.getTitle().getFormattedText(), 8.0f, 4.0f, 0x404040);
-		this.font.drawString(this.playerInventory.getDisplayName().getFormattedText(), 8.0f, 74.0f, 0x404040);
+		this.font.drawString(stack, getTitle().getString(), 8.0f, 4.0f, 0x404040);
+		this.font.drawString(stack, this.playerInventory.getDisplayName().getString(), 8.0f, 74.0f, 0x404040);
 
 		ClientUtils.drawFluid(TEXTURE, this.container.getInputFluid(), 27, 14, 13, 57);
 		ClientUtils.drawFluid(TEXTURE, this.container.getOutputFluid(), 117, 14, 13, 57);
@@ -48,24 +51,25 @@ public class BoilerScreen extends ContainerScreen<BoilerContainer> {
 	}
 
 	@Override
-	public void render(int mouseX, int mouseY, float partialTicks) {
-		this.renderBackground();
-		super.render(mouseX, mouseY, partialTicks);
-		this.renderHoveredToolTip(mouseX, mouseY);
+	public void render(final MatrixStack stack, final int mouseX, final int mouseY, final float partialTicks) {
+		this.renderBackground(stack);
+		super.render(stack, mouseX, mouseY, partialTicks);
+		renderHoveredTooltip(stack, mouseX, mouseY);
 
-		this.renderTooltip(this.container.getInputFluid().getDisplayName().getFormattedText(), mouseX, mouseY, 26, 13,
+		this.renderTooltip(stack, this.container.getInputFluid().getDisplayName().getString(), mouseX, mouseY, 26, 13,
 				40, 71);
-		this.renderTooltip(this.container.getOutputFluid().getDisplayName().getFormattedText(), mouseX, mouseY, 116, 13,
+		this.renderTooltip(stack, this.container.getOutputFluid().getDisplayName().getString(), mouseX, mouseY, 116, 13,
 				130, 71);
-		this.renderTooltip(
-				new TranslationTextComponent(this.container.getOutputGas().getTranslationKey()).getFormattedText(),
-				mouseX, mouseY, 152, 13, 166, 71);
+		this.renderTooltip(stack,
+				new TranslationTextComponent(this.container.getOutputGas().getTranslationKey()).getString(), mouseX,
+				mouseY, 152, 13, 166, 71);
 	}
 
-	protected void renderTooltip(String tooltip, int mouseX, int mouseY, int xLeft, int yTop, int xRight, int yBottom) {
+	protected void renderTooltip(final MatrixStack stack, final String tooltip, final int mouseX, final int mouseY,
+			final int xLeft, final int yTop, final int xRight, final int yBottom) {
 		if (mouseX > this.guiLeft + xLeft && mouseX < this.guiLeft + xRight && mouseY > this.guiTop + yTop
 				&& mouseY < this.guiTop + yBottom) {
-			this.renderTooltip(tooltip, mouseX, mouseY);
+			super.renderHoveredTooltip(stack, mouseX, mouseY);
 		}
 	}
 }

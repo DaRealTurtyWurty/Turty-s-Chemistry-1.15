@@ -3,6 +3,7 @@ package com.turtywurty.turtyschemistry.common.recipes;
 import javax.annotation.Nullable;
 
 import com.turtywurty.turtyschemistry.common.recipes.interfaces.IAutoclaveRecipe;
+import com.turtywurty.turtyschemistry.core.init.RecipeSerializerInit;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipeSerializer;
@@ -45,7 +46,7 @@ public class AutoclaveRecipe implements IAutoclaveRecipe {
 
 	@Override
 	public IRecipeSerializer<?> getSerializer() {
-		return null;
+		return RecipeSerializerInit.AUTOCLAVE_SERIALIZER.get();
 	}
 
 	@Override

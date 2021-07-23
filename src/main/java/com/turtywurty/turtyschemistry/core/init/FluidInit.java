@@ -16,6 +16,8 @@ import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import net.minecraft.block.AbstractBlock;
+
 public final class FluidInit {
 	
 	private FluidInit() {}
@@ -37,7 +39,7 @@ public final class FluidInit {
 			() -> new ForgeFlowingFluid.Flowing(FluidInit.BRINE_PROPERTIES));
 
 	public static final RegistryObject<FlowingFluidBlock> BRINE_BLOCK = BlockInit.BLOCKS.register("brine",
-			() -> new FlowingFluidBlock(BRINE_STILL::get, Block.Properties.create(Material.WATER)
+			() -> new FlowingFluidBlock(BRINE_STILL::get, AbstractBlock.Properties.create(Material.WATER)
 					.doesNotBlockMovement().hardnessAndResistance(100.0f).noDrops()));
 
 	public static final ForgeFlowingFluid.Properties BRINE_PROPERTIES = new ForgeFlowingFluid.Properties(

@@ -21,6 +21,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
+import net.minecraft.block.AbstractBlock.Properties;
+
 public abstract class AbstractSolarPanelBlock extends BaseHorizontalBlock {
 
 	protected AbstractSolarPanelBlock(Properties properties) {

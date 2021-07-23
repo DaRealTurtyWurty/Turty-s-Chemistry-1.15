@@ -8,6 +8,9 @@ import com.turtywurty.turtyschemistry.core.init.TileEntityTypeInit;
 import net.minecraft.inventory.container.IContainerProvider;
 import net.minecraft.util.text.TranslationTextComponent;
 
+import com.turtywurty.turtyschemistry.common.blocks.solar_panel.AbstractSolarPanelBlock.PanelInfo;
+import net.minecraft.block.AbstractBlock.Properties;
+
 public class BasicSolarPanelBlock extends AbstractSolarPanelBlock {
 
 	public BasicSolarPanelBlock(Properties properties) {

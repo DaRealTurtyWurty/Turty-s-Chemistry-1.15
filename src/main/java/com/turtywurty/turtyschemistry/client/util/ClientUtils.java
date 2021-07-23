@@ -11,17 +11,18 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.turtywurty.turtyschemistry.TurtyChemistry;
-import com.turtywurty.turtyschemistry.common.network.MessageNoSpamChatComponents;
+import com.turtywurty.turtyschemistry.common.blocks.agitator.AgitatorData;
+import com.turtywurty.turtyschemistry.common.blocks.boiler.BoilerRecipe;
+import com.turtywurty.turtyschemistry.common.blocks.electrolyzer.ElectrolyzerRecipe;
+import com.turtywurty.turtyschemistry.common.blocks.electrolyzer.ElectrolyzerRecipeReader;
+import com.turtywurty.turtyschemistry.core.util.SimpleJsonDataManager;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.NewChatGui;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.Matrix4f;
-import net.minecraft.client.renderer.Quaternion;
 import net.minecraft.client.renderer.RenderState.AlphaState;
 import net.minecraft.client.renderer.RenderState.TextureState;
 import net.minecraft.client.renderer.RenderType;
@@ -32,107 +33,52 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.container.PlayerContainer;
+import net.minecraft.resources.IReloadableResourceManager;
+import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fml.network.PacketDistributor;
 
+@SuppressWarnings("deprecation")
 public final class ClientUtils {
 
-	private ClientUtils() {
-	}
+	public static final SimpleJsonDataManager<AgitatorData> AGITATOR_DATA = new SimpleJsonDataManager<>("agitator",
+			AgitatorData.class);
+
+	public static final SimpleJsonDataManager<BoilerRecipe> BOILER_DATA = new SimpleJsonDataManager<>("boiler",
+			BoilerRecipe.class);
+
+	public static final SimpleJsonDataManager<ElectrolyzerRecipe> ELECTROLYZER_DATA = new ElectrolyzerRecipeReader<>();
 
 	public static final Minecraft MC = Minecraft.getInstance();
-	private static final int DELETION_ID = 3718126;
-	private static int lastAdded;
 
-	public static ClientPlayerEntity getClientPlayer() {
-		return MC.player;
+	public static void blit(final MatrixStack stack, final AbstractGui object, final int xPos, final int yPos,
+			final float textureX, final float textureY, final int drawWidth, final int drawHeight,
+			final int textureWidth, final int textureHeight) {
+		AbstractGui.blit(stack, xPos, yPos, textureX, textureY, drawWidth, drawHeight, textureWidth, textureHeight);
 	}
 
-	public static ClientWorld getClientWorld() {
-		return MC.world;
+	public static void blit(final MatrixStack stack, final AbstractGui object, final int xPos, final int yPos,
+			final int textureX, final int textureY, final int width, final int height) {
+		object.blit(stack, xPos, yPos, textureX, textureY, width, height);
 	}
 
-	public static void sendClientNoSpamMessages(ITextComponent[] messages) {
-		NewChatGui chat = MC.ingameGUI.getChatGUI();
-		for (int i = DELETION_ID + messages.length - 1; i <= lastAdded; i++)
-			chat.deleteChatLine(i);
-		for (int i = 0; i < messages.length; i++)
-			chat.printChatMessageWithOptionalDeletion(messages[i], DELETION_ID + i);
-		lastAdded = DELETION_ID + messages.length - 1;
+	private static boolean crossesChunkBorderSingleDim(final double a, final double b, final int offset) {
+		return (int) Math.floor(a + offset) >> 4 != (int) Math.floor(b + offset) >> 4;
 	}
 
-	public static void sendServerNoSpamMessages(PlayerEntity player, ITextComponent... messages) {
-		if (messages.length > 0 && player instanceof ServerPlayerEntity)
-			TurtyChemistry.packetHandler.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
-					new MessageNoSpamChatComponents(messages));
-	}
-
-	public static void renderButton(ResourceLocation textureIn, Widget widgetIn, float partialTicks, float alphaIn,
-			float xPos, float yPos, int widthIn, int heightIn, int textureWidth, int textureHeight) {
-		Minecraft minecraft = Minecraft.getInstance();
-		minecraft.getTextureManager().bindTexture(textureIn);
-		RenderSystem.color4f(1.0F, 1.0F, 1.0F, alphaIn);
-		RenderSystem.enableBlend();
-		RenderSystem.defaultBlendFunc();
-		RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-		blit(widgetIn, widgetIn.x, widgetIn.y, xPos, yPos, widthIn, heightIn, textureWidth, textureHeight);
-	}
-
-	public static void blit(AbstractGui object, int xPos, int yPos, int textureX, int textureY, int width, int height) {
-		object.blit(xPos, yPos, textureX, textureY, width, height);
-	}
-
-	@SuppressWarnings("static-access")
-	public static void blit(AbstractGui object, int xPos, int yPos, float textureX, float textureY, int drawWidth,
-			int drawHeight, int textureWidth, int textureHeight) {
-		object.blit(xPos, yPos, textureX, textureY, drawWidth, drawHeight, textureWidth, textureHeight);
-	}
-
-	public static boolean isMouseInSlot(int mouseX, int mouseY, int slotX, int slotY) {
-		return (mouseX >= slotX && mouseX <= slotX + 15) && (mouseY >= slotY && mouseY <= slotY + 15);
-	}
-
-	public static boolean isMouseInArea(int mouseX, int mouseY, int startX, int startY, int sizeX, int sizeY) {
-		return (mouseX >= startX && mouseX <= startX + sizeX) && (mouseY >= startY && mouseY <= startY + sizeY);
-	}
-
-	public static void drawTexturedRect(IVertexBuilder builder, MatrixStack transform, float x, float y, float w, float h,
-			float r, float g, float b, float alpha, float u0, float u1, float v0, float v1) {
-		Matrix4f mat = transform.getLast().getMatrix();
-		builder.pos(mat, x, y + h, 0).color(r, g, b, alpha).tex(u0, v1).overlay(OverlayTexture.NO_OVERLAY).lightmap(0xf000f0)
-				.normal(1, 1, 1).endVertex();
-		builder.pos(mat, x + w, y + h, 0).color(r, g, b, alpha).tex(u1, v1).overlay(OverlayTexture.NO_OVERLAY)
-				.lightmap(15728880).normal(1, 1, 1).endVertex();
-		builder.pos(mat, x + w, y, 0).color(r, g, b, alpha).tex(u1, v0).overlay(OverlayTexture.NO_OVERLAY).lightmap(15728880)
-				.normal(1, 1, 1).endVertex();
-		builder.pos(mat, x, y, 0).color(r, g, b, alpha).tex(u0, v0).overlay(OverlayTexture.NO_OVERLAY).lightmap(15728880)
-				.normal(1, 1, 1).endVertex();
-	}
-
-	public static void drawTexturedRect(IVertexBuilder builder, MatrixStack transform, int x, int y, int w, int h,
-			float picSize, int u0, int u1, int v0, int v1) {
-		drawTexturedRect(builder, transform, x, y, w, h, 1, 1, 1, 1, u0 / picSize, u1 / picSize, v0 / picSize, v1 / picSize);
-	}
-
-	public static boolean crossesChunkBoundary(Vec3d start, Vec3d end, BlockPos offset) {
-		if (crossesChunkBorderSingleDim(start.x, end.x, offset.getX()))
-			return true;
-		if (crossesChunkBorderSingleDim(start.y, end.y, offset.getY()))
+	public static boolean crossesChunkBoundary(final Vector3d start, final Vector3d end, final BlockPos offset) {
+		if (crossesChunkBorderSingleDim(start.x, end.x, offset.getX())
+				|| crossesChunkBorderSingleDim(start.y, end.y, offset.getY()))
 			return true;
 		return crossesChunkBorderSingleDim(start.z, end.z, offset.getZ());
-	}
-
-	private static boolean crossesChunkBorderSingleDim(double a, double b, int offset) {
-		return ((int) Math.floor(a + offset)) >> 4 != ((int) Math.floor(b + offset)) >> 4;
 	}
 
 	public static Quaternion degreeToQuaterion(double x, double y, double z) {
@@ -149,100 +95,6 @@ public final class ClientUtils {
 		return quat;
 	}
 
-	public static int intFromRgb(float[] rgb) {
-		int ret = (int) (255 * rgb[0]);
-		ret = (ret << 8) + (int) (255 * rgb[1]);
-		ret = (ret << 8) + (int) (255 * rgb[2]);
-		return ret;
-	}
-
-	public static void drawRepeatedFluidSpriteGui(IRenderTypeBuffer buffer, MatrixStack transform, ResourceLocation location,
-			int color, float x, float y, float w, float h) {
-		RenderType renderType = getGui(location);
-		IVertexBuilder builder = buffer.getBuffer(renderType);
-		drawRepeatedFluidSprite(builder, transform, location, color, x, y, w, h);
-	}
-
-	public static void drawRepeatedFluidSprite(IVertexBuilder builder, MatrixStack transform, ResourceLocation location,
-			int color, float x, float y, float w, float h) {
-		int col = color;
-		int iW = 16;
-		int iH = 512;
-		if (iW > 0 && iH > 0)
-			drawRepeatedSprite(builder, transform, x, y, w, h, iW, iH, 0, iW, 0, iH, (col >> 16 & 255) / 255.0f,
-					(col >> 8 & 255) / 255.0f, (col & 255) / 255.0f, 1);
-	}
-
-	public static void drawRepeatedFluidSpriteGui(IRenderTypeBuffer buffer, MatrixStack transform, FluidStack fluid, float x,
-			float y, float w, float h) {
-		RenderType renderType = getGui(PlayerContainer.LOCATION_BLOCKS_TEXTURE);
-		IVertexBuilder builder = buffer.getBuffer(renderType);
-		drawRepeatedFluidSprite(builder, transform, fluid, x, y, w, h);
-	}
-
-	public static void drawRepeatedFluidSprite(IVertexBuilder builder, MatrixStack transform, FluidStack fluid, float x,
-			float y, float w, float h) {
-		TextureAtlasSprite sprite = getSprite(fluid.getFluid().getAttributes().getStillTexture(fluid));
-		int col = fluid.getFluid().getAttributes().getColor(fluid);
-		int iW = sprite.getWidth();
-		int iH = sprite.getHeight();
-		if (iW > 0 && iH > 0)
-			drawRepeatedSprite(builder, transform, x, y, w, h, iW, iH, sprite.getMinU(), sprite.getMaxU(), sprite.getMinV(),
-					sprite.getMaxV(), (col >> 16 & 255) / 255.0f, (col >> 8 & 255) / 255.0f, (col & 255) / 255.0f, 1);
-	}
-
-	public static void drawRepeatedSprite(IVertexBuilder builder, MatrixStack transform, float x, float y, float w, float h,
-			int iconWidth, int iconHeight, float uMin, float uMax, float vMin, float vMax, float r, float g, float b,
-			float alpha) {
-		int iterMaxW = (int) (w / iconWidth);
-		int iterMaxH = (int) (h / iconHeight);
-		float leftoverW = w % iconWidth;
-		float leftoverH = h % iconHeight;
-		float leftoverWf = leftoverW / (float) iconWidth;
-		float leftoverHf = leftoverH / (float) iconHeight;
-		float iconUDif = uMax - uMin;
-		float iconVDif = vMax - vMin;
-		for (int ww = 0; ww < iterMaxW; ww++) {
-			for (int hh = 0; hh < iterMaxH; hh++)
-				drawTexturedRect(builder, transform, x + ww * iconWidth, y + hh * iconHeight, iconWidth, iconHeight, r, g, b,
-						alpha, uMin, uMax, vMin, vMax);
-			drawTexturedRect(builder, transform, x + ww * iconWidth, y + iterMaxH * iconHeight, iconWidth, leftoverH, r, g,
-					b, alpha, uMin, uMax, vMin, (vMin + iconVDif * leftoverHf));
-		}
-		if (leftoverW > 0) {
-			for (int hh = 0; hh < iterMaxH; hh++)
-				drawTexturedRect(builder, transform, x + iterMaxW * iconWidth, y + hh * iconHeight, leftoverW, iconHeight, r,
-						g, b, alpha, uMin, (uMin + iconUDif * leftoverWf), vMin, vMax);
-			drawTexturedRect(builder, transform, x + iterMaxW * iconWidth, y + iterMaxH * iconHeight, leftoverW, leftoverH,
-					r, g, b, alpha, uMin, (uMin + iconUDif * leftoverWf), vMin, (vMin + iconVDif * leftoverHf));
-		}
-	}
-
-	public static TextureAtlasSprite getSprite(ResourceLocation rl) {
-		return MC.getModelManager().getAtlasTexture(PlayerContainer.LOCATION_BLOCKS_TEXTURE).getSprite(rl);
-	}
-
-	public static RenderType getGui(ResourceLocation texture) {
-		return RenderType.makeType("gui_" + texture, DefaultVertexFormats.POSITION_COLOR_TEX, GL11.GL_QUADS, 256,
-				RenderType.State.getBuilder().texture(new TextureState(texture, false, false)).alpha(new AlphaState(0.5F))
-						.build(false));
-	}
-
-	public static List<BakedQuad> getNewQuads(IBakedModel existingModel, BlockState state, Direction side, Random rand,
-			TextureAtlasSprite newTexture) {
-		List<BakedQuad> newQuads = new ArrayList<>();
-		for (BakedQuad quad : existingModel.getQuads(state, side, rand, EmptyModelData.INSTANCE)) {
-			newQuads.add(new BakedQuad(quad.getVertexData(), quad.getTintIndex(), quad.getFace(), newTexture,
-					quad.shouldApplyDiffuseLighting()));
-		}
-
-		for (BakedQuad quad : existingModel.getQuads(state, null, rand, EmptyModelData.INSTANCE)) {
-			newQuads.add(new BakedQuad(quad.getVertexData(), quad.getTintIndex(), quad.getFace(), newTexture,
-					quad.shouldApplyDiffuseLighting()));
-		}
-		return newQuads;
-	}
-
 	public static void drawFluid(final ResourceLocation texture, final FluidStack fluid, final int x, final int y,
 			final int w, final int h) {
 		RenderSystem.pushMatrix();
@@ -255,6 +107,76 @@ public final class ClientUtils {
 		ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, x, y, w, h, 256f, 0, 0, 0, 0);
 		buffer.finish(renderType);
 		RenderSystem.popMatrix();
+	}
+
+	public static void drawRepeatedFluidSprite(final IVertexBuilder builder, final MatrixStack transform,
+			final FluidStack fluid, final float x, final float y, final float w, final float h) {
+		TextureAtlasSprite sprite = getSprite(fluid.getFluid().getAttributes().getStillTexture(fluid));
+		int col = fluid.getFluid().getAttributes().getColor(fluid);
+		int iW = sprite.getWidth();
+		int iH = sprite.getHeight();
+		if (iW > 0 && iH > 0) {
+			drawRepeatedSprite(builder, transform, x, y, w, h, iW, iH, sprite.getMinU(), sprite.getMaxU(),
+					sprite.getMinV(), sprite.getMaxV(), (col >> 16 & 255) / 255.0f, (col >> 8 & 255) / 255.0f,
+					(col & 255) / 255.0f, 1);
+		}
+	}
+
+	public static void drawRepeatedFluidSprite(final IVertexBuilder builder, final MatrixStack transform,
+			final ResourceLocation location, final int color, final float x, final float y, final float w,
+			final float h) {
+		int col = color;
+		int iW = 16;
+		int iH = 512;
+		if (iW > 0 && iH > 0) {
+			drawRepeatedSprite(builder, transform, x, y, w, h, iW, iH, 0, iW, 0, iH, (col >> 16 & 255) / 255.0f,
+					(col >> 8 & 255) / 255.0f, (col & 255) / 255.0f, 1);
+		}
+	}
+
+	public static void drawRepeatedFluidSpriteGui(final IRenderTypeBuffer buffer, final MatrixStack transform,
+			final FluidStack fluid, final float x, final float y, final float w, final float h) {
+		RenderType renderType = getGui(PlayerContainer.LOCATION_BLOCKS_TEXTURE);
+		IVertexBuilder builder = buffer.getBuffer(renderType);
+		drawRepeatedFluidSprite(builder, transform, fluid, x, y, w, h);
+	}
+
+	public static void drawRepeatedFluidSpriteGui(final IRenderTypeBuffer buffer, final MatrixStack transform,
+			final ResourceLocation location, final int color, final float x, final float y, final float w,
+			final float h) {
+		RenderType renderType = getGui(location);
+		IVertexBuilder builder = buffer.getBuffer(renderType);
+		drawRepeatedFluidSprite(builder, transform, location, color, x, y, w, h);
+	}
+
+	public static void drawRepeatedSprite(final IVertexBuilder builder, final MatrixStack transform, final float x,
+			final float y, final float w, final float h, final int iconWidth, final int iconHeight, final float uMin,
+			final float uMax, final float vMin, final float vMax, final float r, final float g, final float b,
+			final float alpha) {
+		int iterMaxW = (int) (w / iconWidth);
+		int iterMaxH = (int) (h / iconHeight);
+		float leftoverW = w % iconWidth;
+		float leftoverH = h % iconHeight;
+		float leftoverWf = leftoverW / iconWidth;
+		float leftoverHf = leftoverH / iconHeight;
+		float iconUDif = uMax - uMin;
+		float iconVDif = vMax - vMin;
+		for (int ww = 0; ww < iterMaxW; ww++) {
+			for (int hh = 0; hh < iterMaxH; hh++) {
+				drawTexturedRect(builder, transform, x + ww * iconWidth, y + hh * iconHeight, iconWidth, iconHeight, r,
+						g, b, alpha, uMin, uMax, vMin, vMax);
+			}
+			drawTexturedRect(builder, transform, x + ww * iconWidth, y + iterMaxH * iconHeight, iconWidth, leftoverH, r,
+					g, b, alpha, uMin, uMax, vMin, vMin + iconVDif * leftoverHf);
+		}
+		if (leftoverW > 0) {
+			for (int hh = 0; hh < iterMaxH; hh++) {
+				drawTexturedRect(builder, transform, x + iterMaxW * iconWidth, y + hh * iconHeight, leftoverW,
+						iconHeight, r, g, b, alpha, uMin, uMin + iconUDif * leftoverWf, vMin, vMax);
+			}
+			drawTexturedRect(builder, transform, x + iterMaxW * iconWidth, y + iterMaxH * iconHeight, leftoverW,
+					leftoverH, r, g, b, alpha, uMin, uMin + iconUDif * leftoverWf, vMin, vMin + iconVDif * leftoverHf);
+		}
 	}
 
 	public static void drawTexture(final ResourceLocation texture, final int x, final int y, final int w, final int h,
@@ -271,5 +193,103 @@ public final class ClientUtils {
 		ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, x, y, w, h, 256f, 0, 0, 0, 0);
 		buffer.finish(renderType);
 		RenderSystem.popMatrix();
+	}
+
+	public static void drawTexturedRect(final IVertexBuilder builder, final MatrixStack transform, final float x,
+			final float y, final float w, final float h, final float r, final float g, final float b, final float alpha,
+			final float u0, final float u1, final float v0, final float v1) {
+		Matrix4f mat = transform.getLast().getMatrix();
+		builder.pos(mat, x, y + h, 0).color(r, g, b, alpha).tex(u0, v1).overlay(OverlayTexture.NO_OVERLAY)
+				.lightmap(0xf000f0).normal(1, 1, 1).endVertex();
+		builder.pos(mat, x + w, y + h, 0).color(r, g, b, alpha).tex(u1, v1).overlay(OverlayTexture.NO_OVERLAY)
+				.lightmap(15728880).normal(1, 1, 1).endVertex();
+		builder.pos(mat, x + w, y, 0).color(r, g, b, alpha).tex(u1, v0).overlay(OverlayTexture.NO_OVERLAY)
+				.lightmap(15728880).normal(1, 1, 1).endVertex();
+		builder.pos(mat, x, y, 0).color(r, g, b, alpha).tex(u0, v0).overlay(OverlayTexture.NO_OVERLAY)
+				.lightmap(15728880).normal(1, 1, 1).endVertex();
+	}
+
+	public static void drawTexturedRect(final IVertexBuilder builder, final MatrixStack transform, final int x,
+			final int y, final int w, final int h, final float picSize, final int u0, final int u1, final int v0,
+			final int v1) {
+		drawTexturedRect(builder, transform, x, y, w, h, 1, 1, 1, 1, u0 / picSize, u1 / picSize, v0 / picSize,
+				v1 / picSize);
+	}
+
+	public static ClientPlayerEntity getClientPlayer() {
+		return MC.player;
+	}
+
+	public static ClientWorld getClientWorld() {
+		return MC.world;
+	}
+
+	public static RenderType getGui(final ResourceLocation texture) {
+		return RenderType.makeType("gui_" + texture, DefaultVertexFormats.POSITION_COLOR_TEX, GL11.GL_QUADS, 256,
+				RenderType.State.getBuilder().texture(new TextureState(texture, false, false))
+						.alpha(new AlphaState(0.5F)).build(false));
+	}
+
+	public static List<BakedQuad> getNewQuads(final IBakedModel existingModel, final BlockState state,
+			final Direction side, final Random rand, final TextureAtlasSprite newTexture) {
+		List<BakedQuad> newQuads = new ArrayList<>();
+		for (BakedQuad quad : existingModel.getQuads(state, side, rand, EmptyModelData.INSTANCE)) {
+			newQuads.add(new BakedQuad(quad.getVertexData(), quad.getTintIndex(), quad.getFace(), newTexture,
+					quad.applyDiffuseLighting()));
+		}
+
+		for (BakedQuad quad : existingModel.getQuads(state, null, rand, EmptyModelData.INSTANCE)) {
+			newQuads.add(new BakedQuad(quad.getVertexData(), quad.getTintIndex(), quad.getFace(), newTexture,
+					quad.applyDiffuseLighting()));
+		}
+		return newQuads;
+	}
+
+	public static TextureAtlasSprite getSprite(final ResourceLocation rl) {
+		return MC.getModelManager().getAtlasTexture(PlayerContainer.LOCATION_BLOCKS_TEXTURE).getSprite(rl);
+	}
+
+	public static int intFromRgb(final float[] rgb) {
+		int ret = (int) (255 * rgb[0]);
+		ret = (ret << 8) + (int) (255 * rgb[1]);
+		return (ret << 8) + (int) (255 * rgb[2]);
+	}
+
+	public static boolean isMouseInArea(final int mouseX, final int mouseY, final int startX, final int startY,
+			final int sizeX, final int sizeY) {
+		return mouseX >= startX && mouseX <= startX + sizeX && mouseY >= startY && mouseY <= startY + sizeY;
+	}
+
+	public static boolean isMouseInSlot(final int mouseX, final int mouseY, final int slotX, final int slotY) {
+		return mouseX >= slotX && mouseX <= slotX + 15 && mouseY >= slotY && mouseY <= slotY + 15;
+	}
+
+	public static void onClientInit() {
+		ModelLoader.addSpecialModel(new ResourceLocation(TurtyChemistry.MOD_ID, "block/agitator_fluid"));
+		ModelLoader.addSpecialModel(new ResourceLocation(TurtyChemistry.MOD_ID, "block/researcher_arm"));
+
+		IResourceManager manager = Minecraft.getInstance().getResourceManager();
+		if (manager instanceof IReloadableResourceManager) {
+			IReloadableResourceManager reloader = (IReloadableResourceManager) manager;
+			reloader.addReloadListener(AGITATOR_DATA);
+			reloader.addReloadListener(BOILER_DATA);
+			reloader.addReloadListener(ELECTROLYZER_DATA);
+			reloader.close();
+		}
+	}
+
+	public static void renderButton(final MatrixStack stack, final ResourceLocation textureIn, final Widget widgetIn,
+			final float partialTicks, final float alphaIn, final float xPos, final float yPos, final int widthIn,
+			final int heightIn, final int textureWidth, final int textureHeight) {
+		Minecraft minecraft = Minecraft.getInstance();
+		minecraft.getTextureManager().getTexture(textureIn);
+		RenderSystem.color4f(1.0F, 1.0F, 1.0F, alphaIn);
+		RenderSystem.enableBlend();
+		RenderSystem.defaultBlendFunc();
+		RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+		blit(stack, widgetIn, widgetIn.x, widgetIn.y, xPos, yPos, widthIn, heightIn, textureWidth, textureHeight);
+	}
+
+	private ClientUtils() {
 	}
 }

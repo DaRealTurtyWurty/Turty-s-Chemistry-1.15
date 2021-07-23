@@ -9,9 +9,11 @@ import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockReader;
 
+import net.minecraft.block.AbstractBlock;
+
 public class CableBlock extends SixWayBlock {
 
-	public CableBlock(Block.Properties properties) {
+	public CableBlock(AbstractBlock.Properties properties) {
 		super(0.3125F, properties);
 	}
 

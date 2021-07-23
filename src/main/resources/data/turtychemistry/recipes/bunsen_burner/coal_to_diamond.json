@@ -1,5 +1,5 @@
 {
-	"type": "turtychemistry:bunsen_burner",
+	"type": "turtychemistry:bunsen",
 	"input": {
 		"item": "minecraft:coal"
 	},

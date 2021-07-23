@@ -7,28 +7,19 @@ import com.turtywurty.turtyschemistry.core.init.BlockInit;
 
 import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.Vector3f;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.util.math.vector.Vector3f;
 
-@OnlyIn(Dist.CLIENT)
 public class BriquettingPressTileEntityRenderer extends TileEntityRenderer<BriquettingPressTileEntity> {
 
-	public BriquettingPressTileEntityRenderer(TileEntityRendererDispatcher rendererDispatcherIn) {
-		super(rendererDispatcherIn);
-	}
+	private static void renderSawdust() {
 
-	@Override
-	public void render(BriquettingPressTileEntity tileEntityIn, float partialTicks, MatrixStack matrixStackIn,
-			IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
-		renderTurner(tileEntityIn, matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
 	}
 
 	@SuppressWarnings("deprecation")
-	private static void renderTurner(BriquettingPressTileEntity tile, MatrixStack stackIn, IRenderTypeBuffer bufferIn,
-			int combinedLightIn, int combinedOverlayIn) {
+	private static void renderTurner(final BriquettingPressTileEntity tile, final MatrixStack stackIn,
+			final IRenderTypeBuffer bufferIn, final int combinedLightIn, final int combinedOverlayIn) {
 		BlockRendererDispatcher blockRenderer = ClientUtils.MC.getBlockRendererDispatcher();
 
 		stackIn.push();
@@ -46,7 +37,14 @@ public class BriquettingPressTileEntityRenderer extends TileEntityRenderer<Briqu
 		stackIn.pop();
 	}
 
-	private static void renderSawdust() {
+	public BriquettingPressTileEntityRenderer(final TileEntityRendererDispatcher rendererDispatcherIn) {
+		super(rendererDispatcherIn);
+	}
 
+	@Override
+	public void render(final BriquettingPressTileEntity tileEntityIn, final float partialTicks,
+			final MatrixStack matrixStackIn, final IRenderTypeBuffer bufferIn, final int combinedLightIn,
+			final int combinedOverlayIn) {
+		renderTurner(tileEntityIn, matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
 	}
 }

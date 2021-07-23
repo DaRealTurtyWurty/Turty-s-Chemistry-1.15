@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 
 import net.minecraft.client.resources.JsonReloadListener;
 import net.minecraft.profiler.IProfiler;
@@ -15,8 +15,20 @@ import net.minecraft.util.ResourceLocation;
 
 //Credits to Commoble for this code
 public class SimpleJsonDataManager<T> extends JsonReloadListener {
-	
+
 	public static final Gson GSON = new GsonBuilder().create();
+
+	/**
+	 * Converts all the values in a map to new values; the new map uses the same
+	 * keys as the old map
+	 **/
+	public static <KEY, IN, OUT> Map<KEY, OUT> mapValues(final Map<KEY, IN> inputs, final Function<IN, OUT> mapper) {
+		Map<KEY, OUT> newMap = new HashMap<>();
+
+		inputs.forEach((key, input) -> newMap.put(key, mapper.apply(input)));
+
+		return newMap;
+	}
 
 	/** The raw data that we parsed from json last time resources were reloaded **/
 	protected Map<ResourceLocation, T> data = new HashMap<>();
@@ -27,9 +39,19 @@ public class SimpleJsonDataManager<T> extends JsonReloadListener {
 	 * @param folder This is the name of the folders that the resource loader looks
 	 *               in, e.g. assets/modid/FOLDER
 	 */
-	public SimpleJsonDataManager(String folder, Class<T> dataClass) {
+	public SimpleJsonDataManager(final String folder, final Class<T> dataClass) {
 		super(GSON, folder);
 		this.dataClass = dataClass;
+	}
+
+	/**
+	 * Called on resource reload, the jsons have already been found for us and we
+	 * just need to parse them in here
+	 **/
+	@Override
+	protected void apply(final Map<ResourceLocation, JsonElement> jsons, final IResourceManager manager,
+			final IProfiler profiler) {
+		this.data = mapValues(jsons, this::getJsonAsData);
 	}
 
 	/**
@@ -40,31 +62,10 @@ public class SimpleJsonDataManager<T> extends JsonReloadListener {
 	}
 
 	/**
-	 * Called on resource reload, the jsons have already been found for us and we
-	 * just need to parse them in here
+	 * Use a json object (presumably one from an assets/modid/FOLDER) to generate a
+	 * data object
 	 **/
-	@Override
-	protected void apply(Map<ResourceLocation, JsonObject> jsons, IResourceManager manager, IProfiler profiler) {
-		this.data = mapValues(jsons, this::getJsonAsData);
-	}
-
-	/**
-	 * Converts all the values in a map to new values; the new map uses the same
-	 * keys as the old map
-	 **/
-	public static <KEY, IN, OUT> Map<KEY, OUT> mapValues(Map<KEY, IN> inputs, Function<IN, OUT> mapper) {
-		Map<KEY, OUT> newMap = new HashMap<>();
-
-		inputs.forEach((key, input) -> newMap.put(key, mapper.apply(input)));
-
-		return newMap;
-	}
-
-	/**
-	 * Use a json object (presumably one from an assets/turtychemistry/agitator folder) to
-	 * generate a data object
-	 **/
-	protected T getJsonAsData(JsonObject json) {
+	protected T getJsonAsData(final JsonElement json) {
 		return GSON.fromJson(json, this.dataClass);
 	}
 }

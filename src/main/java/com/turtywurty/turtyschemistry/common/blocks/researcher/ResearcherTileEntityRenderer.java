@@ -1,5 +1,7 @@
 package com.turtywurty.turtyschemistry.common.blocks.researcher;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.turtywurty.turtyschemistry.TurtyChemistry;
 import com.turtywurty.turtyschemistry.client.util.ClientUtils;
@@ -7,7 +9,6 @@ import com.turtywurty.turtyschemistry.client.util.ClientUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Vector3f;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType;
 import net.minecraft.client.renderer.tileentity.BeaconTileEntityRenderer;
@@ -16,17 +17,19 @@ import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.client.model.data.EmptyModelData;
 
 public class ResearcherTileEntityRenderer extends TileEntityRenderer<ResearcherTileEntity> {
 
-	public ResearcherTileEntityRenderer(TileEntityRendererDispatcher rendererDispatcherIn) {
+	public ResearcherTileEntityRenderer(final TileEntityRendererDispatcher rendererDispatcherIn) {
 		super(rendererDispatcherIn);
 	}
 
 	@Override
-	public void render(ResearcherTileEntity tileEntityIn, float partialTicks, MatrixStack matrixStackIn,
-			IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
+	public void render(final ResearcherTileEntity tileEntityIn, final float partialTicks,
+			final MatrixStack matrixStackIn, final IRenderTypeBuffer bufferIn, final int combinedLightIn,
+			final int combinedOverlayIn) {
 		matrixStackIn.push();
 		Direction facing = tileEntityIn.getBlockState().get(ResearcherBlock.FACING);
 		switch (facing) {
@@ -35,13 +38,15 @@ public class ResearcherTileEntityRenderer extends TileEntityRenderer<ResearcherT
 			matrixStackIn.translate(0f, 0.0f, -1.0f);
 			if (tileEntityIn.getProcessingTime() > 0) {
 				if (tileEntityIn.moveLeft) {
-					matrixStackIn.translate((tileEntityIn.time += 0.025f), 0.0f, 0.0f);
-					if (tileEntityIn.time > 0.2f)
+					matrixStackIn.translate(tileEntityIn.time += 0.025f, 0.0f, 0.0f);
+					if (tileEntityIn.time > 0.2f) {
 						tileEntityIn.moveLeft = false;
+					}
 				} else {
-					matrixStackIn.translate((tileEntityIn.time -= 0.025f), 0.0f, 0.0f);
-					if (tileEntityIn.time < -0.2f)
+					matrixStackIn.translate(tileEntityIn.time -= 0.025f, 0.0f, 0.0f);
+					if (tileEntityIn.time < -0.2f) {
 						tileEntityIn.moveLeft = true;
+					}
 				}
 			} else {
 				tileEntityIn.time = 0;
@@ -52,13 +57,15 @@ public class ResearcherTileEntityRenderer extends TileEntityRenderer<ResearcherT
 			matrixStackIn.translate(-1f, 0.0f, -1.0f);
 			if (tileEntityIn.getProcessingTime() > 0) {
 				if (tileEntityIn.moveLeft) {
-					matrixStackIn.translate((tileEntityIn.time += 0.025f), 0.0f, 0.0f);
-					if (tileEntityIn.time > 0.2f)
+					matrixStackIn.translate(tileEntityIn.time += 0.025f, 0.0f, 0.0f);
+					if (tileEntityIn.time > 0.2f) {
 						tileEntityIn.moveLeft = false;
+					}
 				} else {
-					matrixStackIn.translate((tileEntityIn.time -= 0.025f), 0.0f, 0.0f);
-					if (tileEntityIn.time < -0.2f)
+					matrixStackIn.translate(tileEntityIn.time -= 0.025f, 0.0f, 0.0f);
+					if (tileEntityIn.time < -0.2f) {
 						tileEntityIn.moveLeft = true;
+					}
 				}
 			} else {
 				tileEntityIn.time = 0;
@@ -69,13 +76,15 @@ public class ResearcherTileEntityRenderer extends TileEntityRenderer<ResearcherT
 			matrixStackIn.translate(-1f, 0.0f, 0.0f);
 			if (tileEntityIn.getProcessingTime() > 0) {
 				if (tileEntityIn.moveLeft) {
-					matrixStackIn.translate((tileEntityIn.time += 0.025f), 0.0f, 0.0f);
-					if (tileEntityIn.time > 0.2f)
+					matrixStackIn.translate(tileEntityIn.time += 0.025f, 0.0f, 0.0f);
+					if (tileEntityIn.time > 0.2f) {
 						tileEntityIn.moveLeft = false;
+					}
 				} else {
-					matrixStackIn.translate((tileEntityIn.time -= 0.025f), 0.0f, 0.0f);
-					if (tileEntityIn.time < -0.2f)
+					matrixStackIn.translate(tileEntityIn.time -= 0.025f, 0.0f, 0.0f);
+					if (tileEntityIn.time < -0.2f) {
 						tileEntityIn.moveLeft = true;
+					}
 				}
 			} else {
 				tileEntityIn.time = 0;
@@ -84,13 +93,15 @@ public class ResearcherTileEntityRenderer extends TileEntityRenderer<ResearcherT
 		case NORTH:
 			if (tileEntityIn.getProcessingTime() > 0) {
 				if (tileEntityIn.moveLeft) {
-					matrixStackIn.translate((tileEntityIn.time += 0.025f), 0.0f, 0.0f);
-					if (tileEntityIn.time > 0.2f)
+					matrixStackIn.translate(tileEntityIn.time += 0.025f, 0.0f, 0.0f);
+					if (tileEntityIn.time > 0.2f) {
 						tileEntityIn.moveLeft = false;
+					}
 				} else {
-					matrixStackIn.translate((tileEntityIn.time -= 0.025f), 0.0f, 0.0f);
-					if (tileEntityIn.time < -0.2f)
+					matrixStackIn.translate(tileEntityIn.time -= 0.025f, 0.0f, 0.0f);
+					if (tileEntityIn.time < -0.2f) {
 						tileEntityIn.moveLeft = true;
+					}
 				}
 			} else {
 				tileEntityIn.time = 0;
@@ -104,7 +115,7 @@ public class ResearcherTileEntityRenderer extends TileEntityRenderer<ResearcherT
 		ClientUtils.MC.getBlockRendererDispatcher().getBlockModelRenderer().renderModel(tileEntityIn.getWorld(), model,
 				tileEntityIn.getBlockState(), tileEntityIn.getPos(), matrixStackIn,
 				bufferIn.getBuffer(RenderType.getSolid()), true, tileEntityIn.getWorld().getRandom(),
-				tileEntityIn.getWorld().getSeed(), combinedOverlayIn, EmptyModelData.INSTANCE);
+				ThreadLocalRandom.current().nextLong(), combinedOverlayIn, EmptyModelData.INSTANCE);
 		matrixStackIn.pop();
 
 		matrixStackIn.push();
@@ -133,9 +144,9 @@ public class ResearcherTileEntityRenderer extends TileEntityRenderer<ResearcherT
 			break;
 		}
 		if (!tileEntityIn.getItemInSlot(1).isEmpty()) {
-			this.renderItem(tileEntityIn.getItemInSlot(1), matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
+			renderItem(tileEntityIn.getItemInSlot(1), matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
 		} else if (!tileEntityIn.getItemInSlot(0).isEmpty()) {
-			this.renderItem(tileEntityIn.getItemInSlot(0), matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
+			renderItem(tileEntityIn.getItemInSlot(0), matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
 		}
 		matrixStackIn.pop();
 
@@ -151,9 +162,9 @@ public class ResearcherTileEntityRenderer extends TileEntityRenderer<ResearcherT
 		}
 	}
 
-	private void renderItem(ItemStack stack, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int combinedLightIn,
-			int combinedOverlayIn) {
-		Minecraft.getInstance().getItemRenderer().renderItem(stack, TransformType.FIXED, combinedLightIn, combinedOverlayIn,
-				matrixStackIn, bufferIn);
+	private void renderItem(final ItemStack stack, final MatrixStack matrixStackIn, final IRenderTypeBuffer bufferIn,
+			final int combinedLightIn, final int combinedOverlayIn) {
+		Minecraft.getInstance().getItemRenderer().renderItem(stack, TransformType.FIXED, combinedLightIn,
+				combinedOverlayIn, matrixStackIn, bufferIn);
 	}
 }

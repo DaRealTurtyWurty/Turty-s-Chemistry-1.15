@@ -1,8 +1,9 @@
 package com.turtywurty.turtyschemistry.common.blocks.researcher;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.turtywurty.turtyschemistry.TurtyChemistry;
+import com.turtywurty.turtyschemistry.client.util.ClientUtils;
 
-import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
@@ -11,47 +12,66 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
 
 public class RecipeButton extends ExtendedButton {
 
 	private static final ResourceLocation TEXTURE = new ResourceLocation(TurtyChemistry.MOD_ID,
 			"textures/gui/blueprint_section.png");
+
+	public static int getHeightForRecipe(final IRecipe<?> recipe) {
+		int rows = 1 + (recipe.getIngredients().size() - 1) / 3;
+		return rows * 18 + 4; // 2 padding on top, 2 on bottom
+	}
+
+	public static ItemStack getIngredientVariant(final ItemStack[] variants) {
+		int variantCount = variants.length;
+		if (variantCount > 0) {
+			// if this ingredient has multiple stacks, cycle through them
+			int variantIndex = (int) (Util.milliTime() / 1000L / variantCount);
+			return variants[MathHelper.clamp(variantIndex, 0, variantCount - 1)];
+		}
+		return ItemStack.EMPTY;
+	}
+
+	public static void onButtonClicked(final ResearcherContainer container, final IRecipe<CraftingInventory> recipe) {
+		TurtyChemistry.PACKET_HANDLER.sendToServer(new ResearcherRecipeButtonPacket(recipe.getId()));
+		// Assemble recipe
+	}
+
 	private final int baseY;
+
 	private final ResearcherScreen screen;
+
 	private final IRecipe<CraftingInventory> recipe;
+
 	public ItemStack tooltipItem = ItemStack.EMPTY;
 
-	public RecipeButton(ResearcherScreen screen, IRecipe<CraftingInventory> recipe, int x, int y, int width) {
-		super(x, y, width, getHeightForRecipe(recipe), "", button -> onButtonClicked(screen.getContainer(), recipe));
+	public RecipeButton(final ResearcherScreen screen, final IRecipe<CraftingInventory> recipe, final int x,
+			final int y, final int width) {
+		super(x, y, width, getHeightForRecipe(recipe), new StringTextComponent(""),
+				button -> onButtonClicked(screen.getContainer(), recipe));
 		this.baseY = y;
 		this.screen = screen;
 		this.recipe = recipe;
 	}
 
-	public static void onButtonClicked(ResearcherContainer container, IRecipe<CraftingInventory> recipe) {
-		TurtyChemistry.packetHandler.sendToServer(new ResearcherRecipeButtonPacket(recipe.getId()));
-		// Assemble recipe
-	}
-
-	public static int getHeightForRecipe(IRecipe<?> recipe) {
-		int rows = 1 + (recipe.getIngredients().size() - 1) / 3;
-		return (rows * 18) + 4; // 2 padding on top, 2 on bottom
-	}
-
 	@Override
-	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+	public boolean mouseDragged(final double mouseX, final double mouseY, final int button, final double deltaX,
+			final double deltaY) {
 		return false;
 	}
 
-	/**
-	 * Draws this button to the screen.
-	 */
+	public void onClickButton() {
+
+	}
+
 	@Override
-	public void renderButton(int mouseX, int mouseY, float partial) {
+	public void renderWidget(final MatrixStack matrix, final int mouseX, final int mouseY, final float partial) {
 		this.tooltipItem = ItemStack.EMPTY;
 		if (this.visible) {
-			super.renderButton(mouseX, mouseY, partial);
+			super.renderWidget(matrix, mouseX, mouseY, partial);
 			NonNullList<Ingredient> ingredients = this.recipe.getIngredients();
 			int ingredientCount = ingredients.size();
 			// render ingredients
@@ -74,19 +94,19 @@ public class RecipeButton extends ExtendedButton {
 			if (ingredientCount > 0) {
 				int extraIngredientRows = (ingredientCount - 1) / 3; // 0 if 3 ingredients, 1 if 4-6 ingredients, 2 if
 																		// 7-9 ingredients, etc
-				int arrowX = this.x + 2 + (18 * 3) + 4;
+				int arrowX = this.x + 2 + 18 * 3 + 4;
 				int arrowY = this.y + 2 + 4 + 9 * extraIngredientRows;
 				int arrowWidth = 10;
 				int arrowHeight = 9;
 				int arrowU = 15;
 				int arrowV = 171;
-				this.screen.minecraft.textureManager.bindTexture(TEXTURE);
-				AbstractGui.blit(arrowX, arrowY, arrowU, arrowV, arrowWidth, arrowHeight, 512, 256);
+				ClientUtils.MC.textureManager.bindTexture(TEXTURE);
+				ClientUtils.blit(matrix, this, arrowX, arrowY, arrowU, arrowV, arrowWidth, arrowHeight, 512, 256);
 
 				// render the output item
 				ItemStack outputStack = this.recipe.getRecipeOutput();
 				if (!outputStack.isEmpty()) {
-					int itemX = this.x + 2 + (18 * 4);
+					int itemX = this.x + 2 + 18 * 4;
 					int itemY = this.y + 2 + 9 * extraIngredientRows;
 					int itemEndX = itemX + 18;
 					int itemEndY = itemY + 18;
@@ -100,22 +120,7 @@ public class RecipeButton extends ExtendedButton {
 		}
 	}
 
-	public static ItemStack getIngredientVariant(ItemStack[] variants) {
-		int variantCount = variants.length;
-		if (variantCount > 0) {
-			// if this ingredient has multiple stacks, cycle through them
-			int variantIndex = (int) ((Util.milliTime() / 1000L) / variantCount);
-			return variants[MathHelper.clamp(variantIndex, 0, variantCount - 1)];
-		} else {
-			return ItemStack.EMPTY;
-		}
-	}
-
-	public void scrollButton(int currentScrollAmount) {
+	public void scrollButton(final int currentScrollAmount) {
 		this.y = this.baseY - currentScrollAmount;
-	}
-
-	public void onClickButton() {
-
 	}
 }

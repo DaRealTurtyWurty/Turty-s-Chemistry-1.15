@@ -1,0 +1,19 @@
+{
+	"Input": { 
+		"FluidName": "minecraft:water", 
+		"Amount": 1000 
+	},
+	"Output1": {
+		"FluidName": "turtychemistry:hydrogen",
+		"Amount": 1
+	},
+	"Output2": {
+		"FluidName": "turtychemistry:oxygen",
+		"Amount": 1
+	},
+	"RatioInput": 2,
+	"RatioOutput1": 2,
+	"RatioOutput2": 1,
+	"Anode": "minecraft:beetroot",
+	"Cathode": "minecraft:apple"
+}

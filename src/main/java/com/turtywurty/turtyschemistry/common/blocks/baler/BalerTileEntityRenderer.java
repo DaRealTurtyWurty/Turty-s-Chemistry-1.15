@@ -7,7 +7,6 @@ import com.turtywurty.turtyschemistry.core.init.BlockInit;
 
 import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.Vector3f;
 import net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
@@ -16,28 +15,31 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.vector.Vector3f;
 
 @SuppressWarnings("deprecation")
 public class BalerTileEntityRenderer extends TileEntityRenderer<BalerTileEntity> {
 
-	public BalerTileEntityRenderer(TileEntityRendererDispatcher rendererDispatcherIn) {
+	public BalerTileEntityRenderer(final TileEntityRendererDispatcher rendererDispatcherIn) {
 		super(rendererDispatcherIn);
 	}
 
 	@Override
-	public void render(BalerTileEntity tileEntityIn, float partialTicks, MatrixStack matrixStackIn,
-			IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
+	public void render(final BalerTileEntity tileEntityIn, final float partialTicks, final MatrixStack matrixStackIn,
+			final IRenderTypeBuffer bufferIn, final int combinedLightIn, final int combinedOverlayIn) {
 
 		BlockRendererDispatcher blockRenderer = ClientUtils.MC.getBlockRendererDispatcher();
 
 		renderArm(blockRenderer, matrixStackIn, tileEntityIn, bufferIn, combinedLightIn, combinedOverlayIn);
-		renderPress(blockRenderer, matrixStackIn, tileEntityIn, bufferIn, combinedLightIn, combinedOverlayIn, partialTicks);
+		renderPress(blockRenderer, matrixStackIn, tileEntityIn, bufferIn, combinedLightIn, combinedOverlayIn,
+				partialTicks);
 		renderBale(tileEntityIn, matrixStackIn, bufferIn, combinedOverlayIn);
 		renderWheat(tileEntityIn, matrixStackIn, bufferIn, combinedOverlayIn);
 	}
 
-	private void renderArm(BlockRendererDispatcher blockRenderer, MatrixStack stackIn, BalerTileEntity tile,
-			IRenderTypeBuffer buf, int combinedLightIn, int combinedOverlayIn) {
+	private void renderArm(final BlockRendererDispatcher blockRenderer, final MatrixStack stackIn,
+			final BalerTileEntity tile, final IRenderTypeBuffer buf, final int combinedLightIn,
+			final int combinedOverlayIn) {
 
 		stackIn.push();
 
@@ -49,26 +51,8 @@ public class BalerTileEntityRenderer extends TileEntityRenderer<BalerTileEntity>
 		stackIn.pop();
 	}
 
-	private void renderPress(BlockRendererDispatcher blockRenderer, MatrixStack stackIn, BalerTileEntity tile,
-			IRenderTypeBuffer buf, int combinedLightIn, int combinedOverlayIn, float partialTicks) {
-
-		stackIn.push();
-
-		if (tile.isCompressing()) {
-			float currentTime = tile.getWorld().getGameTime() + partialTicks;
-
-			stackIn.translate(0.0f, Math.sin(Math.PI * currentTime / 16) / 11 - 0.035f, 0.0f);
-		}
-
-		blockRenderer.renderBlock(
-				BlockInit.BALER_PRESS.get().getDefaultState().with(BaseHorizontalBlock.HORIZONTAL_FACING,
-						tile.getBlockState().get(BaseHorizontalBlock.HORIZONTAL_FACING)),
-				stackIn, buf, combinedLightIn, combinedOverlayIn);
-
-		stackIn.pop();
-	}
-
-	private void renderBale(BalerTileEntity tile, MatrixStack stackIn, IRenderTypeBuffer bufferIn, int combinedLightIn) {
+	private void renderBale(final BalerTileEntity tile, final MatrixStack stackIn, final IRenderTypeBuffer bufferIn,
+			final int combinedLightIn) {
 
 		Direction direction = tile.getBlockState().get(BaseHorizontalBlock.HORIZONTAL_FACING);
 
@@ -88,8 +72,34 @@ public class BalerTileEntityRenderer extends TileEntityRenderer<BalerTileEntity>
 		}
 	}
 
-	private void renderWheat(BalerTileEntity tile, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn,
-			int combinedLightIn) {
+	private void renderItem(final ItemStack stack, final MatrixStack matrixStackIn, final IRenderTypeBuffer bufferIn,
+			final int combinedLightIn) {
+		ClientUtils.MC.getItemRenderer().renderItem(stack, TransformType.FIXED, combinedLightIn,
+				OverlayTexture.NO_OVERLAY, matrixStackIn, bufferIn);
+	}
+
+	private void renderPress(final BlockRendererDispatcher blockRenderer, final MatrixStack stackIn,
+			final BalerTileEntity tile, final IRenderTypeBuffer buf, final int combinedLightIn,
+			final int combinedOverlayIn, final float partialTicks) {
+
+		stackIn.push();
+
+		if (tile.isCompressing()) {
+			float currentTime = tile.getWorld().getGameTime() + partialTicks;
+
+			stackIn.translate(0.0f, Math.sin(Math.PI * currentTime / 16) / 11 - 0.035f, 0.0f);
+		}
+
+		blockRenderer.renderBlock(
+				BlockInit.BALER_PRESS.get().getDefaultState().with(BaseHorizontalBlock.HORIZONTAL_FACING,
+						tile.getBlockState().get(BaseHorizontalBlock.HORIZONTAL_FACING)),
+				stackIn, buf, combinedLightIn, combinedOverlayIn);
+
+		stackIn.pop();
+	}
+
+	private void renderWheat(final BalerTileEntity tile, final MatrixStack matrixStackIn,
+			final IRenderTypeBuffer bufferIn, final int combinedLightIn) {
 		Direction direction = tile.getBlockState().get(BaseHorizontalBlock.HORIZONTAL_FACING);
 
 		if (!tile.completed) {
@@ -111,17 +121,12 @@ public class BalerTileEntityRenderer extends TileEntityRenderer<BalerTileEntity>
 					matrixStackIn.translate(0.07f, 0.0f, 0.0f);
 				}
 
-				matrixStackIn.translate(0.525f, 0.5f, 0.42f + (float) (index - 2) / 10.0f);
+				matrixStackIn.translate(0.525f, 0.5f, 0.42f + (index - 2) / 10.0f);
 
 				renderItem(tile.getItems().get(index), matrixStackIn, bufferIn, combinedLightIn);
 
 				matrixStackIn.pop();
 			}
 		}
-	}
-
-	private void renderItem(ItemStack stack, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int combinedLightIn) {
-		ClientUtils.MC.getItemRenderer().renderItem(stack, TransformType.FIXED, combinedLightIn, OverlayTexture.NO_OVERLAY,
-				matrixStackIn, bufferIn);
 	}
 }

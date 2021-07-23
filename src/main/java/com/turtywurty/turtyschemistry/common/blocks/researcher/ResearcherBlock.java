@@ -28,72 +28,73 @@ import net.minecraftforge.fml.network.NetworkHooks;
 
 public class ResearcherBlock extends Block {
 
+	public enum Processor implements IStringSerializable {
+		BASIC("basic"), INTERMEDIATE("intermediate"), ADVANCED("advanced");
+
+		private String name;
+
+		Processor(final String nameIn) {
+			this.name = nameIn;
+		}
+
+		@Override
+		public String getString() {
+			return this.name;
+		}
+	}
+
 	public static final EnumProperty<Processor> PROCESSOR = EnumProperty.create("processor", Processor.class);
+
 	public static final DirectionProperty FACING = DirectionProperty.create("facing", Direction.Plane.HORIZONTAL);
 
-	public ResearcherBlock(Properties properties, Processor processorIn) {
+	public ResearcherBlock(final Properties properties, final Processor processorIn) {
 		super(properties);
-		this.setDefaultState(this.stateContainer.getBaseState().with(PROCESSOR, processorIn));
+		setDefaultState(this.stateContainer.getBaseState().with(PROCESSOR, processorIn));
 	}
 
 	@Override
-	public boolean hasTileEntity(BlockState state) {
-		return true;
-	}
-
-	@Override
-	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
+	public TileEntity createTileEntity(final BlockState state, final IBlockReader world) {
 		return TileEntityTypeInit.RESEARCHER.get().create();
 	}
 
 	@Override
-	public BlockState getStateForPlacement(BlockItemUseContext context) {
-		return this.getDefaultState().with(FACING, context.getPlacementHorizontalFacing().getOpposite());
-	}
-
-	@Override
-	public BlockState rotate(BlockState state, Rotation rot) {
-		return state.with(FACING, rot.rotate(state.get(FACING)));
-	}
-
-	@Override
-	public BlockState mirror(BlockState state, Mirror mirrorIn) {
-		return state.rotate(mirrorIn.toRotation(state.get(FACING)));
-	}
-
-	@Override
-	protected void fillStateContainer(Builder<Block, BlockState> builder) {
+	protected void fillStateContainer(final Builder<Block, BlockState> builder) {
 		super.fillStateContainer(builder);
 		builder.add(FACING, PROCESSOR);
 	}
 
 	@Override
-	public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn,
-			BlockRayTraceResult hit) {
+	public BlockState getStateForPlacement(final BlockItemUseContext context) {
+		return getDefaultState().with(FACING, context.getPlacementHorizontalFacing().getOpposite());
+	}
+
+	@Override
+	public boolean hasTileEntity(final BlockState state) {
+		return true;
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public BlockState mirror(final BlockState state, final Mirror mirrorIn) {
+		return state.rotate(mirrorIn.toRotation(state.get(FACING)));
+	}
+
+	@Override
+	public ActionResultType onBlockActivated(final BlockState state, final World worldIn, final BlockPos pos,
+			final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
 		if (!worldIn.isRemote && worldIn.getTileEntity(pos) instanceof ResearcherTileEntity) {
 			ResearcherTileEntity tile = (ResearcherTileEntity) worldIn.getTileEntity(pos);
 			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
 			IContainerProvider provider = ResearcherContainer.getServerContainerProvider(tile, pos);
 			INamedContainerProvider namedProvider = new SimpleNamedContainerProvider(provider, tile.getDisplayName());
 			NetworkHooks.openGui(serverPlayer, namedProvider, pos);
-			return ActionResultType.SUCCESS;
 		}
 
 		return ActionResultType.SUCCESS;
 	}
 
-	public enum Processor implements IStringSerializable {
-		BASIC("basic"), INTERMEDIATE("intermediate"), ADVANCED("advanced");
-
-		private String name;
-
-		private Processor(String nameIn) {
-			this.name = nameIn;
-		}
-
-		@Override
-		public String getName() {
-			return this.name;
-		}
+	@Override
+	public BlockState rotate(final BlockState state, final Rotation rot) {
+		return state.with(FACING, rot.rotate(state.get(FACING)));
 	}
 }

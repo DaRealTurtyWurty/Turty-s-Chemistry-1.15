@@ -22,8 +22,10 @@ public abstract class AbstractContainer<T extends TileEntity> extends Container 
 	protected T tile;
 	public final IIntArray data;
 
-	protected AbstractContainer(int id, final PlayerInventory playerInv, IItemHandler slots, BlockPos pos, IIntArray data,
-			RegistryObject<ContainerType<? extends AbstractContainer>> container, T tileEntity, Block... validBlocks) {
+	protected AbstractContainer(final int id, final PlayerInventory playerInv, final IItemHandler slots,
+			final BlockPos pos, final IIntArray data,
+			final RegistryObject<ContainerType<? extends AbstractContainer<T>>> container, final T tileEntity,
+			final Block... validBlocks) {
 		super(container.get(), id);
 		this.callable = IWorldPosCallable.of(playerInv.player.getEntityWorld(), pos);
 		this.data = data;
@@ -34,23 +36,17 @@ public abstract class AbstractContainer<T extends TileEntity> extends Container 
 		this.addPlayerMain(playerInv);
 		this.addPlayerHotbar(playerInv);
 
-		this.trackIntArray(data);
+		trackIntArray(data);
 	}
-
-	public T getTile() {
-		return this.tile;
-	}
-
-	public abstract int getScaledProgress();
 
 	public abstract void addMainInv(IItemHandler slots);
 
-	public abstract void addPlayerMain(PlayerInventory inv);
-
 	public abstract void addPlayerHotbar(PlayerInventory inv);
 
+	public abstract void addPlayerMain(PlayerInventory inv);
+
 	@Override
-	public boolean canInteractWith(PlayerEntity playerIn) {
+	public boolean canInteractWith(final PlayerEntity playerIn) {
 		boolean valid = false;
 		for (Block block : this.validBlocks) {
 			if (isWithinUsableDistance(this.callable, playerIn, block)) {
@@ -61,8 +57,14 @@ public abstract class AbstractContainer<T extends TileEntity> extends Container 
 		return valid;
 	}
 
+	public abstract int getScaledProgress();
+
+	public T getTile() {
+		return this.tile;
+	}
+
 	@Override
-	public ItemStack transferStackInSlot(PlayerEntity playerIn, int index) {
+	public ItemStack transferStackInSlot(final PlayerEntity playerIn, final int index) {
 		ItemStack returnStack = ItemStack.EMPTY;
 		final Slot slot = this.inventorySlots.get(index);
 		if (slot != null && slot.getHasStack()) {
@@ -71,20 +73,17 @@ public abstract class AbstractContainer<T extends TileEntity> extends Container 
 
 			final int containerSlots = this.inventorySlots.size() - playerIn.inventory.mainInventory.size();
 			if (index < containerSlots) {
-				if (!mergeItemStack(slotStack, containerSlots, this.inventorySlots.size(), true)) {
+				if (!mergeItemStack(slotStack, containerSlots, this.inventorySlots.size(), true))
 					return ItemStack.EMPTY;
-				}
-			} else if (!mergeItemStack(slotStack, 0, containerSlots, false)) {
+			} else if (!mergeItemStack(slotStack, 0, containerSlots, false))
 				return ItemStack.EMPTY;
-			}
 			if (slotStack.getCount() == 0) {
 				slot.putStack(ItemStack.EMPTY);
 			} else {
 				slot.onSlotChanged();
 			}
-			if (slotStack.getCount() == returnStack.getCount()) {
+			if (slotStack.getCount() == returnStack.getCount())
 				return ItemStack.EMPTY;
-			}
 			slot.onTake(playerIn, slotStack);
 		}
 		return returnStack;

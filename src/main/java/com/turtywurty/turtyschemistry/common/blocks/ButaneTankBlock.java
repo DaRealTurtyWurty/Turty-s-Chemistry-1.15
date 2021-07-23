@@ -15,6 +15,8 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 
+import net.minecraft.block.AbstractBlock.Properties;
+
 public class ButaneTankBlock extends BaseHorizontalBlock {
 
 	private static final Optional<VoxelShape> SHAPE = Stream

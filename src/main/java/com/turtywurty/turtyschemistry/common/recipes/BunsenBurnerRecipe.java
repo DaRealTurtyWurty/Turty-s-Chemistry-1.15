@@ -50,7 +50,7 @@ public class BunsenBurnerRecipe implements IBunsenBurnerRecipe {
 
 	@Override
 	public IRecipeSerializer<?> getSerializer() {
-		return RecipeSerializerInit.BUNSEN_BURNER_RECIPE.get();
+		return RecipeSerializerInit.BUNSEN_SERIALIZER.get();
 	}
 
 	@Override

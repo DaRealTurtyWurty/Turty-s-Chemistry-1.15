@@ -23,14 +23,29 @@ import net.minecraftforge.items.ItemStackHandler;
 
 public class AgitatorContainer extends Container {
 
-	private final IWorldPosCallable callable;
 	public static AgitatorTileEntity tile;
+
+	public static AgitatorContainer getClientContainer(final int id, final PlayerInventory playerInventory) {
+		return new AgitatorContainer(id, playerInventory, new ItemStackHandler(8), BlockPos.ZERO, new IntArray(1),
+				AgitatorType.LIQUID_ONLY);
+	}
+
+	public static IContainerProvider getServerContainerProvider(final AgitatorTileEntity te,
+			final BlockPos activationPos, final AgitatorType type) {
+		tile = te;
+		return (id, playerInventory, serverPlayer) -> new AgitatorContainer(id, playerInventory, te.getInventory(),
+				activationPos, new AgitatorSyncData(te), type);
+	}
+
+	private final IWorldPosCallable callable;
 	private FluidStack outputFluid = FluidStack.EMPTY;
+
 	public AgitatorType type;
+
 	public final IIntArray data;
 
-	public AgitatorContainer(int id, final PlayerInventory playerInventory, IItemHandler slots, BlockPos pos,
-			IIntArray data, AgitatorType type) {
+	public AgitatorContainer(final int id, final PlayerInventory playerInventory, final IItemHandler slots,
+			final BlockPos pos, final IIntArray data, final AgitatorType type) {
 		super(ContainerTypeInit.AGITATOR.get(), id);
 		this.callable = IWorldPosCallable.of(playerInventory.player.getEntityWorld(), pos);
 		this.data = data;
@@ -43,94 +58,35 @@ public class AgitatorContainer extends Container {
 		final int invStartY = 17;
 		for (int row = 0; row < 2; row++) {
 			for (int column = 0; column < 3; column++) {
-				this.addSlot(new AgitatorSlot(slots, (row * 3) + column, invStartX + (column * slotSizePlus2),
-						invStartY + (row * topToBottom)));
+				addSlot(new AgitatorSlot(slots, row * 3 + column, invStartX + column * slotSizePlus2,
+						invStartY + row * topToBottom));
 			}
 		}
-		this.addSlot(new AgitatorSlot(slots, 7, 133, 55));
+		addSlot(new AgitatorSlot(slots, 7, 133, 55));
 
 		// Main Inventory
 		final int startX = 8;
 		final int startY = 84;
 		for (int row = 0; row < 3; ++row) {
 			for (int column = 0; column < 9; ++column) {
-				this.addSlot(new Slot(playerInventory, 9 + (row * 9) + column, startX + (column * slotSizePlus2),
-						startY + (row * slotSizePlus2)));
+				addSlot(new Slot(playerInventory, 9 + row * 9 + column, startX + column * slotSizePlus2,
+						startY + row * slotSizePlus2));
 			}
 		}
 
 		// Hotbar
 		int hotbarY = 142;
 		for (int column = 0; column < 9; ++column) {
-			this.addSlot(new Slot(playerInventory, column, startX + column * slotSizePlus2, hotbarY));
+			addSlot(new Slot(playerInventory, column, startX + column * slotSizePlus2, hotbarY));
 		}
 
-		this.trackIntArray(data);
+		trackIntArray(data);
 		this.type = type;
 	}
 
-	public static IContainerProvider getServerContainerProvider(AgitatorTileEntity te, BlockPos activationPos,
-			AgitatorType type) {
-		tile = te;
-		return (id, playerInventory, serverPlayer) -> new AgitatorContainer(id, playerInventory, te.getInventory(),
-				activationPos, new AgitatorSyncData(te), type);
-	}
-
-	public static AgitatorContainer getClientContainer(int id, PlayerInventory playerInventory) {
-		return new AgitatorContainer(id, playerInventory, new ItemStackHandler(8), BlockPos.ZERO, new IntArray(1),
-				AgitatorType.LIQUID_ONLY);
-	}
-
 	@Override
-	public boolean canInteractWith(PlayerEntity playerIn) {
+	public boolean canInteractWith(final PlayerEntity playerIn) {
 		return isWithinUsableDistance(this.callable, playerIn, BlockInit.AGITATOR.get());
-	}
-
-	@Override
-	public ItemStack transferStackInSlot(PlayerEntity playerIn, int index) {
-		ItemStack returnStack = ItemStack.EMPTY;
-		final Slot slot = this.inventorySlots.get(index);
-		if (slot != null && slot.getHasStack()) {
-			final ItemStack slotStack = slot.getStack();
-			returnStack = slotStack.copy();
-
-			final int containerSlots = this.inventorySlots.size() - playerIn.inventory.mainInventory.size();
-			if (index < containerSlots) {
-				if (!mergeItemStack(slotStack, containerSlots, this.inventorySlots.size(), true)) {
-					return ItemStack.EMPTY;
-				}
-			} else if (!mergeItemStack(slotStack, 0, containerSlots, false)) {
-				return ItemStack.EMPTY;
-			}
-			if (slotStack.getCount() == 0) {
-				slot.putStack(ItemStack.EMPTY);
-			} else {
-				slot.onSlotChanged();
-			}
-			if (slotStack.getCount() == returnStack.getCount()) {
-				return ItemStack.EMPTY;
-			}
-			slot.onTake(playerIn, slotStack);
-		}
-		return returnStack;
-	}
-
-	public int getScaledProgress() {
-		return tile.getRunningTime() != 0 && AgitatorTileEntity.getMaxRunningTime() != 0
-				? tile.getRunningTime() * 24 / AgitatorTileEntity.getMaxRunningTime()
-				: 0;
-	}
-
-	public void recieveFluid(FluidStack fluid) {
-		this.outputFluid = fluid;
-	}
-
-	public FluidStack getOutputFluid() {
-		return this.outputFluid;
-	}
-
-	public void recieveType(AgitatorType type) {
-		this.type = type;
 	}
 
 	@SuppressWarnings("resource")
@@ -142,7 +98,7 @@ public class AgitatorContainer extends Container {
 				this.outputFluid = tile.getFluidHandler().getFluidInTank(5);
 				for (IContainerListener listener : this.listeners) {
 					if (listener instanceof ServerPlayerEntity) {
-						TurtyChemistry.packetHandler.send(
+						TurtyChemistry.PACKET_HANDLER.send(
 								PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) listener),
 								new AgitatorFluidPacket(tile.getFluidHandler().getFluidInTank(5), this.windowId));
 					}
@@ -153,7 +109,7 @@ public class AgitatorContainer extends Container {
 				this.type = tile.getAgitatorType();
 				for (IContainerListener listener : this.listeners) {
 					if (listener instanceof ServerPlayerEntity) {
-						TurtyChemistry.packetHandler.send(
+						TurtyChemistry.PACKET_HANDLER.send(
 								PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) listener),
 								new AgitatorTypePacket(tile.getAgitatorType(), this.windowId));
 					}
@@ -162,7 +118,51 @@ public class AgitatorContainer extends Container {
 		}
 	}
 
+	public FluidStack getOutputFluid() {
+		return this.outputFluid;
+	}
+
+	public int getScaledProgress() {
+		return tile.getRunningTime() != 0 && AgitatorTileEntity.getMaxRunningTime() != 0
+				? tile.getRunningTime() * 24 / AgitatorTileEntity.getMaxRunningTime()
+				: 0;
+	}
+
 	public AgitatorTileEntity getTile() {
 		return tile;
+	}
+
+	public void recieveFluid(final FluidStack fluid) {
+		this.outputFluid = fluid;
+	}
+
+	public void recieveType(final AgitatorType type) {
+		this.type = type;
+	}
+
+	@Override
+	public ItemStack transferStackInSlot(final PlayerEntity playerIn, final int index) {
+		ItemStack returnStack = ItemStack.EMPTY;
+		final Slot slot = this.inventorySlots.get(index);
+		if (slot != null && slot.getHasStack()) {
+			final ItemStack slotStack = slot.getStack();
+			returnStack = slotStack.copy();
+
+			final int containerSlots = this.inventorySlots.size() - playerIn.inventory.mainInventory.size();
+			if (index < containerSlots) {
+				if (!mergeItemStack(slotStack, containerSlots, this.inventorySlots.size(), true))
+					return ItemStack.EMPTY;
+			} else if (!mergeItemStack(slotStack, 0, containerSlots, false))
+				return ItemStack.EMPTY;
+			if (slotStack.getCount() == 0) {
+				slot.putStack(ItemStack.EMPTY);
+			} else {
+				slot.onSlotChanged();
+			}
+			if (slotStack.getCount() == returnStack.getCount())
+				return ItemStack.EMPTY;
+			slot.onTake(playerIn, slotStack);
+		}
+		return returnStack;
 	}
 }

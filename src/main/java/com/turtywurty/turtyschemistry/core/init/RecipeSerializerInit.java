@@ -3,6 +3,7 @@ package com.turtywurty.turtyschemistry.core.init;
 import com.turtywurty.turtyschemistry.TurtyChemistry;
 import com.turtywurty.turtyschemistry.common.recipes.AutoclaveRecipe;
 import com.turtywurty.turtyschemistry.common.recipes.BunsenBurnerRecipe;
+import com.turtywurty.turtyschemistry.common.recipes.interfaces.IAutoclaveRecipe;
 import com.turtywurty.turtyschemistry.common.recipes.interfaces.IBunsenBurnerRecipe;
 import com.turtywurty.turtyschemistry.common.recipes.serializers.AutoclaveRecipeSerializer;
 import com.turtywurty.turtyschemistry.common.recipes.serializers.BunsenBurnerRecipeSerializer;
@@ -17,21 +18,21 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public final class RecipeSerializerInit {
-	
-	private RecipeSerializerInit() {}
 
-	public static final IRecipeSerializer<BunsenBurnerRecipe> B_RECIPE_SERIALIZER = new BunsenBurnerRecipeSerializer();
+	private RecipeSerializerInit() {
+	}
 
-	public static final IRecipeType<IBunsenBurnerRecipe> BUNSEN_TYPE = registerType(IBunsenBurnerRecipe.RECIPE_TYPE_ID);
+	public static final IRecipeType<IAutoclaveRecipe> AUTOCLAVE_TYPE = registerType(IAutoclaveRecipe.TYPE_ID);
+	public static final IRecipeType<IBunsenBurnerRecipe> BUNSEN_TYPE = registerType(IBunsenBurnerRecipe.TYPE_ID);
 
 	public static final DeferredRegister<IRecipeSerializer<?>> SERIALIZERS = DeferredRegister
 			.create(ForgeRegistries.RECIPE_SERIALIZERS, TurtyChemistry.MOD_ID);
 
-	public static final RegistryObject<IRecipeSerializer<AutoclaveRecipe>> AUTOCLAVE_RECIPE_SERIALIZER = SERIALIZERS
-			.register("autoclave_recipe", AutoclaveRecipeSerializer::new);
+	public static final RegistryObject<IRecipeSerializer<AutoclaveRecipe>> AUTOCLAVE_SERIALIZER = SERIALIZERS
+			.register("autoclave", AutoclaveRecipeSerializer::new);
 
-	public static final RegistryObject<IRecipeSerializer<BunsenBurnerRecipe>> BUNSEN_BURNER_RECIPE = SERIALIZERS
-			.register("bunsen_burner", () -> B_RECIPE_SERIALIZER);
+	public static final RegistryObject<IRecipeSerializer<BunsenBurnerRecipe>> BUNSEN_SERIALIZER = SERIALIZERS
+			.register("bunsen", BunsenBurnerRecipeSerializer::new);
 
 	private static class RecipeType<T extends IRecipe<?>> implements IRecipeType<T> {
 		@Override

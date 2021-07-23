@@ -21,11 +21,13 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
+import net.minecraft.block.AbstractBlock;
+
 public class GasBlock extends Block {
 	
 	private ResourceLocation guiTexture;
 
-	public GasBlock(Block.Properties properties, ResourceLocation guiTextureIn) {
+	public GasBlock(AbstractBlock.Properties properties, ResourceLocation guiTextureIn) {
 		super(properties);
 		this.guiTexture = guiTextureIn;
 	}

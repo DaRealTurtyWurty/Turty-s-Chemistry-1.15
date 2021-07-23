@@ -6,60 +6,45 @@ public class ElectrolyzerSyncData implements IIntArray {
 
 	private final ElectrolyzerTileEntity te;
 
-	public ElectrolyzerSyncData(ElectrolyzerTileEntity te) {
+	public ElectrolyzerSyncData(final ElectrolyzerTileEntity te) {
 		this.te = te;
 	}
 
 	@Override
-	public int get(int index) {
+	public int get(final int index) {
 		switch (index) {
 		case 0:
-			return this.te.getRunningTime();
+			return this.te.runningTime;
 		case 1:
-			return this.te.getMaxRunningTime();
+			return this.te.maxRunningTime;
 		case 2:
-			return this.te.getStoredWater();
+			return this.te.maxInput;
 		case 3:
-			return this.te.getMaxWater();
+			return this.te.maxOutput1;
 		case 4:
-			return this.te.getStoredOxygen();
-		case 5:
-			return this.te.getMaxOxygen();
-		case 6:
-			return this.te.getStoredHydrogen();
-		case 7:
-			return this.te.getMaxHydrogen();
+			return this.te.maxOutput2;
 		default:
 			return 0;
 		}
 	}
 
 	@Override
-	public void set(int index, int value) {
+	public void set(final int index, final int value) {
 		switch (index) {
 		case 0:
-			this.te.setRunningTime(value);
+			this.te.runningTime = value;
 			break;
 		case 1:
-			this.te.setMaxRunningTime(value);
+			this.te.maxRunningTime = value;
 			break;
 		case 2:
-			this.te.setStoredWater(value);
+			this.te.maxInput = value;
 			break;
 		case 3:
-			this.te.setMaxWater(value);
+			this.te.maxOutput1 = value;
 			break;
 		case 4:
-			this.te.setStoredOxygen(value);
-			break;
-		case 5:
-			this.te.setMaxOxygen(value);
-			break;
-		case 6:
-			this.te.setStoredHydrogen(value);
-			break;
-		case 7:
-			this.te.setMaxHydrogen(value);
+			this.te.maxOutput2 = value;
 			break;
 		default:
 			break;

@@ -4,6 +4,7 @@ import com.turtywurty.turtyschemistry.TurtyChemistry;
 import com.turtywurty.turtyschemistry.core.init.BlockInit;
 import com.turtywurty.turtyschemistry.core.init.TileEntityTypeInit;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -23,24 +24,22 @@ public class GasExtractorTileEntity extends TileEntity implements ITickableTileE
 
 	private int gasStored = 0;
 
-	public GasExtractorTileEntity(TileEntityType<?> tileEntityTypeIn) {
-		super(tileEntityTypeIn);
-	}
-
 	public GasExtractorTileEntity() {
 		this(TileEntityTypeInit.GAS_EXTRACTOR.get());
 	}
 
+	public GasExtractorTileEntity(final TileEntityType<?> tileEntityTypeIn) {
+		super(tileEntityTypeIn);
+	}
+
 	@Override
-	public void tick() {
-		if (!this.world.isRemote && this.gasStored < 3000
-				&& this.world.getBlockState(pos.down()).getBlock().equals(BlockInit.HELIUM_GAS.get())) {
-			this.world.setBlockState(pos.down(), Blocks.AIR.getDefaultState(), Constants.BlockFlags.DEFAULT);
-			this.gasStored += 1000;
-			this.markDirty();
-			this.world.markAndNotifyBlock(pos, this.world.getChunkAt(pos), this.getBlockState(), this.getBlockState(),
-					Constants.BlockFlags.BLOCK_UPDATE);
-		}
+	public Container createMenu(final int windowId, final PlayerInventory playerInv, final PlayerEntity playerIn) {
+		return new GasExtractorContainer(windowId, playerInv, this);
+	}
+
+	@Override
+	public ITextComponent getDisplayName() {
+		return new TranslationTextComponent("container." + TurtyChemistry.MOD_ID + ".gas_extractor");
 	}
 
 	public int getGasStored() {
@@ -48,54 +47,56 @@ public class GasExtractorTileEntity extends TileEntity implements ITickableTileE
 	}
 
 	@Override
-	public void read(CompoundNBT compound) {
-		super.read(compound);
-		this.gasStored = compound.getInt("gasStored");
+	public SUpdateTileEntityPacket getUpdatePacket() {
+		CompoundNBT nbt = new CompoundNBT();
+		write(nbt);
+
+		return new SUpdateTileEntityPacket(getPos(), 1, nbt);
 	}
 
 	@Override
-	public CompoundNBT write(CompoundNBT compound) {
-		compound.putInt("gasStored", getGasStored());
-		return super.write(compound);
+	public CompoundNBT getUpdateTag() {
+		return write(new CompoundNBT());
+	}
+
+	@Override
+	public void handleUpdateTag(final BlockState state, final CompoundNBT tag) {
+		this.read(state, tag);
+	}
+
+	@Override
+	public void onDataPacket(final NetworkManager net, final SUpdateTileEntityPacket packet) {
+		this.read(this.world.getBlockState(packet.getPos()), packet.getNbtCompound());
+	}
+
+	@Override
+	public void read(final BlockState state, final CompoundNBT compound) {
+		super.read(state, compound);
+		this.gasStored = compound.getInt("gasStored");
 	}
 
 	@Override
 	public void remove() {
 		super.remove();
-		this.invalidateCaps();
-		this.warnInvalidBlock();
+		invalidateCaps();
+		warnInvalidBlock();
 	}
 
 	@Override
-	public SUpdateTileEntityPacket getUpdatePacket() {
-		CompoundNBT nbt = new CompoundNBT();
-		this.write(nbt);
-
-		return new SUpdateTileEntityPacket(this.getPos(), 1, nbt);
+	public void tick() {
+		if (!this.world.isRemote && this.gasStored < 3000
+				&& this.world.getBlockState(this.pos.down()).getBlock().equals(BlockInit.HELIUM_GAS.get())) {
+			this.world.setBlockState(this.pos.down(), Blocks.AIR.getDefaultState(), Constants.BlockFlags.DEFAULT);
+			this.gasStored += 1000;
+			markDirty();
+			this.world.markAndNotifyBlock(this.pos, this.world.getChunkAt(this.pos), getBlockState(), getBlockState(),
+					Constants.BlockFlags.BLOCK_UPDATE, 0);
+		}
 	}
 
 	@Override
-	public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket packet) {
-		this.read(packet.getNbtCompound());
-	}
-
-	@Override
-	public CompoundNBT getUpdateTag() {
-		return this.write(new CompoundNBT());
-	}
-
-	@Override
-	public void handleUpdateTag(CompoundNBT tag) {
-		this.read(tag);
-	}
-
-	@Override
-	public Container createMenu(int windowId, PlayerInventory playerInv, PlayerEntity playerIn) {
-		return new GasExtractorContainer(windowId, playerInv, this);
-	}
-
-	@Override
-	public ITextComponent getDisplayName() {
-		return new TranslationTextComponent("container." + TurtyChemistry.MOD_ID + ".gas_extractor");
+	public CompoundNBT write(final CompoundNBT compound) {
+		compound.putInt("gasStored", getGasStored());
+		return super.write(compound);
 	}
 }

@@ -148,7 +148,7 @@ public class BoilerContainer extends Container {
 				this.inputFluid = tile.getFluidHandler().getFluidInTank(0);
 				for (IContainerListener listener : this.listeners) {
 					if (listener instanceof ServerPlayerEntity) {
-						TurtyChemistry.packetHandler.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) listener),
+						TurtyChemistry.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) listener),
 								new BoilerFluidPacket(tile.getFluidHandler().getFluidInTank(0), this.windowId, 0));
 					}
 				}
@@ -158,7 +158,7 @@ public class BoilerContainer extends Container {
 				this.outputFluid = tile.getFluidHandler().getFluidInTank(1);
 				for (IContainerListener listener : this.listeners) {
 					if (listener instanceof ServerPlayerEntity) {
-						TurtyChemistry.packetHandler.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) listener),
+						TurtyChemistry.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) listener),
 								new BoilerFluidPacket(tile.getFluidHandler().getFluidInTank(1), this.windowId, 1));
 					}
 				}

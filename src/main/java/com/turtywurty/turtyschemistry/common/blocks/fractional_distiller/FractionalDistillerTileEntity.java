@@ -43,11 +43,11 @@ public class FractionalDistillerTileEntity extends TileEntity implements ITickab
 	public static final int LUBOIL_SLOT = 6;
 	public static final int FUELOIL_SLOT = 7;
 	public static final int BITUMEN_SLOT = 8;
-	private int ticks = 0;
-
 	private static final String INVENTORY_TAG = "inventory";
+
 	private static final String PROCESSING_TIME_LEFT_TAG = "processingTimeLeft";
 	private static final String MAX_PROCESSING_TIME_TAG = "maxProcessingTime";
+	private final int ticks = 0;
 
 	public final ItemStackHandler inventory = new ItemStackHandler(9) {
 		@Override
@@ -87,11 +87,68 @@ public class FractionalDistillerTileEntity extends TileEntity implements ITickab
 		super(TileEntityTypeInit.FRACTIONAL_DISTILLER.get());
 	}
 
-	public boolean isCrudeOil(Item item) {
+	@Override
+	public Container createMenu(final int windowId, final PlayerInventory inventory, final PlayerEntity player) {
+		return new FractionalDistillerContainer(windowId, inventory, this);
+	}
+
+	private void dropStack(final ItemStack stack) {
+		InventoryHelper.spawnItemStack(this.world, this.pos.getX(), this.pos.getY(), this.pos.getZ(), stack);
+	}
+
+	@Override
+	public <T> LazyOptional<T> getCapability(@Nonnull final Capability<T> cap, @Nullable final Direction side) {
+		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+			if (side == null)
+				return this.inventoryCapabilityExternal.cast();
+			switch (side) {
+			case DOWN:
+				return this.inventoryCapabilityExternalDown.cast();
+			case UP:
+				return this.inventoryCapabilityExternalUp.cast();
+			default:
+				return super.getCapability(cap, side);
+			}
+		}
+		return super.getCapability(cap, side);
+	}
+
+	@Override
+	public ITextComponent getDisplayName() {
+		return new TranslationTextComponent(BlockInit.FRACTIONAL_DISTILLER.get().getTranslationKey());
+	}
+
+	private short getProcessingTime(final ItemStack input) {
+		return (short) 200;
+	}
+
+	private List<ItemStack> getResults(final Item input) {
+		List<ItemStack> results = new ArrayList<>();
+		results.add(new ItemStack(ItemInit.REFINARY_GAS.get(), 1));
+		results.add(new ItemStack(ItemInit.PETROL.get(), 1));
+		results.add(new ItemStack(ItemInit.NAPHTHA.get(), 1));
+		results.add(new ItemStack(ItemInit.KEROSINE.get(), 1));
+		results.add(new ItemStack(ItemInit.DIESEL.get(), 1));
+		results.add(new ItemStack(ItemInit.LUBRICATING_OIL.get(), 1));
+		results.add(new ItemStack(ItemInit.FUEL_OIL.get(), 1));
+		results.add(new ItemStack(ItemInit.BITUMEN.get(), 1));
+		return results;
+	}
+
+	@Override
+	public CompoundNBT getUpdateTag() {
+		return write(new CompoundNBT());
+	}
+
+	public boolean isCrudeOil(final Item item) {
 		return item != Items.ACACIA_BOAT;
 	}
 
-	public boolean isValidOutput(ItemStack item, int slot) {
+	public boolean isProcessing() {
+		return this.world.isBlockPowered(this.pos);
+	}
+
+	public boolean isValidOutput(final ItemStack item, final int slot) {
 		switch (slot) {
 		case REFGAS_SLOT:
 			return item.getItem() == ItemInit.REFINARY_GAS.get();
@@ -114,36 +171,38 @@ public class FractionalDistillerTileEntity extends TileEntity implements ITickab
 		}
 	}
 
-	private List<ItemStack> getResults(final Item input) {
-		List<ItemStack> results = new ArrayList<>();
-		results.add(new ItemStack(ItemInit.REFINARY_GAS.get(), 1));
-		results.add(new ItemStack(ItemInit.PETROL.get(), 1));
-		results.add(new ItemStack(ItemInit.NAPHTHA.get(), 1));
-		results.add(new ItemStack(ItemInit.KEROSINE.get(), 1));
-		results.add(new ItemStack(ItemInit.DIESEL.get(), 1));
-		results.add(new ItemStack(ItemInit.LUBRICATING_OIL.get(), 1));
-		results.add(new ItemStack(ItemInit.FUEL_OIL.get(), 1));
-		results.add(new ItemStack(ItemInit.BITUMEN.get(), 1));
-		return results;
+	@Override
+	public void read(final BlockState state, final CompoundNBT compound) {
+		super.read(state, compound);
+		this.inventory.deserializeNBT(compound.getCompound(INVENTORY_TAG));
+		this.processTimeLeft = compound.getShort(PROCESSING_TIME_LEFT_TAG);
+		this.maxProcessingTime = compound.getShort(MAX_PROCESSING_TIME_TAG);
+	}
+
+	@Override
+	public void remove() {
+		super.remove();
+		this.inventoryCapabilityExternal.invalidate();
 	}
 
 	@Override
 	public void tick() {
-		if (world == null || world.isRemote)
+		if (this.world == null || this.world.isRemote)
 			return;
-		if (ticks == 0 && !world.isRemote)
-			lastProcessing = isProcessing();
+		if (this.ticks == 0 && !this.world.isRemote) {
+			this.lastProcessing = isProcessing();
+		}
 		boolean powered = false;
 		if (isProcessing()) {
 			powered = true;
 		}
 
-		final ItemStack input = inventory.getStackInSlot(CRUDE_SLOT);
+		final ItemStack input = this.inventory.getStackInSlot(CRUDE_SLOT);
 		final List<ItemStack> results = getResults(input.getItem());
 
 		for (ItemStack result : results) {
 			if (result.isEmpty()) {
-				processTimeLeft = maxProcessingTime = -1;
+				this.processTimeLeft = this.maxProcessingTime = -1;
 				break;
 			}
 		}
@@ -153,118 +212,55 @@ public class FractionalDistillerTileEntity extends TileEntity implements ITickab
 			if (canInsertResultIntoOutput) {
 				if (!powered)
 					return;
-				if (processTimeLeft == -1) {
-					processTimeLeft = maxProcessingTime = getProcessingTime(input);
+				if (this.processTimeLeft == -1) {
+					this.processTimeLeft = this.maxProcessingTime = getProcessingTime(input);
 				}
 
 				else {
-					--processTimeLeft;
-					if (processTimeLeft == 0) {
-						inventory.insertItem(REFGAS_SLOT, new ItemStack(ItemInit.REFINARY_GAS.get()), false);
-						inventory.insertItem(PETROL_SLOT, new ItemStack(ItemInit.PETROL.get()), false);
-						inventory.insertItem(NAPHTHA_SLOT, new ItemStack(ItemInit.NAPHTHA.get()), false);
-						inventory.insertItem(KEROSINE_SLOT, new ItemStack(ItemInit.KEROSINE.get()), false);
-						inventory.insertItem(DIESEL_SLOT, new ItemStack(ItemInit.DIESEL.get()), false);
-						inventory.insertItem(LUBOIL_SLOT, new ItemStack(ItemInit.LUBRICATING_OIL.get()), false);
-						inventory.insertItem(FUELOIL_SLOT, new ItemStack(ItemInit.FUEL_OIL.get()), false);
-						inventory.insertItem(BITUMEN_SLOT, new ItemStack(ItemInit.BITUMEN.get()), false);
+					--this.processTimeLeft;
+					if (this.processTimeLeft == 0) {
+						this.inventory.insertItem(REFGAS_SLOT, new ItemStack(ItemInit.REFINARY_GAS.get()), false);
+						this.inventory.insertItem(PETROL_SLOT, new ItemStack(ItemInit.PETROL.get()), false);
+						this.inventory.insertItem(NAPHTHA_SLOT, new ItemStack(ItemInit.NAPHTHA.get()), false);
+						this.inventory.insertItem(KEROSINE_SLOT, new ItemStack(ItemInit.KEROSINE.get()), false);
+						this.inventory.insertItem(DIESEL_SLOT, new ItemStack(ItemInit.DIESEL.get()), false);
+						this.inventory.insertItem(LUBOIL_SLOT, new ItemStack(ItemInit.LUBRICATING_OIL.get()), false);
+						this.inventory.insertItem(FUELOIL_SLOT, new ItemStack(ItemInit.FUEL_OIL.get()), false);
+						this.inventory.insertItem(BITUMEN_SLOT, new ItemStack(ItemInit.BITUMEN.get()), false);
 						if (input.hasContainerItem()) {
 							final ItemStack containerStack = input.getContainerItem();
 							input.shrink(1);
 							dropStack(containerStack);
-							processTimeLeft = -1;
-							inventory.setStackInSlot(CRUDE_SLOT, input);
-						}
-
-						else
+							this.processTimeLeft = -1;
+							this.inventory.setStackInSlot(CRUDE_SLOT, input);
+						} else {
 							input.shrink(1);
-						processTimeLeft = -1;
-						inventory.setStackInSlot(CRUDE_SLOT, input);
+						}
+						this.processTimeLeft = -1;
+						this.inventory.setStackInSlot(CRUDE_SLOT, input);
 					}
 				}
+			} else if (this.processTimeLeft < this.maxProcessingTime) {
+				++this.processTimeLeft;
 			}
-
-			else {
-				if (processTimeLeft < maxProcessingTime)
-					++processTimeLeft;
-			}
+		} else {
+			this.processTimeLeft = this.maxProcessingTime = -1;
 		}
 
-		else
-			processTimeLeft = maxProcessingTime = -1;
-
-		if (lastProcessing != powered) {
-			this.markDirty();
-			final BlockState newState = this.getBlockState().with(FractionalDistillerBlock.PROCESSING, powered);
-			world.setBlockState(pos, newState, 2);
-			lastProcessing = powered;
+		if (this.lastProcessing != powered) {
+			markDirty();
+			final BlockState newState = getBlockState().with(FractionalDistillerBlock.PROCESSING, powered);
+			this.world.setBlockState(this.pos, newState, 2);
+			this.lastProcessing = powered;
 		}
 	}
 
-	private void dropStack(final ItemStack stack) {
-		InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), stack);
-	}
-
-	private short getProcessingTime(final ItemStack input) {
-		return (short) 200;
-	}
-
-	public boolean isProcessing() {
-		return world.isBlockPowered(pos);
-	}
-
 	@Override
-	public <T> LazyOptional<T> getCapability(@Nonnull final Capability<T> cap, @Nullable final Direction side) {
-		if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-			if (side == null)
-				return inventoryCapabilityExternal.cast();
-			switch (side) {
-			case DOWN:
-				return inventoryCapabilityExternalDown.cast();
-			case UP:
-				return inventoryCapabilityExternalUp.cast();
-			default:
-				return super.getCapability(cap, side);
-			}
-		}
-		return super.getCapability(cap, side);
-	}
-
-	@Override
-	public void read(CompoundNBT compound) {
-		super.read(compound);
-		this.inventory.deserializeNBT(compound.getCompound(INVENTORY_TAG));
-		this.processTimeLeft = compound.getShort(PROCESSING_TIME_LEFT_TAG);
-		this.maxProcessingTime = compound.getShort(MAX_PROCESSING_TIME_TAG);
-	}
-
-	@Override
-	public CompoundNBT write(CompoundNBT compound) {
+	public CompoundNBT write(final CompoundNBT compound) {
 		super.write(compound);
 		compound.put(INVENTORY_TAG, this.inventory.serializeNBT());
 		compound.putShort(PROCESSING_TIME_LEFT_TAG, this.processTimeLeft);
 		compound.putShort(MAX_PROCESSING_TIME_TAG, this.maxProcessingTime);
 		return compound;
-	}
-
-	@Override
-	public CompoundNBT getUpdateTag() {
-		return this.write(new CompoundNBT());
-	}
-
-	@Override
-	public void remove() {
-		super.remove();
-		inventoryCapabilityExternal.invalidate();
-	}
-
-	@Override
-	public ITextComponent getDisplayName() {
-		return new TranslationTextComponent(BlockInit.FRACTIONAL_DISTILLER.get().getTranslationKey());
-	}
-
-	@Override
-	public Container createMenu(final int windowId, final PlayerInventory inventory, final PlayerEntity player) {
-		return new FractionalDistillerContainer(windowId, inventory, this);
 	}
 }

@@ -2,6 +2,8 @@ modLoader="javafml"
 
 loaderVersion="[31,)"
 
+license="MIT"
+
 [[mods]]
 
 modId="turtychemistry"
@@ -21,17 +23,3 @@ authors="TurtyWurty and maybe, just maybe, TurtyWurty. Also now that I think of 
 description='''
 A mod for minecraft which adds chemistry into the game.
 '''
-
-[[dependencies.turtychemistry]] 
-    modId="forge" 
-    mandatory=true 
-    versionRange="[31,)" 
-    ordering="NONE"
-    side="BOTH"
-
-[[dependencies.turtychemistry]]
-    modId="minecraft"
-    mandatory=true
-    versionRange="[1.15.2]"
-    ordering="NONE"
-    side="BOTH"

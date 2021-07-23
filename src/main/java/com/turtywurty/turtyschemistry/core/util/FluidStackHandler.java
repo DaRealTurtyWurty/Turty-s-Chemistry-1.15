@@ -9,22 +9,24 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.fluids.FluidStack;
 
+import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
+
 public class FluidStackHandler implements IMultiTank, INBTSerializable<CompoundNBT> {
 
 	protected NonNullList<FluidStack> stacks;
-	protected int capacity;
+	protected int[] capacity;
 
-	public FluidStackHandler(int tanks, int capacity) {
+	public FluidStackHandler(int tanks, int... capacity) {
 		this.stacks = NonNullList.withSize(tanks, FluidStack.EMPTY);
 		this.capacity = capacity;
 	}
 
-	public FluidStackHandler(int capacity) {
+	public FluidStackHandler(int... capacity) {
 		this(1, capacity);
 	}
 
-	public FluidStackHandler setCapacity(int capacity) {
-		this.capacity = capacity;
+	public FluidStackHandler setCapacity(int capacity, int tank) {
+		this.capacity[tank] = capacity;
 		return this;
 	}
 
@@ -50,7 +52,7 @@ public class FluidStackHandler implements IMultiTank, INBTSerializable<CompoundN
 
 	@Override
 	public int getTankCapacity(int tank) {
-		return capacity;
+		return capacity[tank];
 	}
 
 	/**
@@ -173,12 +175,12 @@ public class FluidStackHandler implements IMultiTank, INBTSerializable<CompoundN
 		validateSlotIndex(tank);
 		if (existingFluid.isEmpty()) {
 			if (action.execute()) {
-				stacks.set(tank, new FluidStack(resource, Math.min(capacity, resource.getAmount())));
+				stacks.set(tank, new FluidStack(resource, Math.min(capacity[tank], resource.getAmount())));
 				onContentsChanged();
 			}
 			return resource.getAmount();
 		} else {
-			int filled = capacity - existingFluid.getAmount();
+			int filled = capacity[tank] - existingFluid.getAmount();
 			if (resource.getAmount() < filled) {
 				if (action.execute()) {
 					existingFluid.grow(resource.getAmount());
@@ -186,7 +188,7 @@ public class FluidStackHandler implements IMultiTank, INBTSerializable<CompoundN
 				filled = resource.getAmount();
 			} else {
 				if (action.execute()) {
-					existingFluid.setAmount(capacity);
+					existingFluid.setAmount(capacity[tank]);
 				}
 			}
 			if (filled > 0 && action.execute()) {
@@ -267,13 +269,12 @@ public class FluidStackHandler implements IMultiTank, INBTSerializable<CompoundN
 		CompoundNBT nbt = new CompoundNBT();
 		nbt.put("Fluids", nbtTagList);
 		nbt.putInt("Size", stacks.size());
-		nbt.putInt("Capacity", capacity);
+		nbt.putIntArray("Capacity", capacity);
 		return nbt;
 	}
 
 	@Override
 	public void deserializeNBT(CompoundNBT nbt) {
-		setCapacity(nbt.contains("Capacity", Constants.NBT.TAG_INT) ? nbt.getInt("Capacity") : capacity);
 		setSize(nbt.contains("Size", Constants.NBT.TAG_INT) ? nbt.getInt("Size") : stacks.size());
 		ListNBT tagList = nbt.getList("Fluids", Constants.NBT.TAG_COMPOUND);
 		for (int i = 0; i < tagList.size(); i++) {
@@ -282,6 +283,8 @@ public class FluidStackHandler implements IMultiTank, INBTSerializable<CompoundN
 			if (tank >= 0 && tank < stacks.size()) {
 				stacks.set(tank, FluidStack.loadFluidStackFromNBT(fluidTags));
 			}
+			setCapacity(nbt.contains("Capacity", Constants.NBT.TAG_INT) ? nbt.getInt("Capacity") : capacity[tank],
+					tank);
 		}
 		onLoad();
 	}
@@ -301,5 +304,9 @@ public class FluidStackHandler implements IMultiTank, INBTSerializable<CompoundN
 
 	public boolean isEmpty() {
 		return stacks.stream().allMatch(FluidStack::isEmpty);
+	}
+	
+	public boolean isFluidEqual(int tank, FluidStack fluid) {
+		return this.getFluidInTank(tank).isFluidEqual(fluid);
 	}
 }

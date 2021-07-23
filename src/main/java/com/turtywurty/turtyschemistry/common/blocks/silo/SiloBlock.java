@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import com.turtywurty.turtyschemistry.core.init.TileEntityTypeInit;
 
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -43,28 +44,17 @@ public class SiloBlock extends Block {
 	protected static final Map<Direction, VoxelShape> BOTTOM_SHAPES = new EnumMap<>(Direction.class),
 			MIDDLE_SHAPES = new EnumMap<>(Direction.class), TOP_SHAPES = new EnumMap<>(Direction.class);
 
-	public SiloBlock(Block.Properties properties) {
+	public SiloBlock(final AbstractBlock.Properties properties) {
 		super(properties);
-		this.setDefaultState(this.stateContainer.getBaseState().with(ROTATION, Direction.NORTH)
+		setDefaultState(this.stateContainer.getBaseState().with(ROTATION, Direction.NORTH)
 				.with(PARTS, SiloPart.FRONT_BOTTOM_LEFT).with(LEVEL, 0));
-	}
-
-	@Override
-	protected void fillStateContainer(Builder<Block, BlockState> builder) {
-		super.fillStateContainer(builder);
-		builder.add(PARTS, ROTATION, LEVEL);
-	}
-
-	@Override
-	public void onBlockAdded(BlockState state, World worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
-		checkValidity(worldIn, pos);
 	}
 
 	// TODO: Fix
 	@SuppressWarnings("deprecation")
-	private void checkValidity(World worldIn, BlockPos pos) {
+	private void checkValidity(final World worldIn, final BlockPos pos) {
 		BlockState state = worldIn.getBlockState(pos);
-		if (state.get(PARTS).equals(SiloPart.FRONT_BOTTOM_LEFT)) {
+		if (SiloPart.FRONT_BOTTOM_LEFT.equals(state.get(PARTS))) {
 			int index = 0;
 
 			for (int x = 0; x < 2; x++) {
@@ -94,23 +84,51 @@ public class SiloBlock extends Block {
 	}
 
 	@Override
-	public boolean hasTileEntity(BlockState state) {
+	@Nullable
+	public TileEntity createTileEntity(final BlockState state, final IBlockReader world) {
+		if (SiloPart.FRONT_BOTTOM_LEFT.equals(state.get(PARTS)))
+			return TileEntityTypeInit.SILO.get().create();
+		return null;
+	}
+
+	@Override
+	protected void fillStateContainer(final Builder<Block, BlockState> builder) {
+		super.fillStateContainer(builder);
+		builder.add(PARTS, ROTATION, LEVEL);
+	}
+
+	@Override
+	public float getPlayerRelativeBlockHardness(final BlockState blockState, final PlayerEntity player,
+			final IBlockReader worldIn, final BlockPos pos) {
+		return SiloPart.FRONT_BOTTOM_LEFT.equals(blockState.get(PARTS))
+				? blockState.getPlayerRelativeBlockHardness(player, worldIn, pos)
+				: -1f;
+	}
+
+	@Override
+	public BlockState getStateForPlacement(final BlockItemUseContext context) {
+		return getDefaultState().with(ROTATION, context.getPlacementHorizontalFacing().getOpposite())
+				.with(PARTS, SiloPart.FRONT_BOTTOM_LEFT).with(LEVEL, 0);
+	}
+
+	@Override
+	public boolean hasTileEntity(final BlockState state) {
 		return true;
 	}
 
 	@Override
-	public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn,
-			BlockRayTraceResult hit) {
+	public ActionResultType onBlockActivated(final BlockState state, final World worldIn, final BlockPos pos,
+			final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
 		if (worldIn != null && !worldIn.isRemote) {
-			if (state.get(PARTS).equals(SiloPart.FRONT_BOTTOM_LEFT)) {
+			if (SiloPart.FRONT_BOTTOM_LEFT.equals(state.get(PARTS))) {
 				TileEntity tile = worldIn.getTileEntity(pos);
 				if (tile instanceof SiloTileEntity) {
 					ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
-					IContainerProvider provider = SiloContainer.getServerContainerProvider((SiloTileEntity) tile, pos, 0);
+					IContainerProvider provider = SiloContainer.getServerContainerProvider((SiloTileEntity) tile, pos,
+							0);
 					INamedContainerProvider namedProvider = new SimpleNamedContainerProvider(provider,
 							((SiloTileEntity) tile).getDisplayName());
 					NetworkHooks.openGui(serverPlayer, namedProvider, pos);
-					return ActionResultType.SUCCESS;
 				}
 			} else {
 				for (int width = 0; width < 2; width++) {
@@ -135,22 +153,22 @@ public class SiloBlock extends Block {
 	}
 
 	@Override
-	@Nullable
-	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-		if (state.get(PARTS).equals(SiloPart.FRONT_BOTTOM_LEFT)) {
-			return TileEntityTypeInit.SILO.get().create();
+	public void onBlockAdded(final BlockState state, final World worldIn, final BlockPos pos, final BlockState oldState,
+			final boolean isMoving) {
+		checkValidity(worldIn, pos);
+	}
+
+	@Override
+	public void onPlayerDestroy(final IWorld worldIn, final BlockPos pos, final BlockState state) {
+		super.onPlayerDestroy(worldIn, pos, state);
+		if (!SiloPart.FRONT_BOTTOM_LEFT.equals(state.get(PARTS))) {
+			worldIn.setBlockState(pos, state, Constants.BlockFlags.BLOCK_UPDATE);
 		}
-		return null;
 	}
 
 	@Override
-	public BlockState getStateForPlacement(BlockItemUseContext context) {
-		return this.getDefaultState().with(ROTATION, context.getPlacementHorizontalFacing().getOpposite())
-				.with(PARTS, SiloPart.FRONT_BOTTOM_LEFT).with(LEVEL, Integer.valueOf(0));
-	}
-
-	@Override
-	public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+	public void onReplaced(final BlockState state, final World worldIn, final BlockPos pos, final BlockState newState,
+			final boolean isMoving) {
 		if (worldIn.getTileEntity(pos) instanceof SiloTileEntity && state.getBlock() != newState.getBlock()) {
 			SiloTileEntity tile = (SiloTileEntity) worldIn.getTileEntity(pos);
 
@@ -176,20 +194,5 @@ public class SiloBlock extends Block {
 		if (state.hasTileEntity() && (state.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
 			worldIn.removeTileEntity(pos);
 		}
-	}
-
-	@Override
-	public void onPlayerDestroy(IWorld worldIn, BlockPos pos, BlockState state) {
-		super.onPlayerDestroy(worldIn, pos, state);
-		if (!state.get(PARTS).equals(SiloPart.FRONT_BOTTOM_LEFT)) {
-			worldIn.setBlockState(pos, state, Constants.BlockFlags.BLOCK_UPDATE);
-		}
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public float getBlockHardness(BlockState blockState, IBlockReader worldIn, BlockPos pos) {
-		return blockState.get(PARTS).equals(SiloPart.FRONT_BOTTOM_LEFT) ? super.getBlockHardness(blockState, worldIn, pos)
-				: -1f;
 	}
 }

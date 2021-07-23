@@ -13,51 +13,52 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fluids.FluidStack;
 
 public class AgitatorScreen extends ContainerScreen<AgitatorContainer> {
 
+	public static class ChangeModeButton extends Button {
+
+		private final AgitatorScreen screen;
+
+		public ChangeModeButton(final AgitatorScreen screen, final int x, final int y, final int width,
+				final int height) {
+			super(x, y, width, height, new StringTextComponent(""), pressable -> {
+				AgitatorTileEntity tile = screen.container.getTile();
+				AgitatorType currentType = tile.getAgitatorType();
+				AgitatorType[] types = AgitatorType.values();
+				int newType = currentType.ordinal() + 1 >= types.length ? 0 : currentType.ordinal() + 1;
+				tile.setAgitatorType(AgitatorType.values()[newType]);
+			});
+
+			this.screen = screen;
+		}
+
+		@Override
+		public void renderWidget(final MatrixStack stack, final int mouseY, final int mouseX,
+				final float partialTicks) {
+			int offsetY = 17;
+			if (isHovered()) {
+				offsetY += this.height;
+			}
+			ClientUtils.renderButton(stack, TEXTURE, this, partialTicks, this.alpha,
+					199 + this.screen.container.getTile().getAgitatorType().ordinal() * 19, offsetY, this.width,
+					this.height, 256, 256);
+		}
+	}
+
 	private static final ResourceLocation TEXTURE = new ResourceLocation(TurtyChemistry.MOD_ID,
 			"textures/gui/agitator.png");
 
-	public AgitatorScreen(AgitatorContainer screenContainer, PlayerInventory inv, ITextComponent titleIn) {
+	public AgitatorScreen(final AgitatorContainer screenContainer, final PlayerInventory inv,
+			final ITextComponent titleIn) {
 		super(screenContainer, inv, titleIn);
 		this.guiLeft = 0;
 		this.guiTop = 0;
 		this.xSize = 176;
 		this.ySize = 166;
-	}
-
-	@Override
-	protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
-		RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
-		getMinecraft().getTextureManager().bindTexture(TEXTURE);
-		ClientUtils.blit(this, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
-
-		// Progress Bar
-		ClientUtils.blit(this, this.guiLeft + 79, this.guiTop + 35, 176, 0, this.container.getScaledProgress(), 17);
-	}
-
-	@Override
-	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-
-		this.font.drawString(this.title.getFormattedText(), 7.0f, 5.0f, 0x404040);
-		this.font.drawString(this.playerInventory.getDisplayName().getFormattedText(), 7.0f, 74.0f, 0x404040);
-
-		drawFluids();
-	}
-
-	@Override
-	public void render(int mouseX, int mouseY, float partialTicks) {
-		this.renderBackground();
-		super.render(mouseX, mouseY, partialTicks);
-		this.renderHoveredToolTip(mouseX, mouseY);
-
-		this.renderTooltip(
-				new TranslationTextComponent(this.container.getOutputFluid().getTranslationKey()).getFormattedText(),
-				mouseX, mouseY, 153, 167, 12, 60);
 	}
 
 	public void drawFluids() {
@@ -79,11 +80,26 @@ public class AgitatorScreen extends ContainerScreen<AgitatorContainer> {
 		RenderSystem.popMatrix();
 	}
 
-	protected void renderTooltip(String tooltip, int mouseX, int mouseY, int xLeft, int xRight, int yTop, int yBottom) {
-		if (mouseX > this.guiLeft + xLeft && mouseX < this.guiLeft + xRight && mouseY > this.guiTop + yTop
-				&& mouseY < this.guiTop + yBottom) {
-			this.renderTooltip(tooltip, mouseX, mouseY);
-		}
+	@Override
+	protected void drawGuiContainerBackgroundLayer(final MatrixStack stack, final float partialTicks, final int mouseX,
+			final int mouseY) {
+		RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
+		getMinecraft().getTextureManager().bindTexture(TEXTURE);
+		ClientUtils.blit(stack, this, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
+
+		// Progress Bar
+		ClientUtils.blit(stack, this, this.guiLeft + 79, this.guiTop + 35, 176, 0, this.container.getScaledProgress(),
+				17);
+	}
+
+	@Override
+	protected void drawGuiContainerForegroundLayer(final MatrixStack stack, final int mouseX, final int mouseY) {
+		super.drawGuiContainerForegroundLayer(stack, mouseX, mouseY);
+
+		this.font.drawString(stack, this.title.getString(), 7.0f, 5.0f, 0x404040);
+		this.font.drawString(stack, this.playerInventory.getDisplayName().getString(), 7.0f, 74.0f, 0x404040);
+
+		drawFluids();
 	}
 
 	@Override
@@ -93,30 +109,22 @@ public class AgitatorScreen extends ContainerScreen<AgitatorContainer> {
 		this.addButton(new ChangeModeButton(this, this.guiLeft + 115, this.guiTop + 4, 19, 19));
 	}
 
-	public static class ChangeModeButton extends Button {
+	@Override
+	public void render(final MatrixStack stack, final int mouseX, final int mouseY, final float partialTicks) {
+		this.renderBackground(stack);
+		super.render(stack, mouseX, mouseY, partialTicks);
+		renderHoveredTooltip(stack, mouseX, mouseY);
 
-		private AgitatorScreen screen;
+		this.renderTooltip(stack,
+				new TranslationTextComponent(this.container.getOutputFluid().getTranslationKey()).getString(), mouseX,
+				mouseY, 153, 167, 12, 60);
+	}
 
-		public ChangeModeButton(AgitatorScreen screen, int x, int y, int width, int height) {
-			super(x, y, width, height, "", pressable -> {
-				AgitatorTileEntity tile = screen.container.getTile();
-				AgitatorType currentType = tile.getAgitatorType();
-				AgitatorType[] types = AgitatorType.values();
-				int newType = currentType.ordinal() + 1 >= types.length ? 0 : currentType.ordinal() + 1;
-				tile.setAgitatorType(AgitatorType.values()[newType]);
-			});
-
-			this.screen = screen;
-		}
-
-		@Override
-		public void renderButton(int mouseY, int mouseX, float partialTicks) {
-			int offsetY = 17;
-			if (this.isHovered())
-				offsetY += this.height;
-			ClientUtils.renderButton(TEXTURE, this, partialTicks, this.alpha,
-					199 + (this.screen.container.getTile().getAgitatorType().ordinal() * 19), offsetY, this.width,
-					this.height, 256, 256);
+	protected void renderTooltip(final MatrixStack stack, final String tooltip, final int mouseX, final int mouseY,
+			final int xLeft, final int xRight, final int yTop, final int yBottom) {
+		if (mouseX > this.guiLeft + xLeft && mouseX < this.guiLeft + xRight && mouseY > this.guiTop + yTop
+				&& mouseY < this.guiTop + yBottom) {
+			super.renderTooltip(stack, new StringTextComponent(tooltip), mouseX, mouseY);
 		}
 	}
 }

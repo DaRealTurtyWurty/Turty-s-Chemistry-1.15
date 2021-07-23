@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Stream;
 
-import com.turtywurty.turtyschemistry.client.particle.FireParticle;
 import com.turtywurty.turtyschemistry.common.recipes.BunsenBurnerRecipe;
 import com.turtywurty.turtyschemistry.core.init.ItemInit;
 import com.turtywurty.turtyschemistry.core.init.TileEntityTypeInit;
@@ -47,45 +46,36 @@ public class BunsenBurnerBlock extends Block {
 	public static final BooleanProperty MESH = BooleanProperty.create("mesh");
 	public static final BooleanProperty CRUCIBLE = BooleanProperty.create("crucible");
 
-	private static final Optional<VoxelShape> SHAPE = Stream
-			.of(Block.makeCuboidShape(7.5, 3, 7, 8.5, 4, 7), Block.makeCuboidShape(5, 0, 5, 11, 1, 11),
-					Block.makeCuboidShape(6, 1, 6, 10, 2, 10), Block.makeCuboidShape(7, 4, 7, 9, 9, 9),
-					Block.makeCuboidShape(7, 2, 7, 9, 3, 9), Block.makeCuboidShape(7, 3, 8, 9, 4, 9),
-					Block.makeCuboidShape(7, 3, 7, 7.5, 4, 8), Block.makeCuboidShape(8.5, 3, 7, 9, 4, 8),
-					Block.makeCuboidShape(7.625, 2.2, 9, 8.375, 2.95, 9.75), Block.makeCuboidShape(7, 9, 7, 7.25, 9.75, 9),
-					Block.makeCuboidShape(7.25, 9, 8.75, 8.75, 9.75, 9), Block.makeCuboidShape(7.25, 9, 7, 8.75, 9.75, 7.25),
-					Block.makeCuboidShape(7.75, 9, 7.75, 8.25, 9.25, 8.25), Block.makeCuboidShape(8.75, 9, 7, 9, 9.75, 9))
+	private static final Optional<VoxelShape> SHAPE = Stream.of(Block.makeCuboidShape(7.5, 3, 7, 8.5, 4, 7),
+			Block.makeCuboidShape(5, 0, 5, 11, 1, 11), Block.makeCuboidShape(6, 1, 6, 10, 2, 10),
+			Block.makeCuboidShape(7, 4, 7, 9, 9, 9), Block.makeCuboidShape(7, 2, 7, 9, 3, 9),
+			Block.makeCuboidShape(7, 3, 8, 9, 4, 9), Block.makeCuboidShape(7, 3, 7, 7.5, 4, 8),
+			Block.makeCuboidShape(8.5, 3, 7, 9, 4, 8), Block.makeCuboidShape(7.625, 2.2, 9, 8.375, 2.95, 9.75),
+			Block.makeCuboidShape(7, 9, 7, 7.25, 9.75, 9), Block.makeCuboidShape(7.25, 9, 8.75, 8.75, 9.75, 9),
+			Block.makeCuboidShape(7.25, 9, 7, 8.75, 9.75, 7.25), Block.makeCuboidShape(7.75, 9, 7.75, 8.25, 9.25, 8.25),
+			Block.makeCuboidShape(8.75, 9, 7, 9, 9.75, 9))
 			.reduce((v1, v2) -> VoxelShapes.combineAndSimplify(v1, v2, IBooleanFunction.OR));
 
-	public BunsenBurnerBlock(Properties properties) {
+	public BunsenBurnerBlock(final Properties properties) {
 		super(properties);
-		this.setDefaultState(this.stateContainer.getBaseState().with(FACING, Direction.NORTH).with(STRENGTH, 0)
+		setDefaultState(this.stateContainer.getBaseState().with(FACING, Direction.NORTH).with(STRENGTH, 0)
 				.with(HAS_GAS, false).with(FRAME, false).with(MESH, false).with(CRUCIBLE, false));
 	}
 
-	@Override
-	public BlockState getStateForPlacement(BlockItemUseContext context) {
-		return super.getStateForPlacement(context).with(FACING, context.getPlacementHorizontalFacing().getOpposite());
+	public void addFireParticles(final World world, final BlockPos pos, final int amount, final Color rgba,
+			final double strength) {
+		for (int particle = 0; particle < amount; particle++) {
+			/*
+			 * world.addParticle( new FireParticle.FireColourData((float) rgba.getRed() /
+			 * 255, (float) rgba.getGreen() / 255, (float) rgba.getBlue() / 255, (float)
+			 * rgba.getAlpha() / 255), pos.getX() + 0.5D, pos.getY() + 0.7D, pos.getZ() +
+			 * 0.5D, 0.0D, strength, 0.0D);
+			 */
+		}
 	}
 
 	@Override
-	public BlockState rotate(BlockState state, IWorld world, BlockPos pos, Rotation direction) {
-		return state.with(FACING, direction.rotate(state.get(FACING)));
-	}
-
-	@Override
-	public BlockState mirror(BlockState state, Mirror mirrorIn) {
-		return state.rotate(mirrorIn.toRotation(state.get(FACING)));
-	}
-
-	@Override
-	protected void fillStateContainer(Builder<Block, BlockState> builder) {
-		super.fillStateContainer(builder);
-		builder.add(FACING, STRENGTH, HAS_GAS, FRAME, MESH, CRUCIBLE);
-	}
-
-	@Override
-	public void animateTick(BlockState stateIn, World worldIn, BlockPos pos, Random rand) {
+	public void animateTick(final BlockState stateIn, final World worldIn, final BlockPos pos, final Random rand) {
 		if (!stateIn.get(HAS_GAS)) {
 			switch (stateIn.get(STRENGTH)) {
 			case 1:
@@ -96,7 +86,8 @@ public class BunsenBurnerBlock extends Block {
 			case 2:
 				// yellow
 				addFireParticles(worldIn, pos, 15,
-						new Color(Color.YELLOW.getRed(), Color.YELLOW.getGreen() - 15, Color.YELLOW.getBlue(), 80), 0.05);
+						new Color(Color.YELLOW.getRed(), Color.YELLOW.getGreen() - 15, Color.YELLOW.getBlue(), 80),
+						0.05);
 				break;
 			case 3:
 				// yellow
@@ -117,9 +108,8 @@ public class BunsenBurnerBlock extends Block {
 				break;
 			case 7:
 				// blue
-				addFireParticles(worldIn, pos, 12,
-						new Color(Color.MAGENTA.getRed() - 200, Color.MAGENTA.getGreen(), Color.MAGENTA.getBlue() - 50, 80),
-						0.007D);
+				addFireParticles(worldIn, pos, 12, new Color(Color.MAGENTA.getRed() - 200, Color.MAGENTA.getGreen(),
+						Color.MAGENTA.getBlue() - 50, 80), 0.007D);
 				break;
 			case 8:
 				// blue
@@ -134,46 +124,66 @@ public class BunsenBurnerBlock extends Block {
 		}
 	}
 
-	public void addFireParticles(World world, BlockPos pos, int amount, Color rgba, double strength) {
-		for (int particle = 0; particle < amount; particle++) {
-			world.addParticle(
-					new FireParticle.FireColourData((float) rgba.getRed() / 255, (float) rgba.getGreen() / 255,
-							(float) rgba.getBlue() / 255, (float) rgba.getAlpha() / 255),
-					pos.getX() + 0.5D, pos.getY() + 0.7D, pos.getZ() + 0.5D, 0.0D, strength, 0.0D);
-		}
-	}
-
 	@Override
-	public boolean hasTileEntity(BlockState state) {
-		return true;
-	}
-
-	@Override
-	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
+	public TileEntity createTileEntity(final BlockState state, final IBlockReader world) {
 		return TileEntityTypeInit.BUNSEN_BURNER.get().create();
 	}
 
 	@Override
-	public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn,
-			BlockRayTraceResult hit) {
+	protected void fillStateContainer(final Builder<Block, BlockState> builder) {
+		super.fillStateContainer(builder);
+		builder.add(FACING, STRENGTH, HAS_GAS, FRAME, MESH, CRUCIBLE);
+	}
+
+	@Override
+	public VoxelShape getShape(final BlockState state, final IBlockReader worldIn, final BlockPos pos,
+			final ISelectionContext context) {
+		if (SHAPE.isPresent())
+			return SHAPE.get();
+		return null;
+	}
+
+	@Override
+	public BlockState getStateForPlacement(final BlockItemUseContext context) {
+		return super.getStateForPlacement(context).with(FACING, context.getPlacementHorizontalFacing().getOpposite());
+	}
+
+	@Override
+	public boolean hasTileEntity(final BlockState state) {
+		return true;
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public BlockState mirror(final BlockState state, final Mirror mirrorIn) {
+		return state.rotate(mirrorIn.toRotation(state.get(FACING)));
+	}
+
+	@Override
+	public ActionResultType onBlockActivated(final BlockState state, final World worldIn, final BlockPos pos,
+			final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
 		if (player.isCrouching() && player.getHeldItemMainhand().isEmpty()) {
 			worldIn.setBlockState(pos, state.with(STRENGTH, state.get(STRENGTH) + 1 >= 9 ? 0 : state.get(STRENGTH) + 1),
 					BlockFlags.BLOCK_UPDATE);
 		} else if (!state.get(FRAME) && player.getHeldItemMainhand().getItem().equals(ItemInit.BUNSEN_FRAME.get())) {
 			worldIn.setBlockState(pos, state.with(FRAME, true), BlockFlags.BLOCK_UPDATE);
-			if (!player.abilities.isCreativeMode)
+			if (!player.abilities.isCreativeMode) {
 				player.getHeldItemMainhand().shrink(1);
+			}
 		} else if (!state.get(MESH) && state.get(FRAME)
 				&& player.getHeldItemMainhand().getItem().equals(ItemInit.WIRE_GAUZE.get())) {
 			worldIn.setBlockState(pos, state.with(MESH, true), BlockFlags.BLOCK_UPDATE);
-			if (!player.abilities.isCreativeMode)
+			if (!player.abilities.isCreativeMode) {
 				player.getHeldItemMainhand().shrink(1);
+			}
 		} else if (!state.get(CRUCIBLE) && state.get(FRAME) && state.get(MESH)
 				&& player.getHeldItemMainhand().getItem().equals(ItemInit.CRUCIBLE.get())) {
 			worldIn.setBlockState(pos, state.with(CRUCIBLE, true), BlockFlags.BLOCK_UPDATE);
-			if (!player.abilities.isCreativeMode)
+			if (!player.abilities.isCreativeMode) {
 				player.getHeldItemMainhand().shrink(1);
-		} else if (state.get(CRUCIBLE) && state.get(FRAME) && state.get(MESH) && !player.getHeldItemMainhand().isEmpty()) {
+			}
+		} else if (state.get(CRUCIBLE) && state.get(FRAME) && state.get(MESH)
+				&& !player.getHeldItemMainhand().isEmpty()) {
 			TileEntity tile = worldIn.getTileEntity(pos);
 			if (tile instanceof BunsenBurnerTileEntity) {
 				ItemStack heldStack = player.getHeldItemMainhand().copy();
@@ -216,14 +226,8 @@ public class BunsenBurnerBlock extends Block {
 	}
 
 	@Override
-	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
-		if (SHAPE.isPresent())
-			return SHAPE.get();
-		return null;
-	}
-
-	@Override
-	public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+	public void onReplaced(final BlockState state, final World worldIn, final BlockPos pos, final BlockState newState,
+			final boolean isMoving) {
 		TileEntity tile = worldIn.getTileEntity(pos);
 		if (tile instanceof BunsenBurnerTileEntity && state.getBlock() != newState.getBlock()) {
 			BunsenBurnerTileEntity bunsenBurner = (BunsenBurnerTileEntity) tile;
@@ -232,21 +236,29 @@ public class BunsenBurnerBlock extends Block {
 						new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(), bunsenBurner.getItemInSlot(0)));
 			}
 
-			if (state.get(FRAME))
+			if (state.get(FRAME)) {
 				worldIn.addEntity(new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(),
 						new ItemStack(ItemInit.BUNSEN_FRAME.get())));
+			}
 
-			if (state.get(MESH))
+			if (state.get(MESH)) {
 				worldIn.addEntity(new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(),
 						new ItemStack(ItemInit.WIRE_GAUZE.get())));
+			}
 
-			if (state.get(CRUCIBLE))
-				worldIn.addEntity(
-						new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(ItemInit.CRUCIBLE.get())));
+			if (state.get(CRUCIBLE)) {
+				worldIn.addEntity(new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(),
+						new ItemStack(ItemInit.CRUCIBLE.get())));
+			}
 		}
 
 		if (state.hasTileEntity() && (state.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
 			worldIn.removeTileEntity(pos);
 		}
+	}
+
+	@Override
+	public BlockState rotate(final BlockState state, final IWorld world, final BlockPos pos, final Rotation direction) {
+		return state.with(FACING, direction.rotate(state.get(FACING)));
 	}
 }

@@ -28,6 +28,8 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
+import net.minecraft.block.AbstractBlock.Properties;
+
 public class GasCanisterBlock extends Block {
 
 	private static final Optional<VoxelShape> LARGE_SHAPE = Stream

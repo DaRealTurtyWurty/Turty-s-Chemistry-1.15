@@ -31,45 +31,55 @@ public class FractionalDistillerBlock extends HorizontalBlock {
 
 	public static final BooleanProperty PROCESSING = BooleanProperty.create("processing");
 
-	public FractionalDistillerBlock(Properties builder) {
+	public FractionalDistillerBlock(final Properties builder) {
 		super(builder);
-		this.setDefaultState(
+		setDefaultState(
 				this.stateContainer.getBaseState().with(HORIZONTAL_FACING, Direction.NORTH).with(PROCESSING, false));
 	}
 
 	@Override
-	public boolean hasTileEntity(BlockState state) {
-		return true;
+	public TileEntity createTileEntity(final BlockState state, final IBlockReader worldIn) {
+		return TileEntityTypeInit.FRACTIONAL_DISTILLER.get().create();
 	}
 
 	@Override
-	public TileEntity createTileEntity(BlockState state, IBlockReader worldIn) {
-		return TileEntityTypeInit.FRACTIONAL_DISTILLER.get().create();
+	protected void fillStateContainer(final StateContainer.Builder<Block, BlockState> builder) {
+		super.fillStateContainer(builder);
+		builder.add(HORIZONTAL_FACING, PROCESSING);
+	}
+
+	@Override
+	public int getComparatorInputOverride(final BlockState blockState, final World worldIn, final BlockPos pos) {
+		final TileEntity tileEntity = worldIn.getTileEntity(pos);
+		if (tileEntity instanceof FractionalDistillerTileEntity)
+			return ItemHandlerHelper.calcRedstoneFromInventory(((FractionalDistillerTileEntity) tileEntity).inventory);
+		return blockState.getComparatorInputOverride(worldIn, pos);
+	}
+
+	@Override
+	public int getLightValue(final BlockState state, final IBlockReader world, final BlockPos pos) {
+		return state.get(PROCESSING) ? super.getLightValue(state, world, pos) : 0;
+	}
+
+	@Override
+	public BlockRenderType getRenderType(final BlockState state) {
+		return BlockRenderType.MODEL;
+	}
+
+	@Override
+	public BlockState getStateForPlacement(final BlockItemUseContext context) {
+		return getDefaultState().with(HORIZONTAL_FACING, context.getPlacementHorizontalFacing().getOpposite());
+	}
+
+	@Override
+	public boolean hasTileEntity(final BlockState state) {
+		return true;
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public int getLightValue(BlockState state) {
-		return state.get(PROCESSING) ? super.getLightValue(state) : 0;
-	}
-
-	@Override
-	public void onReplaced(BlockState oldState, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-		if (oldState.getBlock() != newState.getBlock()) {
-			TileEntity tileEntity = worldIn.getTileEntity(pos);
-			if (tileEntity instanceof FractionalDistillerTileEntity) {
-				final ItemStackHandler inventory = ((FractionalDistillerTileEntity) tileEntity).inventory;
-				for (int slot = 0; slot < inventory.getSlots(); ++slot) {
-					ItemEntity ie = new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(),
-							inventory.getStackInSlot(slot));
-					worldIn.addEntity(ie);
-				}
-			}
-		}
-		
-		if (oldState.hasTileEntity() && (oldState.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
-			worldIn.removeTileEntity(pos);
-		}
+	public BlockState mirror(final BlockState state, final Mirror mirrorIn) {
+		return state.rotate(mirrorIn.toRotation(state.get(HORIZONTAL_FACING)));
 	}
 
 	@Override
@@ -85,39 +95,28 @@ public class FractionalDistillerBlock extends HorizontalBlock {
 		return ActionResultType.SUCCESS;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
-	public int getComparatorInputOverride(BlockState blockState, World worldIn, BlockPos pos) {
-		final TileEntity tileEntity = worldIn.getTileEntity(pos);
-		if (tileEntity instanceof FractionalDistillerTileEntity) {
-			return ItemHandlerHelper.calcRedstoneFromInventory(((FractionalDistillerTileEntity) tileEntity).inventory);
+	public void onReplaced(final BlockState oldState, final World worldIn, final BlockPos pos,
+			final BlockState newState, final boolean isMoving) {
+		if (oldState.getBlock() != newState.getBlock()) {
+			TileEntity tileEntity = worldIn.getTileEntity(pos);
+			if (tileEntity instanceof FractionalDistillerTileEntity) {
+				final ItemStackHandler inventory = ((FractionalDistillerTileEntity) tileEntity).inventory;
+				for (int slot = 0; slot < inventory.getSlots(); ++slot) {
+					ItemEntity ie = new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(),
+							inventory.getStackInSlot(slot));
+					worldIn.addEntity(ie);
+				}
+			}
 		}
-		return super.getComparatorInputOverride(blockState, worldIn, pos);
+
+		if (oldState.hasTileEntity() && (oldState.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
+			worldIn.removeTileEntity(pos);
+		}
 	}
 
 	@Override
-	public BlockState rotate(BlockState state, Rotation rot) {
+	public BlockState rotate(final BlockState state, final Rotation rot) {
 		return state.with(HORIZONTAL_FACING, rot.rotate(state.get(HORIZONTAL_FACING)));
-	}
-
-	@Override
-	public BlockState getStateForPlacement(BlockItemUseContext context) {
-		return this.getDefaultState().with(HORIZONTAL_FACING, context.getPlacementHorizontalFacing().getOpposite());
-	}
-
-	@Override
-	public BlockState mirror(BlockState state, Mirror mirrorIn) {
-		return state.rotate(mirrorIn.toRotation(state.get(HORIZONTAL_FACING)));
-	}
-
-	@Override
-	protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
-		super.fillStateContainer(builder);
-		builder.add(HORIZONTAL_FACING, PROCESSING);
-	}
-
-	@Override
-	public BlockRenderType getRenderType(BlockState state) {
-		return BlockRenderType.MODEL;
 	}
 }

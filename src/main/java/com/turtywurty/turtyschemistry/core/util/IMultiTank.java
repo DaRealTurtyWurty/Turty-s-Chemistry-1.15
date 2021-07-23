@@ -5,6 +5,8 @@ import javax.annotation.Nonnull;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 
+import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
+
 public interface IMultiTank extends IFluidHandler {
 
 	/**

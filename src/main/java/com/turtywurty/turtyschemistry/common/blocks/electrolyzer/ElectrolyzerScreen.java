@@ -10,17 +10,17 @@ import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraftforge.fluids.FluidStack;
+import net.minecraft.util.text.StringTextComponent;
 
 public class ElectrolyzerScreen extends ContainerScreen<ElectrolyzerContainer> {
 
 	private static final ResourceLocation TEXTURE = new ResourceLocation(TurtyChemistry.MOD_ID,
 			"textures/gui/electrolyzer.png");
 
-	public ElectrolyzerScreen(ElectrolyzerContainer screenContainer, PlayerInventory inv, ITextComponent titleIn) {
+	public ElectrolyzerScreen(final ElectrolyzerContainer screenContainer, final PlayerInventory inv,
+			final ITextComponent titleIn) {
 		super(screenContainer, inv, titleIn);
 		this.guiLeft = 0;
 		this.guiTop = 0;
@@ -28,28 +28,11 @@ public class ElectrolyzerScreen extends ContainerScreen<ElectrolyzerContainer> {
 		this.ySize = 166;
 	}
 
-	@Override
-	protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
-		RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
-		getMinecraft().getTextureManager().bindTexture(TEXTURE);
-		ClientUtils.blit(this, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
-
-		ClientUtils.blit(this, this.guiLeft + 49, this.guiTop + 32, 176, 0, this.container.getScaledProgress(), 17);
-	}
-
-	@Override
-	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-		this.font.drawString(this.title.getFormattedText(), 7.0f, 3.0f, 0x404040);
-		this.font.drawString(this.playerInventory.getDisplayName().getFormattedText(), 7.0f, 74.0f, 0x404040);
-
-		this.drawFluids();
-	}
-
+	@SuppressWarnings("deprecation")
 	public void drawFluids() {
-		int waterX = 9;
-		int oxygenX = 154;
-		int hydrogenX = 100;
+		int inputX = 9;
+		int output1X = 154;
+		int output2X = 100;
 		int y = 13;
 		int w = 13;
 		int h = 57;
@@ -57,51 +40,76 @@ public class ElectrolyzerScreen extends ContainerScreen<ElectrolyzerContainer> {
 		RenderType renderType = ClientUtils.getGui(TEXTURE);
 
 		RenderSystem.pushMatrix();
-		int waterHeight = (int) (57 * (this.container.data.get(2) / (float) this.container.data.get(3)));
-		int oxygenHeight = (int) (57 * (this.container.data.get(4) / (float) this.container.data.get(5)));
-		int hydrogenHeight = (int) (57 * (this.container.data.get(6) / (float) this.container.data.get(7)));
+		int inputHeight = (int) (57 * (this.container.inputFluid.getAmount() / (float) this.container.data.get(2)));
+		int output1Height = (int) (57 * (this.container.outputFluid1.getAmount() / (float) this.container.data.get(3)));
+		int output2Height = (int) (57 * (this.container.outputFluid2.getAmount() / (float) this.container.data.get(4)));
 
 		IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer());
 		MatrixStack transform = new MatrixStack();
 
-		ClientUtils.drawRepeatedFluidSpriteGui(buffer, transform, new FluidStack(Fluids.WATER, 1000), waterX,
-				y + h - waterHeight, w, waterHeight);
-		ClientUtils.drawRepeatedFluidSpriteGui(buffer, transform,
-				new ResourceLocation(TurtyChemistry.MOD_ID, "textures/gui/oxygen.png"), 0xE1EDF8, oxygenX,
-				y + h - oxygenHeight, w, oxygenHeight);
-		ClientUtils.drawRepeatedFluidSpriteGui(buffer, transform,
-				new ResourceLocation("turtychemistry:textures/gui/hydrogen.png"), 0xEFEFEF, hydrogenX,
-				y + h - hydrogenHeight, w, hydrogenHeight);
+		ClientUtils.drawRepeatedFluidSpriteGui(buffer, transform, this.container.inputFluid, inputX,
+				y + h - inputHeight, w, inputHeight);
+		ClientUtils.drawRepeatedFluidSpriteGui(buffer, transform, this.container.outputFluid1, output1X,
+				y + h - output1Height, w, output1Height);
+		ClientUtils.drawRepeatedFluidSpriteGui(buffer, transform, this.container.outputFluid2, output2X,
+				y + h - output2Height, w, output2Height);
 
 		RenderSystem.color3f(1.0f, 1.0f, 1.0f);
-		ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, waterX, y, w, h, 256f, 0, 0, 0, 0);
-		ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, oxygenX, y, w, h, 256f, 0, 0, 0, 0);
-		ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, hydrogenX, y, w, h, 256f, 0, 0, 0, 0);
+		ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, inputX, y, w, h, 256f, 0, 0, 0, 0);
+		ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, output1X, y, w, h, 256f, 0, 0, 0, 0);
+		ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, output2X, y, w, h, 256f, 0, 0, 0, 0);
 
 		buffer.finish(renderType);
 		RenderSystem.popMatrix();
 	}
 
-	protected void renderTooltip(String tooltip, int mouseX, int mouseY, int xLeft, int xRight, int yTop, int yBottom) {
-		if (mouseX > this.guiLeft + xLeft && mouseX < this.guiLeft + xRight && mouseY > this.guiTop + yTop
-				&& mouseY < this.guiTop + yBottom) {
-			this.renderTooltip(tooltip, mouseX, mouseY);
-		}
+	@SuppressWarnings("deprecation")
+	@Override
+	protected void drawGuiContainerBackgroundLayer(final MatrixStack stack, final float partialTicks, final int mouseX,
+			final int mouseY) {
+		RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
+		getMinecraft().getTextureManager().bindTexture(TEXTURE);
+		ClientUtils.blit(stack, this, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
+
+		ClientUtils.blit(stack, this, this.guiLeft + 49, this.guiTop + 32, 176, 0, this.container.getScaledProgress(),
+				17);
 	}
 
 	@Override
-	public void render(int mouseX, int mouseY, float partialTicks) {
-		this.renderBackground();
-		super.render(mouseX, mouseY, partialTicks);
-		this.renderHoveredToolTip(mouseX, mouseY);
+	protected void drawGuiContainerForegroundLayer(final MatrixStack stack, final int mouseX, final int mouseY) {
+		this.font.drawString(stack, this.title.getString(), 7.0f, 3.0f, 0x404040);
+		this.font.drawString(stack, this.playerInventory.getDisplayName().getString(), 7.0f, 74.0f, 0x404040);
 
-		this.renderTooltip("Water: " + this.container.data.get(2) + "/" + this.container.data.get(3), mouseX, mouseY, 8, 22,
-				12, 70);
+		drawFluids();
+	}
 
-		this.renderTooltip("Oxygen: " + this.container.data.get(4) + "/" + this.container.data.get(5), mouseX, mouseY, 153,
-				167, 12, 70);
+	@Override
+	public void render(final MatrixStack stack, final int mouseX, final int mouseY, final float partialTicks) {
+		this.renderBackground(stack);
+		super.render(stack, mouseX, mouseY, partialTicks);
+		renderHoveredTooltip(stack, mouseX, mouseY);
 
-		this.renderTooltip("Hydrogen: " + this.container.data.get(6) + "/" + this.container.data.get(7), mouseX, mouseY, 99,
-				113, 12, 70);
+		this.renderTooltip(
+				stack, this.container.inputFluid.getDisplayName().getString() + ": "
+						+ this.container.inputFluid.getAmount() + "/" + this.container.data.get(2),
+				mouseX, mouseY, 8, 22, 12, 70);
+
+		this.renderTooltip(stack,
+				this.container.outputFluid1.getDisplayName().getString() + ": "
+						+ this.container.outputFluid1.getAmount() + "/" + this.container.data.get(3),
+				mouseX, mouseY, 153, 167, 12, 70);
+
+		this.renderTooltip(stack,
+				this.container.outputFluid2.getDisplayName().getString() + ": "
+						+ this.container.outputFluid2.getAmount() + "/" + this.container.data.get(4),
+				mouseX, mouseY, 99, 113, 12, 70);
+	}
+
+	protected void renderTooltip(final MatrixStack stack, final String tooltip, final int mouseX, final int mouseY,
+			final int xLeft, final int xRight, final int yTop, final int yBottom) {
+		if (mouseX > this.guiLeft + xLeft && mouseX < this.guiLeft + xRight && mouseY > this.guiTop + yTop
+				&& mouseY < this.guiTop + yBottom) {
+			super.renderTooltip(stack, new StringTextComponent(tooltip), mouseX, mouseY);
+		}
 	}
 }
