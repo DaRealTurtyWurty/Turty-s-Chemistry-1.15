@@ -13,24 +13,26 @@ import net.minecraft.util.math.vector.Vector3f;
 
 public class BoilerTileEntityRenderer extends TileEntityRenderer<BoilerTileEntity> {
 
-	private final BoilerModel boilerModel;
+    private final BoilerModel boilerModel;
 
-	public BoilerTileEntityRenderer(final TileEntityRendererDispatcher rendererDispatcherIn) {
-		super(rendererDispatcherIn);
+    public BoilerTileEntityRenderer(final TileEntityRendererDispatcher rendererDispatcherIn) {
+        super(rendererDispatcherIn);
 
-		this.boilerModel = new BoilerModel();
-	}
+        this.boilerModel = new BoilerModel();
+    }
 
-	@Override
-	public void render(final BoilerTileEntity tileEntityIn, final float partialTicks, final MatrixStack matrixStackIn,
-			final IRenderTypeBuffer bufferIn, final int combinedLightIn, final int combinedOverlayIn) {
-		matrixStackIn.push();
-		float rot = tileEntityIn.getBlockState().get(BaseHorizontalBlock.HORIZONTAL_FACING).getHorizontalAngle();
-		matrixStackIn.rotate(Vector3f.YP.rotationDegrees(-rot));
-		this.boilerModel.getBase().render(matrixStackIn,
-				bufferIn.getBuffer(RenderType.getEntityTranslucent(
-						new ResourceLocation(TurtyChemistry.MOD_ID, "textures/blocks/boiler.png"))),
-				combinedLightIn, combinedOverlayIn);
-		matrixStackIn.pop();
-	}
+    @Override
+    public void render(final BoilerTileEntity tileEntityIn, final float partialTicks,
+            final MatrixStack matrixStackIn, final IRenderTypeBuffer bufferIn, final int combinedLightIn,
+            final int combinedOverlayIn) {
+        matrixStackIn.push();
+        final float rot = tileEntityIn.getBlockState().get(BaseHorizontalBlock.HORIZONTAL_FACING)
+                .getHorizontalAngle();
+        matrixStackIn.rotate(Vector3f.YP.rotationDegrees(-rot));
+        this.boilerModel.getBase().render(matrixStackIn,
+                bufferIn.getBuffer(RenderType.getEntityTranslucent(
+                        new ResourceLocation(TurtyChemistry.MOD_ID, "textures/blocks/boiler.png"))),
+                combinedLightIn, combinedOverlayIn);
+        matrixStackIn.pop();
+    }
 }

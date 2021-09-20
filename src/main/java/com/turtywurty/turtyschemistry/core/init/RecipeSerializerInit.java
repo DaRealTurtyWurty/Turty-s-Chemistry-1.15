@@ -19,29 +19,30 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public final class RecipeSerializerInit {
 
-	private RecipeSerializerInit() {
-	}
+    public static final IRecipeType<IAutoclaveRecipe> AUTOCLAVE_TYPE = registerType(IAutoclaveRecipe.TYPE_ID);
 
-	public static final IRecipeType<IAutoclaveRecipe> AUTOCLAVE_TYPE = registerType(IAutoclaveRecipe.TYPE_ID);
-	public static final IRecipeType<IBunsenBurnerRecipe> BUNSEN_TYPE = registerType(IBunsenBurnerRecipe.TYPE_ID);
+    public static final IRecipeType<IBunsenBurnerRecipe> BUNSEN_TYPE = registerType(
+            IBunsenBurnerRecipe.TYPE_ID);
+    public static final DeferredRegister<IRecipeSerializer<?>> SERIALIZERS = DeferredRegister
+            .create(ForgeRegistries.RECIPE_SERIALIZERS, TurtyChemistry.MOD_ID);
 
-	public static final DeferredRegister<IRecipeSerializer<?>> SERIALIZERS = DeferredRegister
-			.create(ForgeRegistries.RECIPE_SERIALIZERS, TurtyChemistry.MOD_ID);
+    public static final RegistryObject<IRecipeSerializer<AutoclaveRecipe>> AUTOCLAVE_SERIALIZER = SERIALIZERS
+            .register("autoclave", AutoclaveRecipeSerializer::new);
 
-	public static final RegistryObject<IRecipeSerializer<AutoclaveRecipe>> AUTOCLAVE_SERIALIZER = SERIALIZERS
-			.register("autoclave", AutoclaveRecipeSerializer::new);
+    public static final RegistryObject<IRecipeSerializer<BunsenBurnerRecipe>> BUNSEN_SERIALIZER = SERIALIZERS
+            .register("bunsen", BunsenBurnerRecipeSerializer::new);
 
-	public static final RegistryObject<IRecipeSerializer<BunsenBurnerRecipe>> BUNSEN_SERIALIZER = SERIALIZERS
-			.register("bunsen", BunsenBurnerRecipeSerializer::new);
+    private RecipeSerializerInit() {
+    }
 
-	private static class RecipeType<T extends IRecipe<?>> implements IRecipeType<T> {
-		@Override
-		public String toString() {
-			return Registry.RECIPE_TYPE.getKey(this).toString();
-		}
-	}
+    private static <T extends IRecipeType> T registerType(final ResourceLocation recipeTypeId) {
+        return (T) Registry.register(Registry.RECIPE_TYPE, recipeTypeId, new RecipeType<>());
+    }
 
-	private static <T extends IRecipeType> T registerType(ResourceLocation recipeTypeId) {
-		return (T) Registry.register(Registry.RECIPE_TYPE, recipeTypeId, new RecipeType<>());
-	}
+    private static class RecipeType<T extends IRecipe<?>> implements IRecipeType<T> {
+        @Override
+        public String toString() {
+            return Registry.RECIPE_TYPE.getKey(this).toString();
+        }
+    }
 }

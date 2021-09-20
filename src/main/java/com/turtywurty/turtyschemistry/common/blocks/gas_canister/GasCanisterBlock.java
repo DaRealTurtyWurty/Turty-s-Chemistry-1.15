@@ -28,127 +28,128 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
-import net.minecraft.block.AbstractBlock.Properties;
-
 public class GasCanisterBlock extends Block {
 
-	private static final Optional<VoxelShape> LARGE_SHAPE = Stream
-			.of(Block.makeCuboidShape(3, 15, 3, 13, 16, 13), Block.makeCuboidShape(3, 1, 2, 13, 15, 3),
-					Block.makeCuboidShape(13, 1, 3, 14, 15, 13), Block.makeCuboidShape(3, 1, 13, 13, 15, 14),
-					Block.makeCuboidShape(2, 1, 3, 3, 15, 13), Block.makeCuboidShape(3, 0, 3, 13, 1, 13))
-			.reduce((v1, v2) -> VoxelShapes.combineAndSimplify(v1, v2, IBooleanFunction.OR)),
+    private static final Optional<VoxelShape> LARGE_SHAPE = Stream
+            .of(Block.makeCuboidShape(3, 15, 3, 13, 16, 13), Block.makeCuboidShape(3, 1, 2, 13, 15, 3),
+                    Block.makeCuboidShape(13, 1, 3, 14, 15, 13), Block.makeCuboidShape(3, 1, 13, 13, 15, 14),
+                    Block.makeCuboidShape(2, 1, 3, 3, 15, 13), Block.makeCuboidShape(3, 0, 3, 13, 1, 13))
+            .reduce((v1, v2) -> VoxelShapes.combineAndSimplify(v1, v2, IBooleanFunction.OR)),
 
-			SMALL_SHAPE = Stream
-					.of(Block.makeCuboidShape(5, 12, 5, 11, 13, 11), Block.makeCuboidShape(4, 1, 5, 5, 12, 11),
-							Block.makeCuboidShape(5, 1, 11, 11, 12, 12), Block.makeCuboidShape(11, 1, 5, 12, 12, 11),
-							Block.makeCuboidShape(5, 1, 4, 11, 12, 5), Block.makeCuboidShape(5, 0, 5, 11, 1, 11))
-					.reduce((v1, v2) -> VoxelShapes.combineAndSimplify(v1, v2, IBooleanFunction.OR));
+            SMALL_SHAPE = Stream.of(Block.makeCuboidShape(5, 12, 5, 11, 13, 11),
+                    Block.makeCuboidShape(4, 1, 5, 5, 12, 11), Block.makeCuboidShape(5, 1, 11, 11, 12, 12),
+                    Block.makeCuboidShape(11, 1, 5, 12, 12, 11), Block.makeCuboidShape(5, 1, 4, 11, 12, 5),
+                    Block.makeCuboidShape(5, 0, 5, 11, 1, 11))
+                    .reduce((v1, v2) -> VoxelShapes.combineAndSimplify(v1, v2, IBooleanFunction.OR));
 
-	private static final String BLOCK_ENTITY_TAG = "BlockEntityTag", MAX_AMOUNT = "MaxAmount", GAS_NAME = "GasName",
-			GAS_STORED = "GasStored";
+    private static final String BLOCK_ENTITY_TAG = "BlockEntityTag", MAX_AMOUNT = "MaxAmount",
+            GAS_NAME = "GasName", GAS_STORED = "GasStored";
 
-	private boolean large;
+    private final boolean large;
 
-	public GasCanisterBlock(Properties properties, boolean isLarge) {
-		super(properties);
-		this.large = isLarge;
-	}
+    public GasCanisterBlock(final Properties properties, final boolean isLarge) {
+        super(properties);
+        this.large = isLarge;
+    }
 
-	@Override
-	public boolean hasTileEntity(BlockState state) {
-		return true;
-	}
+    @Override
+    public void addInformation(final ItemStack stack, final IBlockReader worldIn,
+            final List<ITextComponent> tooltip, final ITooltipFlag flagIn) {
+        final CompoundNBT nbt = stack.getOrCreateChildTag(BLOCK_ENTITY_TAG);
+        if (isLarge()) {
+            nbt.putInt(MAX_AMOUNT, 15000);
+        } else {
+            nbt.putInt(MAX_AMOUNT, 5000);
+        }
 
-	@Override
-	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-		return isLarge() ? TileEntityTypeInit.GAS_CANISTER_L.get().create()
-				: TileEntityTypeInit.GAS_CANISTER_S.get().create();
-	}
+        if (flagIn.isAdvanced()) {
+            if (nbt.contains(GAS_NAME)) {
+                tooltip.add(new TranslationTextComponent(nbt.getString(GAS_NAME)));
+            }
 
-	public boolean isLarge() {
-		return this.large;
-	}
+            if (nbt.getInt(GAS_STORED) > 0) {
+                tooltip.add(new StringTextComponent(
+                        "Amount Stored: " + nbt.getInt(GAS_STORED) + "/" + nbt.getInt(MAX_AMOUNT)));
+            } else {
+                tooltip.add(new TranslationTextComponent("gas_canister.no_gas.tooltip"));
+            }
+        }
+    }
 
-	@Override
-	public void onBlockHarvested(World worldIn, BlockPos pos, BlockState state, PlayerEntity player) {
-		if (worldIn.getTileEntity(pos) instanceof AbstractGasCanisterTE) {
-			AbstractGasCanisterTE canister = (AbstractGasCanisterTE) worldIn.getTileEntity(pos);
-			if (!worldIn.isRemote && canister.getGasStored() > 0) {
-				ItemStack itemstack = new ItemStack(
-						isLarge() ? ItemInit.GAS_CANISTER_L.get() : ItemInit.GAS_CANISTER_S.get());
+    @Override
+    public Item asItem() {
+        return isLarge() ? ItemInit.GAS_CANISTER_L.get() : ItemInit.GAS_CANISTER_S.get();
+    }
 
-				CompoundNBT compoundnbt = canister.saveToNbt(new CompoundNBT());
-				if (!compoundnbt.isEmpty()) {
-					itemstack.setTagInfo(BLOCK_ENTITY_TAG, compoundnbt);
-				}
+    @Override
+    public TileEntity createTileEntity(final BlockState state, final IBlockReader world) {
+        return isLarge() ? TileEntityTypeInit.GAS_CANISTER_L.get().create()
+                : TileEntityTypeInit.GAS_CANISTER_S.get().create();
+    }
 
-				ItemEntity itementity = new ItemEntity(worldIn, (double) pos.getX(), (double) pos.getY(),
-						(double) pos.getZ(), itemstack);
-				itementity.setDefaultPickupDelay();
-				worldIn.addEntity(itementity);
-			}
-		}
+    @Override
+    public ItemStack getItem(final IBlockReader worldIn, final BlockPos pos, final BlockState state) {
+        final ItemStack itemstack = isLarge() ? new ItemStack(ItemInit.GAS_CANISTER_L.get())
+                : new ItemStack(ItemInit.GAS_CANISTER_S.get());
+        final AbstractGasCanisterTE canisterTE = (AbstractGasCanisterTE) worldIn.getTileEntity(pos);
+        final CompoundNBT compoundnbt = canisterTE.saveToNbt(new CompoundNBT());
+        if (!compoundnbt.isEmpty()) {
+            itemstack.setTagInfo(BLOCK_ENTITY_TAG, compoundnbt);
+        }
+        return itemstack;
+    }
 
-		super.onBlockHarvested(worldIn, pos, state, player);
-	}
+    @Override
+    public VoxelShape getShape(final BlockState state, final IBlockReader worldIn, final BlockPos pos,
+            final ISelectionContext context) {
+        if (isLarge() && LARGE_SHAPE.isPresent())
+            return LARGE_SHAPE.get();
+        if (SMALL_SHAPE.isPresent())
+            return SMALL_SHAPE.get();
 
-	@Override
-	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
-		if (isLarge() && LARGE_SHAPE.isPresent())
-			return LARGE_SHAPE.get();
+        return VoxelShapes.empty();
+    }
 
-		else if (SMALL_SHAPE.isPresent())
-			return SMALL_SHAPE.get();
+    @Override
+    public boolean hasTileEntity(final BlockState state) {
+        return true;
+    }
 
-		return VoxelShapes.empty();
-	}
+    public boolean isLarge() {
+        return this.large;
+    }
 
-	@Override
-	public ItemStack getItem(IBlockReader worldIn, BlockPos pos, BlockState state) {
-		ItemStack itemstack = isLarge() ? new ItemStack(ItemInit.GAS_CANISTER_L.get())
-				: new ItemStack(ItemInit.GAS_CANISTER_S.get());
-		AbstractGasCanisterTE canisterTE = (AbstractGasCanisterTE) worldIn.getTileEntity(pos);
-		CompoundNBT compoundnbt = canisterTE.saveToNbt(new CompoundNBT());
-		if (!compoundnbt.isEmpty()) {
-			itemstack.setTagInfo(BLOCK_ENTITY_TAG, compoundnbt);
-		}
-		return itemstack;
-	}
+    @Override
+    public void onBlockHarvested(final World worldIn, final BlockPos pos, final BlockState state,
+            final PlayerEntity player) {
+        if (worldIn.getTileEntity(pos) instanceof AbstractGasCanisterTE) {
+            final AbstractGasCanisterTE canister = (AbstractGasCanisterTE) worldIn.getTileEntity(pos);
+            if (!worldIn.isRemote && canister.getGasStored() > 0) {
+                final ItemStack itemstack = new ItemStack(
+                        isLarge() ? ItemInit.GAS_CANISTER_L.get() : ItemInit.GAS_CANISTER_S.get());
 
-	@Override
-	public Item asItem() {
-		return isLarge() ? ItemInit.GAS_CANISTER_L.get() : ItemInit.GAS_CANISTER_S.get();
-	}
+                final CompoundNBT compoundnbt = canister.saveToNbt(new CompoundNBT());
+                if (!compoundnbt.isEmpty()) {
+                    itemstack.setTagInfo(BLOCK_ENTITY_TAG, compoundnbt);
+                }
 
-	@Override
-	public void addInformation(ItemStack stack, IBlockReader worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
-		CompoundNBT nbt = stack.getOrCreateChildTag(BLOCK_ENTITY_TAG);
-		if (isLarge()) {
-			nbt.putInt(MAX_AMOUNT, 15000);
-		} else {
-			nbt.putInt(MAX_AMOUNT, 5000);
-		}
+                final ItemEntity itementity = new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(),
+                        itemstack);
+                itementity.setDefaultPickupDelay();
+                worldIn.addEntity(itementity);
+            }
+        }
 
-		if (flagIn.isAdvanced()) {
-			if (nbt.contains(GAS_NAME)) {
-				tooltip.add(new TranslationTextComponent(nbt.getString(GAS_NAME)));
-			}
+        super.onBlockHarvested(worldIn, pos, state, player);
+    }
 
-			if (nbt.getInt(GAS_STORED) > 0) {
-				tooltip.add(
-						new StringTextComponent("Amount Stored: " + nbt.getInt(GAS_STORED) + "/" + nbt.getInt(MAX_AMOUNT)));
-			} else {
-				tooltip.add(new TranslationTextComponent("gas_canister.no_gas.tooltip"));
-			}
-		}
-	}
-
-	@Override
-	public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
-		TileEntity tileentity = worldIn.getTileEntity(pos);
-		if (tileentity instanceof AbstractGasCanisterTE) {
-			((AbstractGasCanisterTE) tileentity).loadFromNbt(stack.getOrCreateChildTag(BLOCK_ENTITY_TAG));
-		}
-	}
+    @Override
+    public void onBlockPlacedBy(final World worldIn, final BlockPos pos, final BlockState state,
+            final LivingEntity placer, final ItemStack stack) {
+        super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+        final TileEntity tileentity = worldIn.getTileEntity(pos);
+        if (tileentity instanceof AbstractGasCanisterTE) {
+            ((AbstractGasCanisterTE) tileentity).loadFromNbt(stack.getOrCreateChildTag(BLOCK_ENTITY_TAG));
+        }
+    }
 }

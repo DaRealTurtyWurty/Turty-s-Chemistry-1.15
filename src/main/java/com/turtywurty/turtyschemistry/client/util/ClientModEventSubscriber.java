@@ -43,81 +43,96 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 @EventBusSubscriber(modid = TurtyChemistry.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class ClientModEventSubscriber {
 
-	public static void addItemPropertyOverrides() {
-		ItemModelsProperties.registerProperty(ItemInit.BLUEPRINT.get(),
-				new ResourceLocation(TurtyChemistry.MOD_ID, "stage"), (stack, world, living) -> {
-					if (!stack.getOrCreateTag().contains("Progress")) {
-						stack.getOrCreateTag().putInt("Progress", 0);
-					}
+    private ClientModEventSubscriber() {
+    }
 
-					return stack.getOrCreateTag().getInt("Progress") * 0.05f;
-				});
+    public static void addItemPropertyOverrides() {
+        ItemModelsProperties.registerProperty(ItemInit.BLUEPRINT.get(),
+                new ResourceLocation(TurtyChemistry.MOD_ID, "stage"), (stack, world, living) -> {
+                    if (!stack.getOrCreateTag().contains("Progress")) {
+                        stack.getOrCreateTag().putInt("Progress", 0);
+                    }
 
-	}
+                    return stack.getOrCreateTag().getInt("Progress") * 0.05f;
+                });
 
-	public static void bindEntityRenders() {
-		RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.FIRE_RES_ITEM.get(),
-				renderHandler -> new ItemRenderer(renderHandler, ClientUtils.MC.getItemRenderer()));
-	}
+    }
 
-	public static void bindTERs() {
-		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.AUTOCLAVE.get(), AutoclaveTileEntityRenderer::new);
-		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.BALER.get(), BalerTileEntityRenderer::new);
-		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.BRIQUETTING_PRESS.get(),
-				BriquettingPressTileEntityRenderer::new);
-		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.AGITATOR.get(), AgitatorTileEntityRenderer::new);
-		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.HOPPER.get(), HopperTileEntityRenderer::new);
-		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.BOILER.get(), BoilerTileEntityRenderer::new);
-		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.BUNSEN_BURNER.get(),
-				BunsenBurnerTileEntityRenderer::new);
-		ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.RESEARCHER.get(), ResearcherTileEntityRenderer::new);
-	}
+    public static void bindEntityRenders() {
+        RenderingRegistry.registerEntityRenderingHandler(EntityTypeInit.FIRE_RES_ITEM.get(),
+                renderHandler -> new ItemRenderer(renderHandler, ClientUtils.MC.getItemRenderer()));
+    }
 
-	@SubscribeEvent
-	public static void onFMLClientSetupEvent(final FMLClientSetupEvent event) {
-		setupScreens();
-		setupRenderTypes();
-		bindTERs();
-		addItemPropertyOverrides();
-		bindEntityRenders();
-	}
+    public static void bindTERs() {
+        ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.AUTOCLAVE.get(),
+                AutoclaveTileEntityRenderer::new);
+        ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.BALER.get(), BalerTileEntityRenderer::new);
+        ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.BRIQUETTING_PRESS.get(),
+                BriquettingPressTileEntityRenderer::new);
+        ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.AGITATOR.get(),
+                AgitatorTileEntityRenderer::new);
+        ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.HOPPER.get(), HopperTileEntityRenderer::new);
+        ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.BOILER.get(), BoilerTileEntityRenderer::new);
+        ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.BUNSEN_BURNER.get(),
+                BunsenBurnerTileEntityRenderer::new);
+        ClientRegistry.bindTileEntityRenderer(TileEntityTypeInit.RESEARCHER.get(),
+                ResearcherTileEntityRenderer::new);
+    }
 
-	public static void setupRenderTypes() {
-		RenderTypeLookup.setRenderLayer(BlockInit.AUTOCLAVE.get(),
-				layer -> layer == RenderType.getSolid() || layer == RenderType.getTranslucent());
-		RenderTypeLookup.setRenderLayer(BlockInit.AGITATOR.get(),
-				layer -> layer == RenderType.getSolid() || layer == RenderType.getTranslucent());
-		RenderTypeLookup.setRenderLayer(BlockInit.GREEN_ALGAE.get(), type -> type.equals(RenderType.getTranslucent()));
-		RenderTypeLookup.setRenderLayer(BlockInit.GAS_EXTRACTOR.get(), type -> type.equals(RenderType.getCutout()));
-		RenderTypeLookup.setRenderLayer(FluidInit.BRINE_STILL.get(), type -> type.equals(RenderType.getTranslucent()));
-		RenderTypeLookup.setRenderLayer(FluidInit.BRINE_FLOWING.get(),
-				type -> type.equals(RenderType.getTranslucent()));
-		RenderTypeLookup.setRenderLayer(FluidInit.BRINE_BLOCK.get(), type -> type.equals(RenderType.getTranslucent()));
-		RenderTypeLookup.setRenderLayer(BlockInit.BRIQUETTING_TURNER.get(),
-				type -> type.equals(RenderType.getCutout()));
-		RenderTypeLookup.setRenderLayer(BlockInit.ULEXITE.get(), type -> type.equals(RenderType.getTranslucent()));
-		RenderTypeLookup.setRenderLayer(BlockInit.KERNITE.get(), type -> type.equals(RenderType.getTranslucent()));
-		RenderTypeLookup.setRenderLayer(BlockInit.COLUMBITE.get(), type -> type.equals(RenderType.getTranslucent()));
-		RenderTypeLookup.setRenderLayer(BlockInit.TANTALITE.get(), type -> type.equals(RenderType.getTranslucent()));
-		RenderTypeLookup.setRenderLayer(BlockInit.SPESSARTINE.get(), type -> type.equals(RenderType.getTranslucent()));
-		RenderTypeLookup.setRenderLayer(BlockInit.TOURMALINE.get(), type -> type.equals(RenderType.getTranslucent()));
-		RenderTypeLookup.setRenderLayer(BlockInit.SPODUMENE.get(), type -> type.equals(RenderType.getTranslucent()));
-	}
+    @SubscribeEvent
+    public static void onFMLClientSetupEvent(final FMLClientSetupEvent event) {
+        setupScreens();
+        setupRenderTypes();
+        bindTERs();
+        addItemPropertyOverrides();
+        bindEntityRenders();
+    }
 
-	public static void setupScreens() {
-		ScreenManager.registerFactory(ContainerTypeInit.FRACTIONAL_DISTILLER.get(), FractionalDistillerScreen::new);
-		ScreenManager.registerFactory(ContainerTypeInit.AUTOCLAVE.get(), AutoclaveScreen::new);
-		ScreenManager.registerFactory(ContainerTypeInit.GAS_EXTRACTOR.get(), GasExtractorScreen::new);
-		ScreenManager.registerFactory(ContainerTypeInit.BALER.get(), BalerScreen::new);
-		ScreenManager.registerFactory(ContainerTypeInit.BRIQUETTING_PRESS.get(), BriquettingPressScreen::new);
-		ScreenManager.registerFactory(ContainerTypeInit.SILO.get(), SiloScreen::new);
-		ScreenManager.registerFactory(ContainerTypeInit.HOPPER.get(), HopperScreen::new);
-		ScreenManager.registerFactory(ContainerTypeInit.ELECTROLYZER.get(), ElectrolyzerScreen::new);
-		ScreenManager.registerFactory(ContainerTypeInit.AGITATOR.get(), AgitatorScreen::new);
-		ScreenManager.registerFactory(ContainerTypeInit.BOILER.get(), BoilerScreen::new);
-		ScreenManager.registerFactory(ContainerTypeInit.RESEARCHER.get(), ResearcherScreen::new);
-	}
+    public static void setupRenderTypes() {
+        RenderTypeLookup.setRenderLayer(BlockInit.AUTOCLAVE.get(),
+                layer -> layer == RenderType.getSolid() || layer == RenderType.getTranslucent());
+        RenderTypeLookup.setRenderLayer(BlockInit.AGITATOR.get(),
+                layer -> layer == RenderType.getSolid() || layer == RenderType.getTranslucent());
+        RenderTypeLookup.setRenderLayer(BlockInit.GREEN_ALGAE.get(),
+                type -> type.equals(RenderType.getTranslucent()));
+        RenderTypeLookup.setRenderLayer(BlockInit.GAS_EXTRACTOR.get(),
+                type -> type.equals(RenderType.getCutout()));
+        RenderTypeLookup.setRenderLayer(FluidInit.BRINE_STILL.get(),
+                type -> type.equals(RenderType.getTranslucent()));
+        RenderTypeLookup.setRenderLayer(FluidInit.BRINE_FLOWING.get(),
+                type -> type.equals(RenderType.getTranslucent()));
+        RenderTypeLookup.setRenderLayer(FluidInit.BRINE_BLOCK.get(),
+                type -> type.equals(RenderType.getTranslucent()));
+        RenderTypeLookup.setRenderLayer(BlockInit.BRIQUETTING_TURNER.get(),
+                type -> type.equals(RenderType.getCutout()));
+        RenderTypeLookup.setRenderLayer(BlockInit.ULEXITE.get(),
+                type -> type.equals(RenderType.getTranslucent()));
+        RenderTypeLookup.setRenderLayer(BlockInit.KERNITE.get(),
+                type -> type.equals(RenderType.getTranslucent()));
+        RenderTypeLookup.setRenderLayer(BlockInit.COLUMBITE.get(),
+                type -> type.equals(RenderType.getTranslucent()));
+        RenderTypeLookup.setRenderLayer(BlockInit.TANTALITE.get(),
+                type -> type.equals(RenderType.getTranslucent()));
+        RenderTypeLookup.setRenderLayer(BlockInit.SPESSARTINE.get(),
+                type -> type.equals(RenderType.getTranslucent()));
+        RenderTypeLookup.setRenderLayer(BlockInit.TOURMALINE.get(),
+                type -> type.equals(RenderType.getTranslucent()));
+        RenderTypeLookup.setRenderLayer(BlockInit.SPODUMENE.get(),
+                type -> type.equals(RenderType.getTranslucent()));
+    }
 
-	private ClientModEventSubscriber() {
-	}
+    public static void setupScreens() {
+        ScreenManager.registerFactory(ContainerTypeInit.FRACTIONAL_DISTILLER.get(),
+                FractionalDistillerScreen::new);
+        ScreenManager.registerFactory(ContainerTypeInit.AUTOCLAVE.get(), AutoclaveScreen::new);
+        ScreenManager.registerFactory(ContainerTypeInit.GAS_EXTRACTOR.get(), GasExtractorScreen::new);
+        ScreenManager.registerFactory(ContainerTypeInit.BALER.get(), BalerScreen::new);
+        ScreenManager.registerFactory(ContainerTypeInit.BRIQUETTING_PRESS.get(), BriquettingPressScreen::new);
+        ScreenManager.registerFactory(ContainerTypeInit.SILO.get(), SiloScreen::new);
+        ScreenManager.registerFactory(ContainerTypeInit.HOPPER.get(), HopperScreen::new);
+        ScreenManager.registerFactory(ContainerTypeInit.ELECTROLYZER.get(), ElectrolyzerScreen::new);
+        ScreenManager.registerFactory(ContainerTypeInit.AGITATOR.get(), AgitatorScreen::new);
+        ScreenManager.registerFactory(ContainerTypeInit.BOILER.get(), BoilerScreen::new);
+        ScreenManager.registerFactory(ContainerTypeInit.RESEARCHER.get(), ResearcherScreen::new);
+    }
 }

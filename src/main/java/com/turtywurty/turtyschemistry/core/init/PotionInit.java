@@ -10,12 +10,13 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public final class PotionInit {
-	
-	private PotionInit() {}
 
-	public static final DeferredRegister<Effect> EFFECTS = DeferredRegister.create(ForgeRegistries.POTIONS,
-			TurtyChemistry.MOD_ID);
+    public static final DeferredRegister<Effect> EFFECTS = DeferredRegister.create(ForgeRegistries.POTIONS,
+            TurtyChemistry.MOD_ID);
 
-	public static final RegistryObject<Effect> SUFFOCATING_EFFECT = EFFECTS.register("suffocating",
-			() -> new SuffocatingEffect(EffectType.HARMFUL, 0xE9EDEA));
+    public static final RegistryObject<Effect> SUFFOCATING_EFFECT = EFFECTS.register("suffocating",
+            () -> new SuffocatingEffect(EffectType.HARMFUL, 0xE9EDEA));
+
+    private PotionInit() {
+    }
 }

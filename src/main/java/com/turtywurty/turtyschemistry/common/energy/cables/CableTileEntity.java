@@ -8,24 +8,24 @@ import net.minecraft.tileentity.TileEntityType;
 
 public class CableTileEntity extends TileEntity implements ITickableTileEntity {
 
-	private CableNetwork network;
-	private int energyStored = 0;
+    private CableNetwork network;
+    private final int energyStored = 0;
 
-	public CableTileEntity(TileEntityType<?> tileEntityTypeIn) {
-		super(tileEntityTypeIn);
-	}
+    public CableTileEntity() {
+        this(TileEntityTypeInit.CABLE.get());
+        this.network = new CableNetwork(this.energyStored, getPos());
+    }
 
-	public CableTileEntity() {
-		this(TileEntityTypeInit.CABLE.get());
-		this.network = new CableNetwork(this.energyStored, this.getPos());
-	}
+    public CableTileEntity(final TileEntityType<?> tileEntityTypeIn) {
+        super(tileEntityTypeIn);
+    }
 
-	@Override
-	public void tick() {
+    public CableNetwork getCableNetwork() {
+        return this.network;
+    }
 
-	}
+    @Override
+    public void tick() {
 
-	public CableNetwork getCableNetwork() {
-		return this.network;
-	}
+    }
 }

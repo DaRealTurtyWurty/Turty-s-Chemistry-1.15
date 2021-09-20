@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public interface IGuideBookData {
 
-	public UUID getPlayerUUID();
-	
-	public void setPlayerUUID(UUID playerUUID);
+    UUID getPlayerUUID();
+
+    void setPlayerUUID(UUID playerUUID);
 }

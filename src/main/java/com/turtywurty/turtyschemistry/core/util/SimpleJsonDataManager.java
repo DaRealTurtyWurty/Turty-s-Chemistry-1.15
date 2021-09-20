@@ -16,56 +16,57 @@ import net.minecraft.util.ResourceLocation;
 //Credits to Commoble for this code
 public class SimpleJsonDataManager<T> extends JsonReloadListener {
 
-	public static final Gson GSON = new GsonBuilder().create();
+    public static final Gson GSON = new GsonBuilder().create();
 
-	/**
-	 * Converts all the values in a map to new values; the new map uses the same
-	 * keys as the old map
-	 **/
-	public static <KEY, IN, OUT> Map<KEY, OUT> mapValues(final Map<KEY, IN> inputs, final Function<IN, OUT> mapper) {
-		Map<KEY, OUT> newMap = new HashMap<>();
+    /** The raw data that we parsed from json last time resources were reloaded **/
+    protected Map<ResourceLocation, T> data = new HashMap<>();
 
-		inputs.forEach((key, input) -> newMap.put(key, mapper.apply(input)));
+    private final Class<T> dataClass;
 
-		return newMap;
-	}
+    /**
+     * @param folder This is the name of the folders that the resource loader looks
+     *               in, e.g. assets/modid/FOLDER
+     */
+    public SimpleJsonDataManager(final String folder, final Class<T> dataClass) {
+        super(GSON, folder);
+        this.dataClass = dataClass;
+    }
 
-	/** The raw data that we parsed from json last time resources were reloaded **/
-	protected Map<ResourceLocation, T> data = new HashMap<>();
+    /**
+     * Converts all the values in a map to new values; the new map uses the same
+     * keys as the old map
+     **/
+    public static <KEY, IN, OUT> Map<KEY, OUT> mapValues(final Map<KEY, IN> inputs,
+            final Function<IN, OUT> mapper) {
+        final Map<KEY, OUT> newMap = new HashMap<>();
 
-	private final Class<T> dataClass;
+        inputs.forEach((key, input) -> newMap.put(key, mapper.apply(input)));
 
-	/**
-	 * @param folder This is the name of the folders that the resource loader looks
-	 *               in, e.g. assets/modid/FOLDER
-	 */
-	public SimpleJsonDataManager(final String folder, final Class<T> dataClass) {
-		super(GSON, folder);
-		this.dataClass = dataClass;
-	}
+        return newMap;
+    }
 
-	/**
-	 * Called on resource reload, the jsons have already been found for us and we
-	 * just need to parse them in here
-	 **/
-	@Override
-	protected void apply(final Map<ResourceLocation, JsonElement> jsons, final IResourceManager manager,
-			final IProfiler profiler) {
-		this.data = mapValues(jsons, this::getJsonAsData);
-	}
+    /**
+     * Get the data object represented by the json at the given resource location
+     **/
+    public Map<ResourceLocation, T> getData() {
+        return this.data;
+    }
 
-	/**
-	 * Get the data object represented by the json at the given resource location
-	 **/
-	public Map<ResourceLocation, T> getData() {
-		return this.data;
-	}
+    /**
+     * Called on resource reload, the jsons have already been found for us and we
+     * just need to parse them in here
+     **/
+    @Override
+    protected void apply(final Map<ResourceLocation, JsonElement> jsons, final IResourceManager manager,
+            final IProfiler profiler) {
+        this.data = mapValues(jsons, this::getJsonAsData);
+    }
 
-	/**
-	 * Use a json object (presumably one from an assets/modid/FOLDER) to generate a
-	 * data object
-	 **/
-	protected T getJsonAsData(final JsonElement json) {
-		return GSON.fromJson(json, this.dataClass);
-	}
+    /**
+     * Use a json object (presumably one from an assets/modid/FOLDER) to generate a
+     * data object
+     **/
+    protected T getJsonAsData(final JsonElement json) {
+        return GSON.fromJson(json, this.dataClass);
+    }
 }

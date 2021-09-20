@@ -8,20 +8,20 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.storage.WorldSavedData;
 
 public class CableNetwork extends WorldSavedData {
-	
-	protected Map<BlockPos, Integer> positions = new HashMap<BlockPos, Integer>();
 
-	public CableNetwork(int amount, BlockPos... positions) {
-		super("cables");
-	}
+    protected Map<BlockPos, Integer> positions = new HashMap<>();
 
-	@Override
-	public void read(CompoundNBT nbt) {
-		
-	}
+    public CableNetwork(final int amount, final BlockPos... positions) {
+        super("cables");
+    }
 
-	@Override
-	public CompoundNBT write(CompoundNBT compound) {
-		return null;
-	}
+    @Override
+    public void read(final CompoundNBT nbt) {
+
+    }
+
+    @Override
+    public CompoundNBT write(final CompoundNBT compound) {
+        return null;
+    }
 }

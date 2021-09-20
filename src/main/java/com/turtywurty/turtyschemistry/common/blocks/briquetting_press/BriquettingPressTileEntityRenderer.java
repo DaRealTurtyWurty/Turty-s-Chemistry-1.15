@@ -13,38 +13,39 @@ import net.minecraft.util.math.vector.Vector3f;
 
 public class BriquettingPressTileEntityRenderer extends TileEntityRenderer<BriquettingPressTileEntity> {
 
-	private static void renderSawdust() {
+    public BriquettingPressTileEntityRenderer(final TileEntityRendererDispatcher rendererDispatcherIn) {
+        super(rendererDispatcherIn);
+    }
 
-	}
+    private static void renderSawdust() {
 
-	@SuppressWarnings("deprecation")
-	private static void renderTurner(final BriquettingPressTileEntity tile, final MatrixStack stackIn,
-			final IRenderTypeBuffer bufferIn, final int combinedLightIn, final int combinedOverlayIn) {
-		BlockRendererDispatcher blockRenderer = ClientUtils.MC.getBlockRendererDispatcher();
+    }
 
-		stackIn.push();
+    @SuppressWarnings("deprecation")
+    private static void renderTurner(final BriquettingPressTileEntity tile, final MatrixStack stackIn,
+            final IRenderTypeBuffer bufferIn, final int combinedLightIn, final int combinedOverlayIn) {
+        final BlockRendererDispatcher blockRenderer = ClientUtils.MC.getBlockRendererDispatcher();
 
-		stackIn.translate(-0.125f, 0.5f, -0.05f);
+        stackIn.push();
 
-		if (tile.buttonPressed) {
-			stackIn.rotate(Vector3f.YP.rotationDegrees(tile.turnerRotation++));
-		}
+        stackIn.translate(-0.125f, 0.5f, -0.05f);
 
-		blockRenderer.renderBlock(
-				BlockInit.BRIQUETTING_TURNER.get().getDefaultState().with(BaseHorizontalBlock.HORIZONTAL_FACING,
-						tile.getBlockState().get(BaseHorizontalBlock.HORIZONTAL_FACING)),
-				stackIn, bufferIn, combinedLightIn, combinedOverlayIn);
-		stackIn.pop();
-	}
+        if (tile.buttonPressed) {
+            stackIn.rotate(Vector3f.YP.rotationDegrees(tile.turnerRotation++));
+        }
 
-	public BriquettingPressTileEntityRenderer(final TileEntityRendererDispatcher rendererDispatcherIn) {
-		super(rendererDispatcherIn);
-	}
+        blockRenderer.renderBlock(
+                BlockInit.BRIQUETTING_TURNER.get().getDefaultState().with(
+                        BaseHorizontalBlock.HORIZONTAL_FACING,
+                        tile.getBlockState().get(BaseHorizontalBlock.HORIZONTAL_FACING)),
+                stackIn, bufferIn, combinedLightIn, combinedOverlayIn);
+        stackIn.pop();
+    }
 
-	@Override
-	public void render(final BriquettingPressTileEntity tileEntityIn, final float partialTicks,
-			final MatrixStack matrixStackIn, final IRenderTypeBuffer bufferIn, final int combinedLightIn,
-			final int combinedOverlayIn) {
-		renderTurner(tileEntityIn, matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
-	}
+    @Override
+    public void render(final BriquettingPressTileEntity tileEntityIn, final float partialTicks,
+            final MatrixStack matrixStackIn, final IRenderTypeBuffer bufferIn, final int combinedLightIn,
+            final int combinedOverlayIn) {
+        renderTurner(tileEntityIn, matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
+    }
 }

@@ -5,6 +5,7 @@ import java.util.Random;
 import com.turtywurty.turtyschemistry.core.init.ParticleInit;
 import com.turtywurty.turtyschemistry.core.init.PotionInit;
 
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -21,56 +22,60 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
-import net.minecraft.block.AbstractBlock;
-
 public class GasBlock extends Block {
-	
-	private ResourceLocation guiTexture;
 
-	public GasBlock(AbstractBlock.Properties properties, ResourceLocation guiTextureIn) {
-		super(properties);
-		this.guiTexture = guiTextureIn;
-	}
+    private final ResourceLocation guiTexture;
 
-	@Override
-	public BlockRenderType getRenderType(BlockState state) {
-		return BlockRenderType.INVISIBLE;
-	}
+    public GasBlock(final AbstractBlock.Properties properties, final ResourceLocation guiTextureIn) {
+        super(properties);
+        this.guiTexture = guiTextureIn;
+    }
 
-	@Override
-	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
-		return VoxelShapes.empty();
-	}
+    @Override
+    public void animateTick(final BlockState stateIn, final World worldIn, final BlockPos pos,
+            final Random rand) {
+        worldIn.addParticle(ParticleInit.GAS_PARTICLE.get(), (double) pos.getX() + (double) rand.nextFloat(),
+                (double) pos.getY() + (double) rand.nextFloat(),
+                (double) pos.getZ() + (double) rand.nextFloat(), rand.nextDouble(), rand.nextDouble(),
+                rand.nextDouble());
+    }
 
-	@Override
-	public boolean isAir(BlockState state) {
-		return true;
-	}
+    public ResourceLocation getGuiTexture() {
+        return this.guiTexture;
+    }
 
-	@Override
-	public void onEntityCollision(BlockState state, World worldIn, BlockPos pos, Entity entityIn) {
-		if (entityIn instanceof LivingEntity) {
-			((LivingEntity) entityIn).addPotionEffect(new EffectInstance(PotionInit.SUFFOCATING_EFFECT.get(), 200, 3));
-		}
-	}
+    @Override
+    public BlockRenderType getRenderType(final BlockState state) {
+        return BlockRenderType.INVISIBLE;
+    }
 
-	@Override
-	public void animateTick(BlockState stateIn, World worldIn, BlockPos pos, Random rand) {
-		worldIn.addParticle(ParticleInit.GAS_PARTICLE.get(), (double) pos.getX() + (double) rand.nextFloat(),
-				(double) pos.getY() + (double) rand.nextFloat(), (double) pos.getZ() + (double) rand.nextFloat(),
-				rand.nextDouble(), rand.nextDouble(), rand.nextDouble());
-	}
+    @Override
+    public VoxelShape getShape(final BlockState state, final IBlockReader worldIn, final BlockPos pos,
+            final ISelectionContext context) {
+        return VoxelShapes.empty();
+    }
 
-	@Override
-	public void randomTick(BlockState state, ServerWorld worldIn, BlockPos pos, Random rand) {
-		if (worldIn.getBlockState(pos.up()).getBlock().equals(Blocks.AIR)
-				|| worldIn.getBlockState(pos.up()).getBlock().equals(Blocks.CAVE_AIR)) {
-			worldIn.setBlockState(pos.up(), state);
-			worldIn.setBlockState(pos, Blocks.AIR.getDefaultState());
-		}
-	}
+    @Override
+    public boolean isAir(final BlockState state) {
+        return true;
+    }
 
-	public ResourceLocation getGuiTexture() {
-		return this.guiTexture;
-	}
+    @Override
+    public void onEntityCollision(final BlockState state, final World worldIn, final BlockPos pos,
+            final Entity entityIn) {
+        if (entityIn instanceof LivingEntity) {
+            ((LivingEntity) entityIn)
+                    .addPotionEffect(new EffectInstance(PotionInit.SUFFOCATING_EFFECT.get(), 200, 3));
+        }
+    }
+
+    @Override
+    public void randomTick(final BlockState state, final ServerWorld worldIn, final BlockPos pos,
+            final Random rand) {
+        if (worldIn.getBlockState(pos.up()).getBlock().equals(Blocks.AIR)
+                || worldIn.getBlockState(pos.up()).getBlock().equals(Blocks.CAVE_AIR)) {
+            worldIn.setBlockState(pos.up(), state);
+            worldIn.setBlockState(pos, Blocks.AIR.getDefaultState());
+        }
+    }
 }

@@ -8,16 +8,16 @@ import net.minecraft.world.World;
 
 public class ParticleColliderControllerTileEntity extends TileEntity implements ITickableTileEntity {
 
-	public ParticleColliderControllerTileEntity(TileEntityType<?> tileEntityTypeIn) {
-		super(tileEntityTypeIn);
-	}
+    public ParticleColliderControllerTileEntity(final TileEntityType<?> tileEntityTypeIn) {
+        super(tileEntityTypeIn);
+    }
 
-	@Override
-	public void tick() {
-		
-	}
-	
-	public static void mineRing(World worldIn, BlockPos startPos, int radius) {
-		
-	}
+    public static void mineRing(final World worldIn, final BlockPos startPos, final int radius) {
+
+    }
+
+    @Override
+    public void tick() {
+
+    }
 }

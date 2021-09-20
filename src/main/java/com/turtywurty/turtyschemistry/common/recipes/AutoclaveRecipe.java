@@ -14,47 +14,48 @@ import net.minecraft.world.World;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
 
 public class AutoclaveRecipe implements IAutoclaveRecipe {
-	private final ResourceLocation id;
-	private final ItemStack output;
-	private Ingredient input;
+    private final ResourceLocation id;
+    private final ItemStack output;
+    private final Ingredient input;
 
-	public AutoclaveRecipe(ResourceLocation id, ItemStack output, Ingredient input) {
-		this.id = id;
-		this.output = output;
-		this.input = input;
-	}
+    public AutoclaveRecipe(final ResourceLocation id, final ItemStack output, final Ingredient input) {
+        this.id = id;
+        this.output = output;
+        this.input = input;
+    }
 
-	@Override
-	public boolean matches(RecipeWrapper inv, @Nullable World worldIn) {
-		return this.input.test(inv.getStackInSlot(0));
-	}
+    @Override
+    public ItemStack getCraftingResult(final RecipeWrapper inv) {
+        return this.output;
+    }
 
-	@Override
-	public ItemStack getCraftingResult(RecipeWrapper inv) {
-		return this.output;
-	}
+    @Override
+    public ResourceLocation getId() {
+        return this.id;
+    }
 
-	@Override
-	public ItemStack getRecipeOutput() {
-		return this.output;
-	}
+    @Override
+    public NonNullList<Ingredient> getIngredients() {
+        return NonNullList.from(Ingredient.EMPTY, this.input);
+    }
 
-	@Override
-	public ResourceLocation getId() {
-		return this.id;
-	}
+    @Override
+    public Ingredient getInput() {
+        return this.input;
+    }
 
-	@Override
-	public IRecipeSerializer<?> getSerializer() {
-		return RecipeSerializerInit.AUTOCLAVE_SERIALIZER.get();
-	}
+    @Override
+    public ItemStack getRecipeOutput() {
+        return this.output;
+    }
 
-	@Override
-	public NonNullList<Ingredient> getIngredients() {
-		return NonNullList.from(Ingredient.EMPTY, this.input);
-	}
+    @Override
+    public IRecipeSerializer<?> getSerializer() {
+        return RecipeSerializerInit.AUTOCLAVE_SERIALIZER.get();
+    }
 
-	public Ingredient getInput() {
-		return this.input;
-	}
+    @Override
+    public boolean matches(final RecipeWrapper inv, @Nullable final World worldIn) {
+        return this.input.test(inv.getStackInSlot(0));
+    }
 }

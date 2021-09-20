@@ -13,106 +13,107 @@ import net.minecraft.world.World;
 
 public class ElementItem extends Item {
 
-	public static class ElementProperties extends Properties {
-		private int magnetism;
-		private RoomTempState roomTempState;
-		private HalfLife halfLife;
-		private float radioactivity;
+    private static final String TICKS = "Ticks";
 
-		public HalfLife getHalfLife() {
-			return this.halfLife;
-		}
+    private final HalfLife halfLife;
 
-		public int getMagnetism() {
-			return this.magnetism;
-		}
+    private final RoomTempState roomTempState;
 
-		public float getRadioactivity() {
-			return this.radioactivity;
-		}
+    private final float radioactivity;
+    private final int magnetism;
 
-		public RoomTempState getRoomTempState() {
-			return this.roomTempState;
-		}
+    public ElementItem(final ElementProperties properties) {
+        super(properties);
+        this.halfLife = properties.getHalfLife();
+        this.roomTempState = properties.getRoomTempState();
+        this.radioactivity = properties.getRadioactivity();
+        this.magnetism = properties.getMagnetism();
+    }
 
-		public void setHalfLife(final HalfLife lifeIn) {
-			this.halfLife = lifeIn;
-		}
+    @Override
+    public void inventoryTick(final ItemStack stack, final World worldIn, final Entity entityIn,
+            final int itemSlot, final boolean isSelected) {
+        if (this.magnetism > 0.0f && entityIn != null && worldIn != null && isSelected) {
+            final List<ItemEntity> nearbyItems = worldIn.getEntitiesWithinAABB(ItemEntity.class,
+                    new AxisAlignedBB(
+                            new BlockPos(entityIn.getLeashStartPosition().add(-this.magnetism,
+                                    -this.magnetism, -this.magnetism)),
+                            new BlockPos(entityIn.getLeashStartPosition().add(this.magnetism, this.magnetism,
+                                    this.magnetism))));
+            for (final ItemEntity item : nearbyItems) {
+                item.move(MoverType.SELF, entityIn.getPositionVec());
+            }
+        }
 
-		public void setMagnetic(final int magnetismIn) {
-			this.magnetism = magnetismIn;
-		}
+        if (!stack.getOrCreateTag().contains(TICKS)) {
+            stack.getOrCreateTag().putInt(TICKS, 0);
+        }
 
-		public void setRadioactivity(final float amount) {
-			this.radioactivity = amount;
-		}
+        if (this.halfLife.getTime() == 0) {
+            // return;
+        } else if (stack.getOrCreateTag().getInt(TICKS) != this.halfLife.getTime() * 1200) {
+            stack.getOrCreateTag().putInt(TICKS, stack.getOrCreateTag().getInt(TICKS) + 1);
+        } else if (stack.getOrCreateTag().getInt(TICKS) == this.halfLife.getTime() * 1200) {
+            stack.getOrCreateTag().putInt(TICKS, 0);
+            stack.setCount(0);
+        }
+    }
 
-		public void setRoomTempState(final RoomTempState stateIn) {
-			this.roomTempState = stateIn;
-		}
-	}
+    public static class ElementProperties extends Properties {
+        private int magnetism;
+        private RoomTempState roomTempState;
+        private HalfLife halfLife;
+        private float radioactivity;
 
-	public enum HalfLife {
+        public HalfLife getHalfLife() {
+            return this.halfLife;
+        }
 
-		NONE(0), HALF_HOUR(30), HOUR(60), HOUR2(120), HOUR6(360), HOUR12(720), HOUR24(1440);
+        public int getMagnetism() {
+            return this.magnetism;
+        }
 
-		private int time;
+        public float getRadioactivity() {
+            return this.radioactivity;
+        }
 
-		HalfLife(final int timeIn) {
-			this.time = timeIn;
-		}
+        public RoomTempState getRoomTempState() {
+            return this.roomTempState;
+        }
 
-		public int getTime() {
-			return this.time;
-		}
-	}
+        public void setHalfLife(final HalfLife lifeIn) {
+            this.halfLife = lifeIn;
+        }
 
-	public enum RoomTempState {
-		SOLID(), LIQUID(), GAS();
-	}
+        public void setMagnetic(final int magnetismIn) {
+            this.magnetism = magnetismIn;
+        }
 
-	private static final String TICKS = "Ticks";
-	private final HalfLife halfLife;
+        public void setRadioactivity(final float amount) {
+            this.radioactivity = amount;
+        }
 
-	private final RoomTempState roomTempState;
+        public void setRoomTempState(final RoomTempState stateIn) {
+            this.roomTempState = stateIn;
+        }
+    }
 
-	private final float radioactivity;
+    public enum HalfLife {
 
-	private final int magnetism;
+        NONE(0), HALF_HOUR(30), HOUR(60), HOUR2(120), HOUR6(360), HOUR12(720), HOUR24(1440);
 
-	public ElementItem(final ElementProperties properties) {
-		super(properties);
-		this.halfLife = properties.getHalfLife();
-		this.roomTempState = properties.getRoomTempState();
-		this.radioactivity = properties.getRadioactivity();
-		this.magnetism = properties.getMagnetism();
-	}
+        private int time;
 
-	@Override
-	public void inventoryTick(final ItemStack stack, final World worldIn, final Entity entityIn, final int itemSlot,
-			final boolean isSelected) {
-		if ((this.magnetism > 0.0f) && (entityIn != null && worldIn != null && isSelected)) {
-			List<ItemEntity> nearbyItems = worldIn.getEntitiesWithinAABB(ItemEntity.class, new AxisAlignedBB(
-					new BlockPos(
-							entityIn.getLeashStartPosition().add(-this.magnetism, -this.magnetism, -this.magnetism)),
-					new BlockPos(
-							entityIn.getLeashStartPosition().add(this.magnetism, this.magnetism, this.magnetism))));
-			for (ItemEntity item : nearbyItems) {
-				item.move(MoverType.SELF, entityIn.getPositionVec());
-			}
-		}
+        HalfLife(final int timeIn) {
+            this.time = timeIn;
+        }
 
-		if (!stack.getOrCreateTag().contains(TICKS)) {
-			stack.getOrCreateTag().putInt(TICKS, 0);
-		}
+        public int getTime() {
+            return this.time;
+        }
+    }
 
-		if (this.halfLife.getTime() == 0) {
-			// return;
-		} else if (stack.getOrCreateTag().getInt(TICKS) != this.halfLife.getTime() * 1200) {
-			stack.getOrCreateTag().putInt(TICKS, stack.getOrCreateTag().getInt(TICKS) + 1);
-		} else if (stack.getOrCreateTag().getInt(TICKS) == this.halfLife.getTime() * 1200) {
-			stack.getOrCreateTag().putInt(TICKS, 0);
-			stack.setCount(0);
-		}
-	}
+    public enum RoomTempState {
+        SOLID(), LIQUID(), GAS();
+    }
 }

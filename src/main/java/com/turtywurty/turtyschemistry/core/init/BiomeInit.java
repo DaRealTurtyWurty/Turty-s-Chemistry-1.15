@@ -20,31 +20,32 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public final class BiomeInit {
 
-	public static class BiomeMaker {
+    public static final DeferredRegister<Biome> BIOMES = DeferredRegister.create(ForgeRegistries.BIOMES,
+            TurtyChemistry.MOD_ID);
 
-	}
+    public static final RegistryObject<Biome> BRINE_FLATS = BIOMES.register("brine_flats",
+            () -> new Biome.Builder().category(Category.PLAINS).depth(0.0F).scale(0.025F).downfall(0.02f)
+                    .precipitation(RainType.RAIN).temperature(0.5f)
+                    .setEffects(new BiomeAmbience.Builder().setWaterColor(0x000000).setWaterFogColor(0x6DA1DE)
+                            .setFogColor(0x000000).withSkyColor(0x0000ED).withGrassColor(0x00CC00)
+                            .withFoliageColor(0x00CC00).setMusic(BackgroundMusicTracks.WORLD_MUSIC).build())
+                    .withGenerationSettings(new BiomeGenerationSettings.Builder()
+                            .withSurfaceBuilder(new ConfiguredSurfaceBuilder<>(SurfaceBuilder.DEFAULT,
+                                    new SurfaceBuilderConfig(BlockInit.BRINE_BLOCK.get().getDefaultState(),
+                                            Blocks.STONE.getDefaultState(),
+                                            BlockInit.BRINE_BLOCK.get().getDefaultState())))
+                            .build())
+                    .withMobSpawnSettings(hostileMobs(new MobSpawnInfo.Builder()).build()).build());
 
-	public static final DeferredRegister<Biome> BIOMES = DeferredRegister.create(ForgeRegistries.BIOMES,
-			TurtyChemistry.MOD_ID);
+    private BiomeInit() {
+    }
 
-	public static final RegistryObject<Biome> BRINE_FLATS = BIOMES.register("brine_flats", () -> new Biome.Builder()
-			.category(Category.PLAINS).depth(0.0F).scale(0.025F).downfall(0.02f).precipitation(RainType.RAIN)
-			.temperature(0.5f)
-			.setEffects(new BiomeAmbience.Builder().setWaterColor(0x000000).setWaterFogColor(0x6DA1DE)
-					.setFogColor(0x000000).withSkyColor(0x0000ED).withGrassColor(0x00CC00).withFoliageColor(0x00CC00)
-					.setMusic(BackgroundMusicTracks.WORLD_MUSIC).build())
-			.withGenerationSettings(new BiomeGenerationSettings.Builder()
-					.withSurfaceBuilder(new ConfiguredSurfaceBuilder<>(SurfaceBuilder.DEFAULT,
-							new SurfaceBuilderConfig(BlockInit.BRINE_BLOCK.get().getDefaultState(),
-									Blocks.STONE.getDefaultState(), BlockInit.BRINE_BLOCK.get().getDefaultState())))
-					.build())
-			.withMobSpawnSettings(hostileMobs(new MobSpawnInfo.Builder()).build()).build());
+    private static MobSpawnInfo.Builder hostileMobs(final MobSpawnInfo.Builder builder) {
+        DefaultBiomeFeatures.withBatsAndHostiles(builder);
+        return builder;
+    }
 
-	private static MobSpawnInfo.Builder hostileMobs(final MobSpawnInfo.Builder builder) {
-		DefaultBiomeFeatures.withBatsAndHostiles(builder);
-		return builder;
-	}
+    public static class BiomeMaker {
 
-	private BiomeInit() {
-	}
+    }
 }

@@ -7,21 +7,21 @@ import net.minecraft.util.IntReferenceHolder;
 
 public class FunctionalIntReferenceHolder extends IntReferenceHolder {
 
-	private final IntSupplier getter;
-	private final IntConsumer setter;
+    private final IntSupplier getter;
+    private final IntConsumer setter;
 
-	public FunctionalIntReferenceHolder(final IntSupplier getter, final IntConsumer setter) {
-		this.getter = getter;
-		this.setter = setter;
-	}
+    public FunctionalIntReferenceHolder(final IntSupplier getter, final IntConsumer setter) {
+        this.getter = getter;
+        this.setter = setter;
+    }
 
-	@Override
-	public int get() {
-		return this.getter.getAsInt();
-	}
+    @Override
+    public int get() {
+        return this.getter.getAsInt();
+    }
 
-	@Override
-	public void set(final int newValue) {
-		this.setter.accept(newValue);
-	}
+    @Override
+    public void set(final int newValue) {
+        this.setter.accept(newValue);
+    }
 }

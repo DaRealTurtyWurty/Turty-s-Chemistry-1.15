@@ -7,11 +7,11 @@ import net.minecraft.tileentity.TileEntityType;
 
 public class GasifierTileEntity extends InventoryTile {
 
-	public GasifierTileEntity(TileEntityType<?> tileEntityTypeIn) {
-		super(tileEntityTypeIn, 2);
-	}
+    public GasifierTileEntity() {
+        this(TileEntityTypeInit.GASIFIER.get());
+    }
 
-	public GasifierTileEntity() {
-		this(TileEntityTypeInit.GASIFIER.get());
-	}
+    public GasifierTileEntity(final TileEntityType<?> tileEntityTypeIn) {
+        super(tileEntityTypeIn, 2);
+    }
 }

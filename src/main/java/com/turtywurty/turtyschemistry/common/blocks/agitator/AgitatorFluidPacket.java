@@ -10,29 +10,30 @@ import net.minecraftforge.fml.network.NetworkEvent;
 
 public class AgitatorFluidPacket {
 
-	public final int windowId;
-	public final FluidStack fluidContents;
+    public final int windowId;
+    public final FluidStack fluidContents;
 
-	public AgitatorFluidPacket(FluidStack fluid, int windowId) {
-		this.windowId = windowId;
-		this.fluidContents = fluid;
-	}
+    public AgitatorFluidPacket(final FluidStack fluid, final int windowId) {
+        this.windowId = windowId;
+        this.fluidContents = fluid;
+    }
 
-	public void encode(PacketBuffer packetBuffer) {
-		packetBuffer.writeFluidStack(this.fluidContents);
-		packetBuffer.writeInt(this.windowId);
-	}
+    public static AgitatorFluidPacket decode(final PacketBuffer buffer) {
+        return new AgitatorFluidPacket(buffer.readFluidStack(), buffer.readInt());
+    }
 
-	public static AgitatorFluidPacket decode(PacketBuffer buffer) {
-		return new AgitatorFluidPacket(buffer.readFluidStack(), buffer.readInt());
-	}
+    public void encode(final PacketBuffer packetBuffer) {
+        packetBuffer.writeFluidStack(this.fluidContents);
+        packetBuffer.writeInt(this.windowId);
+    }
 
-	public void onRecieved(Supplier<NetworkEvent.Context> context) {
-		context.get().enqueueWork(() -> {
-			if (ClientUtils.getClientPlayer().openContainer.windowId == this.windowId) {
-				((AgitatorContainer) ClientUtils.getClientPlayer().openContainer).recieveFluid(this.fluidContents);
-			}
-		});
-		context.get().setPacketHandled(true);
-	}
+    public void onRecieved(final Supplier<NetworkEvent.Context> context) {
+        context.get().enqueueWork(() -> {
+            if (ClientUtils.getClientPlayer().openContainer.windowId == this.windowId) {
+                ((AgitatorContainer) ClientUtils.getClientPlayer().openContainer)
+                        .recieveFluid(this.fluidContents);
+            }
+        });
+        context.get().setPacketHandled(true);
+    }
 }

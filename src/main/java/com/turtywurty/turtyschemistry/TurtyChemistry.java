@@ -60,108 +60,113 @@ import net.minecraftforge.registries.IForgeRegistry;
 @Mod.EventBusSubscriber(modid = TurtyChemistry.MOD_ID, bus = Bus.MOD)
 public class TurtyChemistry {
 
-	public static class ChemistryItemGroup extends ItemGroup {
-		public static final ChemistryItemGroup instance = new ChemistryItemGroup(ItemGroup.GROUPS.length,
-				"chemistrytab");
+    public static TurtyChemistry instance;
 
-		private ChemistryItemGroup(final int index, final String label) {
-			super(index, label);
-		}
+    public static final String MOD_ID = "turtychemistry";
+    public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
+    public static final String NETWORK_VERSION = "1";
+    public static final String CHAT = "chat." + MOD_ID + ".";
+    public static final String CHAT_INFO = CHAT + "info.";
 
-		@Override
-		public ItemStack createIcon() {
-			return new ItemStack(ItemInit.COPPER.get());
-		}
-	}
+    public static final SimpleChannel PACKET_HANDLER = NetworkRegistry.ChannelBuilder
+            .named(new ResourceLocation(MOD_ID, "main")).networkProtocolVersion(() -> NETWORK_VERSION)
+            .serverAcceptedVersions(NETWORK_VERSION::equals).clientAcceptedVersions(NETWORK_VERSION::equals)
+            .simpleChannel();
 
-	public static TurtyChemistry instance;
-	public static final String MOD_ID = "turtychemistry";
-	public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
-	public static final String NETWORK_VERSION = "1";
-	public static final String CHAT = "chat." + MOD_ID + ".";
+    public TurtyChemistry() {
+        instance = this;
 
-	public static final String CHAT_INFO = CHAT + "info.";
+        final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-	public static final SimpleChannel PACKET_HANDLER = NetworkRegistry.ChannelBuilder
-			.named(new ResourceLocation(MOD_ID, "main")).networkProtocolVersion(() -> NETWORK_VERSION)
-			.serverAcceptedVersions(NETWORK_VERSION::equals).clientAcceptedVersions(NETWORK_VERSION::equals)
-			.simpleChannel();
+        modEventBus.addListener(this::commonSetup);
 
-	@SubscribeEvent
-	public static void initBiomes(final RegistryEvent.Register<Biome> event) {
-		// BiomeManager.addBiome(BiomeType.COOL, new
-		// BiomeEntry(BiomeInit.BRINE_FLATS.get(), 2));
-		// BiomeManager.addSpawnBiome(BiomeInit.BRINE_FLATS.get());
-		// BiomeDictionary.addTypes(BiomeInit.BRINE_FLATS.get(), Type.BEACH,
-		// Type.WASTELAND, Type.WET, Type.WATER);
-	}
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> ClientUtils::onClientInit);
 
-	@SubscribeEvent
-	public static void onRegisterItems(final RegistryEvent.Register<Item> event) {
-		final IForgeRegistry<Item> registry = event.getRegistry();
+        ParticleInit.PARTICLE_TYPES.register(modEventBus);
+        PotionInit.EFFECTS.register(modEventBus);
+        StatsInit.STAT_TYPES.register(modEventBus);
+        ItemInit.ITEMS.register(modEventBus);
+        RecipeSerializerInit.SERIALIZERS.register(modEventBus);
+        TileEntityTypeInit.TILE_ENTITY_TYPES.register(modEventBus);
+        ContainerTypeInit.CONTAINER_TYPES.register(modEventBus);
+        FluidInit.FLUIDS.register(modEventBus);
+        BlockInit.BLOCKS.register(modEventBus);
+        BiomeInit.BIOMES.register(modEventBus);
+        EntityTypeInit.ENTITY_TYPES.register(modEventBus);
 
-		BlockInit.BLOCKS.getEntries().stream().map(RegistryObject::get)
-				.filter(block -> !block.equals(BlockInit.GREEN_ALGAE.get()) && !(block instanceof GasBlock)
-						&& !(block instanceof FlowingFluidBlock) && !(block instanceof BalerPart)
-						&& !(block instanceof BriquettingPressPart) && !(block instanceof GasCanisterBlock)
-						&& !(block instanceof CrystalBlock))
-				.forEach(block -> {
-					final Item.Properties properties = new Item.Properties().group(ChemistryItemGroup.instance);
-					final BlockItem blockItem = new BlockItem(block, properties);
-					blockItem.setRegistryName(block.getRegistryName());
-					registry.register(blockItem);
-				});
+        MinecraftForge.EVENT_BUS.register(this);
+    }
 
-		LOGGER.debug("Registered BlockItems");
-	}
+    @SubscribeEvent
+    public static void initBiomes(final RegistryEvent.Register<Biome> event) {
+        // BiomeManager.addBiome(BiomeType.COOL, new
+        // BiomeEntry(BiomeInit.BRINE_FLATS.get(), 2));
+        // BiomeManager.addSpawnBiome(BiomeInit.BRINE_FLATS.get());
+        // BiomeDictionary.addTypes(BiomeInit.BRINE_FLATS.get(), Type.BEACH,
+        // Type.WASTELAND, Type.WET, Type.WATER);
+    }
 
-	public TurtyChemistry() {
-		instance = this;
+    @SubscribeEvent
+    public static void onRegisterItems(final RegistryEvent.Register<Item> event) {
+        final IForgeRegistry<Item> registry = event.getRegistry();
 
-		final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        BlockInit.BLOCKS.getEntries().stream().map(RegistryObject::get)
+                .filter(block -> !block.equals(BlockInit.GREEN_ALGAE.get()) && !(block instanceof GasBlock)
+                        && !(block instanceof FlowingFluidBlock) && !(block instanceof BalerPart)
+                        && !(block instanceof BriquettingPressPart) && !(block instanceof GasCanisterBlock)
+                        && !(block instanceof CrystalBlock))
+                .forEach(block -> {
+                    final Item.Properties properties = new Item.Properties()
+                            .group(ChemistryItemGroup.instance);
+                    final BlockItem blockItem = new BlockItem(block, properties);
+                    blockItem.setRegistryName(block.getRegistryName());
+                    registry.register(blockItem);
+                });
 
-		modEventBus.addListener(this::commonSetup);
+        LOGGER.debug("Registered BlockItems");
+    }
 
-		DistExecutor.runWhenOn(Dist.CLIENT, () -> ClientUtils::onClientInit);
+    private void commonSetup(final FMLCommonSetupEvent event) {
+        registerPackets();
+        // DeferredWorkQueue.runLater(FeatureGeneration::addAllFeatures);
+        CapabilityManager.INSTANCE.register(IGuideBookData.class, new GuideBookDataCap.Storage(),
+                GuideBookData::new);
+        TurtEnergyCap.register();
+    }
 
-		ParticleInit.PARTICLE_TYPES.register(modEventBus);
-		PotionInit.EFFECTS.register(modEventBus);
-		StatsInit.STAT_TYPES.register(modEventBus);
-		ItemInit.ITEMS.register(modEventBus);
-		RecipeSerializerInit.SERIALIZERS.register(modEventBus);
-		TileEntityTypeInit.TILE_ENTITY_TYPES.register(modEventBus);
-		ContainerTypeInit.CONTAINER_TYPES.register(modEventBus);
-		FluidInit.FLUIDS.register(modEventBus);
-		BlockInit.BLOCKS.register(modEventBus);
-		BiomeInit.BIOMES.register(modEventBus);
-		EntityTypeInit.ENTITY_TYPES.register(modEventBus);
+    private void registerPackets() {
+        int index = 0;
+        PACKET_HANDLER.registerMessage(index, BriquettingPressButtonPacket.class,
+                BriquettingPressButtonPacket::encode, BriquettingPressButtonPacket::decode,
+                BriquettingPressButtonPacket::onRecieved);
+        index++;
+        PACKET_HANDLER.registerMessage(index++, SiloButtonPacket.class, SiloButtonPacket::encode,
+                SiloButtonPacket::decode, SiloButtonPacket::onRecieved);
+        PACKET_HANDLER.registerMessage(index++, AgitatorFluidPacket.class, AgitatorFluidPacket::encode,
+                AgitatorFluidPacket::decode, AgitatorFluidPacket::onRecieved);
+        PACKET_HANDLER.registerMessage(index++, AgitatorTypePacket.class, AgitatorTypePacket::encode,
+                AgitatorTypePacket::decode, AgitatorTypePacket::onRecieved);
+        PACKET_HANDLER.registerMessage(index++, BoilerFluidPacket.class, BoilerFluidPacket::encode,
+                BoilerFluidPacket::decode, BoilerFluidPacket::onRecieved);
+        PACKET_HANDLER.registerMessage(index++, ResearcherRecipeButtonPacket.class,
+                ResearcherRecipeButtonPacket::write, ResearcherRecipeButtonPacket::read,
+                ResearcherRecipeButtonPacket::handle);
+        PACKET_HANDLER.registerMessage(index++, ElectrolyzerFluidPacket.class,
+                ElectrolyzerFluidPacket::encode, ElectrolyzerFluidPacket::decode,
+                ElectrolyzerFluidPacket::onRecieved);
+    }
 
-		MinecraftForge.EVENT_BUS.register(this);
-	}
+    public static class ChemistryItemGroup extends ItemGroup {
+        public static final ChemistryItemGroup instance = new ChemistryItemGroup(ItemGroup.GROUPS.length,
+                "chemistrytab");
 
-	private void commonSetup(final FMLCommonSetupEvent event) {
-		registerPackets();
-		// DeferredWorkQueue.runLater(FeatureGeneration::addAllFeatures);
-		CapabilityManager.INSTANCE.register(IGuideBookData.class, new GuideBookDataCap.Storage(), GuideBookData::new);
-		TurtEnergyCap.register();
-	}
+        private ChemistryItemGroup(final int index, final String label) {
+            super(index, label);
+        }
 
-	private void registerPackets() {
-		int index = 0;
-		PACKET_HANDLER.registerMessage(index++, BriquettingPressButtonPacket.class,
-				BriquettingPressButtonPacket::encode, BriquettingPressButtonPacket::decode,
-				BriquettingPressButtonPacket::onRecieved);
-		PACKET_HANDLER.registerMessage(index++, SiloButtonPacket.class, SiloButtonPacket::encode,
-				SiloButtonPacket::decode, SiloButtonPacket::onRecieved);
-		PACKET_HANDLER.registerMessage(index++, AgitatorFluidPacket.class, AgitatorFluidPacket::encode,
-				AgitatorFluidPacket::decode, AgitatorFluidPacket::onRecieved);
-		PACKET_HANDLER.registerMessage(index++, AgitatorTypePacket.class, AgitatorTypePacket::encode,
-				AgitatorTypePacket::decode, AgitatorTypePacket::onRecieved);
-		PACKET_HANDLER.registerMessage(index++, BoilerFluidPacket.class, BoilerFluidPacket::encode,
-				BoilerFluidPacket::decode, BoilerFluidPacket::onRecieved);
-		PACKET_HANDLER.registerMessage(index++, ResearcherRecipeButtonPacket.class, ResearcherRecipeButtonPacket::write,
-				ResearcherRecipeButtonPacket::read, ResearcherRecipeButtonPacket::handle);
-		PACKET_HANDLER.registerMessage(index++, ElectrolyzerFluidPacket.class, ElectrolyzerFluidPacket::encode,
-				ElectrolyzerFluidPacket::decode, ElectrolyzerFluidPacket::onRecieved);
-	}
+        @Override
+        public ItemStack createIcon() {
+            return new ItemStack(ItemInit.COPPER.get());
+        }
+    }
 }

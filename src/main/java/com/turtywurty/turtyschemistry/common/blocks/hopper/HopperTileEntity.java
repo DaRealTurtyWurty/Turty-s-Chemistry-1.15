@@ -23,57 +23,60 @@ import net.minecraft.world.World;
 
 public class HopperTileEntity extends InventoryTile implements IProductionLineTile, INamedContainerProvider {
 
-	public HopperTileEntity(TileEntityType<?> tileEntityTypeIn) {
-		super(tileEntityTypeIn, 54);
-	}
+    public HopperTileEntity() {
+        this(TileEntityTypeInit.HOPPER.get());
+    }
 
-	public HopperTileEntity() {
-		this(TileEntityTypeInit.HOPPER.get());
-	}
+    public HopperTileEntity(final TileEntityType<?> tileEntityTypeIn) {
+        super(tileEntityTypeIn, 54);
+    }
 
-	@Override
-	public boolean hasValidNeighbours(World world, BlockPos pos, Block... exludingBlocks) {
-		return false;
-	}
+    public List<ItemEntity> collectItems() {
+        return Block.makeCuboidShape(0.0D, 0.0D, 0.0D, 32.0D, 32.0D, 32.0D).toBoundingBoxList().stream()
+                .flatMap(boundingBox -> this.world
+                        .getEntitiesWithinAABB(ItemEntity.class,
+                                boundingBox.offset(this.pos.getX(), this.pos.getY(), this.pos.getZ()))
+                        .stream())
+                .collect(Collectors.toList());
+    }
 
-	@Override
-	public void tick() {
-		// Pickup above and in items
-		for (ItemEntity itemEntity : collectItems()) {
-			insertDrop(itemEntity);
-		}
-	}
+    @Override
+    public Container createMenu(final int windowID, final PlayerInventory playerInv,
+            final PlayerEntity player) {
+        return new HopperContainer(windowID, playerInv, this);
+    }
 
-	public boolean insertDrop(ItemEntity itemEntity) {
-		boolean captured = false;
-		ItemStack stack1 = itemEntity.getItem().copy();
-		for (int index = 0; index < this.getInventory().getSlots(); index++) {
-			stack1 = this.getInventory().insertItem(index, stack1, false);
-		}
+    @Override
+    public ITextComponent getDisplayName() {
+        return new TranslationTextComponent("container." + TurtyChemistry.MOD_ID + ".hopper");
+    }
 
-		if (stack1.isEmpty()) {
-			captured = true;
-			itemEntity.remove();
-		} else {
-			itemEntity.setItem(stack1);
-		}
-		return captured;
-	}
+    @Override
+    public boolean hasValidNeighbours(final World world, final BlockPos pos, final Block... exludingBlocks) {
+        return false;
+    }
 
-	public List<ItemEntity> collectItems() {
-		return Block.makeCuboidShape(0.0D, 0.0D, 0.0D, 32.0D, 32.0D, 32.0D).toBoundingBoxList().stream()
-				.flatMap(boundingBox -> this.world.getEntitiesWithinAABB(ItemEntity.class,
-						boundingBox.offset(this.pos.getX(), this.pos.getY(), this.pos.getZ())).stream())
-				.collect(Collectors.toList());
-	}
+    public boolean insertDrop(final ItemEntity itemEntity) {
+        boolean captured = false;
+        ItemStack stack1 = itemEntity.getItem().copy();
+        for (int index = 0; index < getInventory().getSlots(); index++) {
+            stack1 = getInventory().insertItem(index, stack1, false);
+        }
 
-	@Override
-	public Container createMenu(final int windowID, final PlayerInventory playerInv, final PlayerEntity player) {
-		return new HopperContainer(windowID, playerInv, this);
-	}
+        if (stack1.isEmpty()) {
+            captured = true;
+            itemEntity.remove();
+        } else {
+            itemEntity.setItem(stack1);
+        }
+        return captured;
+    }
 
-	@Override
-	public ITextComponent getDisplayName() {
-		return new TranslationTextComponent("container." + TurtyChemistry.MOD_ID + ".hopper");
-	}
+    @Override
+    public void tick() {
+        // Pickup above and in items
+        for (final ItemEntity itemEntity : collectItems()) {
+            insertDrop(itemEntity);
+        }
+    }
 }

@@ -37,162 +37,167 @@ import net.minecraftforge.fml.network.NetworkHooks;
 
 public class SiloBlock extends Block {
 
-	public static final EnumProperty<SiloPart> PARTS = EnumProperty.<SiloPart>create("part", SiloPart.class);
-	private static final DirectionProperty ROTATION = DirectionProperty.create("rotation", Direction.Plane.HORIZONTAL);
-	public static final IntegerProperty LEVEL = IntegerProperty.create("level", 0, 7);
+    public static final EnumProperty<SiloPart> PARTS = EnumProperty.<SiloPart>create("part", SiloPart.class);
+    private static final DirectionProperty ROTATION = DirectionProperty.create("rotation",
+            Direction.Plane.HORIZONTAL);
+    public static final IntegerProperty LEVEL = IntegerProperty.create("level", 0, 7);
 
-	protected static final Map<Direction, VoxelShape> BOTTOM_SHAPES = new EnumMap<>(Direction.class),
-			MIDDLE_SHAPES = new EnumMap<>(Direction.class), TOP_SHAPES = new EnumMap<>(Direction.class);
+    protected static final Map<Direction, VoxelShape> BOTTOM_SHAPES = new EnumMap<>(Direction.class),
+            MIDDLE_SHAPES = new EnumMap<>(Direction.class), TOP_SHAPES = new EnumMap<>(Direction.class);
 
-	public SiloBlock(final AbstractBlock.Properties properties) {
-		super(properties);
-		setDefaultState(this.stateContainer.getBaseState().with(ROTATION, Direction.NORTH)
-				.with(PARTS, SiloPart.FRONT_BOTTOM_LEFT).with(LEVEL, 0));
-	}
+    public SiloBlock(final AbstractBlock.Properties properties) {
+        super(properties);
+        setDefaultState(this.stateContainer.getBaseState().with(ROTATION, Direction.NORTH)
+                .with(PARTS, SiloPart.FRONT_BOTTOM_LEFT).with(LEVEL, 0));
+    }
 
-	// TODO: Fix
-	@SuppressWarnings("deprecation")
-	private void checkValidity(final World worldIn, final BlockPos pos) {
-		BlockState state = worldIn.getBlockState(pos);
-		if (SiloPart.FRONT_BOTTOM_LEFT.equals(state.get(PARTS))) {
-			int index = 0;
+    @Override
+    @Nullable
+    public TileEntity createTileEntity(final BlockState state, final IBlockReader world) {
+        if (SiloPart.FRONT_BOTTOM_LEFT.equals(state.get(PARTS)))
+            return TileEntityTypeInit.SILO.get().create();
+        return null;
+    }
 
-			for (int x = 0; x < 2; x++) {
-				for (int z = 0; z < 2; z++) {
-					for (int y = 0; y < 3; y++) {
-						BlockPos offsetPos = pos.add(x, y, z);
-						if (!offsetPos.equals(pos) && !worldIn.getBlockState(offsetPos).isAir()) {
-							worldIn.setBlockState(pos, Blocks.AIR.getDefaultState(), Constants.BlockFlags.BLOCK_UPDATE);
-							return;
-						}
-					}
-				}
-			}
+    @Override
+    public float getPlayerRelativeBlockHardness(final BlockState blockState, final PlayerEntity player,
+            final IBlockReader worldIn, final BlockPos pos) {
+        return SiloPart.FRONT_BOTTOM_LEFT.equals(blockState.get(PARTS))
+                ? blockState.getPlayerRelativeBlockHardness(player, worldIn, pos)
+                : -1f;
+    }
 
-			for (int y = 0; y < 3; y++) {
-				for (int z = 0; z < 2; z++) {
-					for (int x = 0; x < 2; x++) {
-						worldIn.setBlockState(
-								pos.add(x, y, z), state.with(PARTS, SiloPart.values()[index])
-										.with(ROTATION, state.get(ROTATION)).with(LEVEL, state.get(LEVEL)),
-								Constants.BlockFlags.BLOCK_UPDATE);
-						index++;
-					}
-				}
-			}
-		}
-	}
+    @Override
+    public BlockState getStateForPlacement(final BlockItemUseContext context) {
+        return getDefaultState().with(ROTATION, context.getPlacementHorizontalFacing().getOpposite())
+                .with(PARTS, SiloPart.FRONT_BOTTOM_LEFT).with(LEVEL, 0);
+    }
 
-	@Override
-	@Nullable
-	public TileEntity createTileEntity(final BlockState state, final IBlockReader world) {
-		if (SiloPart.FRONT_BOTTOM_LEFT.equals(state.get(PARTS)))
-			return TileEntityTypeInit.SILO.get().create();
-		return null;
-	}
+    @Override
+    public boolean hasTileEntity(final BlockState state) {
+        return true;
+    }
 
-	@Override
-	protected void fillStateContainer(final Builder<Block, BlockState> builder) {
-		super.fillStateContainer(builder);
-		builder.add(PARTS, ROTATION, LEVEL);
-	}
+    @Override
+    public ActionResultType onBlockActivated(final BlockState state, final World worldIn, final BlockPos pos,
+            final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
+        if (worldIn != null && !worldIn.isRemote) {
+            if (SiloPart.FRONT_BOTTOM_LEFT.equals(state.get(PARTS))) {
+                final TileEntity tile = worldIn.getTileEntity(pos);
+                if (tile instanceof SiloTileEntity) {
+                    final ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+                    final IContainerProvider provider = SiloContainer
+                            .getServerContainerProvider((SiloTileEntity) tile, pos, 0);
+                    final INamedContainerProvider namedProvider = new SimpleNamedContainerProvider(provider,
+                            ((SiloTileEntity) tile).getDisplayName());
+                    NetworkHooks.openGui(serverPlayer, namedProvider, pos);
+                }
+            } else {
+                for (int width = 0; width < 2; width++) {
+                    for (int depth = 0; depth < 2; depth++) {
+                        for (int height = 0; height < 3; height++) {
+                            if (worldIn.getTileEntity(
+                                    pos.add(-width, -height, -depth)) instanceof SiloTileEntity) {
+                                final SiloTileEntity tile = (SiloTileEntity) worldIn
+                                        .getTileEntity(pos.add(-width, -height, -depth));
+                                final ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+                                final IContainerProvider provider = SiloContainer
+                                        .getServerContainerProvider(tile, pos, 0);
+                                final INamedContainerProvider namedProvider = new SimpleNamedContainerProvider(
+                                        provider, tile.getDisplayName());
+                                NetworkHooks.openGui(serverPlayer, namedProvider,
+                                        pos.add(-width, -height, -depth));
+                                return ActionResultType.SUCCESS;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return ActionResultType.SUCCESS;
+    }
 
-	@Override
-	public float getPlayerRelativeBlockHardness(final BlockState blockState, final PlayerEntity player,
-			final IBlockReader worldIn, final BlockPos pos) {
-		return SiloPart.FRONT_BOTTOM_LEFT.equals(blockState.get(PARTS))
-				? blockState.getPlayerRelativeBlockHardness(player, worldIn, pos)
-				: -1f;
-	}
+    @Override
+    public void onBlockAdded(final BlockState state, final World worldIn, final BlockPos pos,
+            final BlockState oldState, final boolean isMoving) {
+        checkValidity(worldIn, pos);
+    }
 
-	@Override
-	public BlockState getStateForPlacement(final BlockItemUseContext context) {
-		return getDefaultState().with(ROTATION, context.getPlacementHorizontalFacing().getOpposite())
-				.with(PARTS, SiloPart.FRONT_BOTTOM_LEFT).with(LEVEL, 0);
-	}
+    @Override
+    public void onPlayerDestroy(final IWorld worldIn, final BlockPos pos, final BlockState state) {
+        super.onPlayerDestroy(worldIn, pos, state);
+        if (!SiloPart.FRONT_BOTTOM_LEFT.equals(state.get(PARTS))) {
+            worldIn.setBlockState(pos, state, Constants.BlockFlags.BLOCK_UPDATE);
+        }
+    }
 
-	@Override
-	public boolean hasTileEntity(final BlockState state) {
-		return true;
-	}
+    @Override
+    public void onReplaced(final BlockState state, final World worldIn, final BlockPos pos,
+            final BlockState newState, final boolean isMoving) {
+        if (worldIn.getTileEntity(pos) instanceof SiloTileEntity && state.getBlock() != newState.getBlock()) {
+            final SiloTileEntity tile = (SiloTileEntity) worldIn.getTileEntity(pos);
 
-	@Override
-	public ActionResultType onBlockActivated(final BlockState state, final World worldIn, final BlockPos pos,
-			final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
-		if (worldIn != null && !worldIn.isRemote) {
-			if (SiloPart.FRONT_BOTTOM_LEFT.equals(state.get(PARTS))) {
-				TileEntity tile = worldIn.getTileEntity(pos);
-				if (tile instanceof SiloTileEntity) {
-					ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
-					IContainerProvider provider = SiloContainer.getServerContainerProvider((SiloTileEntity) tile, pos,
-							0);
-					INamedContainerProvider namedProvider = new SimpleNamedContainerProvider(provider,
-							((SiloTileEntity) tile).getDisplayName());
-					NetworkHooks.openGui(serverPlayer, namedProvider, pos);
-				}
-			} else {
-				for (int width = 0; width < 2; width++) {
-					for (int depth = 0; depth < 2; depth++) {
-						for (int height = 0; height < 3; height++) {
-							if (worldIn.getTileEntity(pos.add(-width, -height, -depth)) instanceof SiloTileEntity) {
-								SiloTileEntity tile = (SiloTileEntity) worldIn
-										.getTileEntity(pos.add(-width, -height, -depth));
-								ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
-								IContainerProvider provider = SiloContainer.getServerContainerProvider(tile, pos, 0);
-								INamedContainerProvider namedProvider = new SimpleNamedContainerProvider(provider,
-										tile.getDisplayName());
-								NetworkHooks.openGui(serverPlayer, namedProvider, pos.add(-width, -height, -depth));
-								return ActionResultType.SUCCESS;
-							}
-						}
-					}
-				}
-			}
-		}
-		return ActionResultType.SUCCESS;
-	}
+            for (int index = 0; index < tile.getInventory().getSlots(); index++) {
+                if (!tile.getInventory().getStackInSlot(index).isEmpty()) {
+                    final ItemEntity itemEntity = new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ());
+                    itemEntity.setItem(tile.getInventory().getStackInSlot(index));
+                    worldIn.addEntity(itemEntity);
+                }
+            }
 
-	@Override
-	public void onBlockAdded(final BlockState state, final World worldIn, final BlockPos pos, final BlockState oldState,
-			final boolean isMoving) {
-		checkValidity(worldIn, pos);
-	}
+            worldIn.setBlockState(pos, Blocks.AIR.getDefaultState());
+            for (int width = 0; width < 2; width++) {
+                for (int depth = 0; depth < 2; depth++) {
+                    for (int height = 0; height < 3; height++) {
+                        final BlockPos offsetPos = pos.add(width, height, depth);
+                        worldIn.setBlockState(offsetPos, Blocks.AIR.getDefaultState());
+                    }
+                }
+            }
+        }
 
-	@Override
-	public void onPlayerDestroy(final IWorld worldIn, final BlockPos pos, final BlockState state) {
-		super.onPlayerDestroy(worldIn, pos, state);
-		if (!SiloPart.FRONT_BOTTOM_LEFT.equals(state.get(PARTS))) {
-			worldIn.setBlockState(pos, state, Constants.BlockFlags.BLOCK_UPDATE);
-		}
-	}
+        if (state.hasTileEntity() && (state.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
+            worldIn.removeTileEntity(pos);
+        }
+    }
 
-	@Override
-	public void onReplaced(final BlockState state, final World worldIn, final BlockPos pos, final BlockState newState,
-			final boolean isMoving) {
-		if (worldIn.getTileEntity(pos) instanceof SiloTileEntity && state.getBlock() != newState.getBlock()) {
-			SiloTileEntity tile = (SiloTileEntity) worldIn.getTileEntity(pos);
+    @Override
+    protected void fillStateContainer(final Builder<Block, BlockState> builder) {
+        super.fillStateContainer(builder);
+        builder.add(PARTS, ROTATION, LEVEL);
+    }
 
-			for (int index = 0; index < tile.getInventory().getSlots(); index++) {
-				if (!tile.getInventory().getStackInSlot(index).isEmpty()) {
-					ItemEntity itemEntity = new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ());
-					itemEntity.setItem(tile.getInventory().getStackInSlot(index));
-					worldIn.addEntity(itemEntity);
-				}
-			}
+    // TODO: Fix
+    @SuppressWarnings("deprecation")
+    private void checkValidity(final World worldIn, final BlockPos pos) {
+        final BlockState state = worldIn.getBlockState(pos);
+        if (SiloPart.FRONT_BOTTOM_LEFT.equals(state.get(PARTS))) {
+            int index = 0;
 
-			worldIn.setBlockState(pos, Blocks.AIR.getDefaultState());
-			for (int width = 0; width < 2; width++) {
-				for (int depth = 0; depth < 2; depth++) {
-					for (int height = 0; height < 3; height++) {
-						BlockPos offsetPos = pos.add(width, height, depth);
-						worldIn.setBlockState(offsetPos, Blocks.AIR.getDefaultState());
-					}
-				}
-			}
-		}
+            for (int x = 0; x < 2; x++) {
+                for (int z = 0; z < 2; z++) {
+                    for (int y = 0; y < 3; y++) {
+                        final BlockPos offsetPos = pos.add(x, y, z);
+                        if (!offsetPos.equals(pos) && !worldIn.getBlockState(offsetPos).isAir()) {
+                            worldIn.setBlockState(pos, Blocks.AIR.getDefaultState(),
+                                    Constants.BlockFlags.BLOCK_UPDATE);
+                            return;
+                        }
+                    }
+                }
+            }
 
-		if (state.hasTileEntity() && (state.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
-			worldIn.removeTileEntity(pos);
-		}
-	}
+            for (int y = 0; y < 3; y++) {
+                for (int z = 0; z < 2; z++) {
+                    for (int x = 0; x < 2; x++) {
+                        worldIn.setBlockState(pos.add(x, y, z),
+                                state.with(PARTS, SiloPart.values()[index])
+                                        .with(ROTATION, state.get(ROTATION)).with(LEVEL, state.get(LEVEL)),
+                                Constants.BlockFlags.BLOCK_UPDATE);
+                        index++;
+                    }
+                }
+            }
+        }
+    }
 }

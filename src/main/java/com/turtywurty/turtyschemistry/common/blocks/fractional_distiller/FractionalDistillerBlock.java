@@ -29,94 +29,99 @@ import net.minecraftforge.items.ItemStackHandler;
 
 public class FractionalDistillerBlock extends HorizontalBlock {
 
-	public static final BooleanProperty PROCESSING = BooleanProperty.create("processing");
+    public static final BooleanProperty PROCESSING = BooleanProperty.create("processing");
 
-	public FractionalDistillerBlock(final Properties builder) {
-		super(builder);
-		setDefaultState(
-				this.stateContainer.getBaseState().with(HORIZONTAL_FACING, Direction.NORTH).with(PROCESSING, false));
-	}
+    public FractionalDistillerBlock(final Properties builder) {
+        super(builder);
+        setDefaultState(this.stateContainer.getBaseState().with(HORIZONTAL_FACING, Direction.NORTH)
+                .with(PROCESSING, false));
+    }
 
-	@Override
-	public TileEntity createTileEntity(final BlockState state, final IBlockReader worldIn) {
-		return TileEntityTypeInit.FRACTIONAL_DISTILLER.get().create();
-	}
+    @Override
+    public TileEntity createTileEntity(final BlockState state, final IBlockReader worldIn) {
+        return TileEntityTypeInit.FRACTIONAL_DISTILLER.get().create();
+    }
 
-	@Override
-	protected void fillStateContainer(final StateContainer.Builder<Block, BlockState> builder) {
-		super.fillStateContainer(builder);
-		builder.add(HORIZONTAL_FACING, PROCESSING);
-	}
+    @Override
+    public int getComparatorInputOverride(final BlockState blockState, final World worldIn,
+            final BlockPos pos) {
+        final TileEntity tileEntity = worldIn.getTileEntity(pos);
+        if (tileEntity instanceof FractionalDistillerTileEntity)
+            return ItemHandlerHelper
+                    .calcRedstoneFromInventory(((FractionalDistillerTileEntity) tileEntity).inventory);
+        return blockState.getComparatorInputOverride(worldIn, pos);
+    }
 
-	@Override
-	public int getComparatorInputOverride(final BlockState blockState, final World worldIn, final BlockPos pos) {
-		final TileEntity tileEntity = worldIn.getTileEntity(pos);
-		if (tileEntity instanceof FractionalDistillerTileEntity)
-			return ItemHandlerHelper.calcRedstoneFromInventory(((FractionalDistillerTileEntity) tileEntity).inventory);
-		return blockState.getComparatorInputOverride(worldIn, pos);
-	}
+    @Override
+    public int getLightValue(final BlockState state, final IBlockReader world, final BlockPos pos) {
+        return state.get(PROCESSING) ? super.getLightValue(state, world, pos) : 0;
+    }
 
-	@Override
-	public int getLightValue(final BlockState state, final IBlockReader world, final BlockPos pos) {
-		return state.get(PROCESSING) ? super.getLightValue(state, world, pos) : 0;
-	}
+    @Override
+    public BlockRenderType getRenderType(final BlockState state) {
+        return BlockRenderType.MODEL;
+    }
 
-	@Override
-	public BlockRenderType getRenderType(final BlockState state) {
-		return BlockRenderType.MODEL;
-	}
+    @Override
+    public BlockState getStateForPlacement(final BlockItemUseContext context) {
+        return getDefaultState().with(HORIZONTAL_FACING,
+                context.getPlacementHorizontalFacing().getOpposite());
+    }
 
-	@Override
-	public BlockState getStateForPlacement(final BlockItemUseContext context) {
-		return getDefaultState().with(HORIZONTAL_FACING, context.getPlacementHorizontalFacing().getOpposite());
-	}
+    @Override
+    public boolean hasTileEntity(final BlockState state) {
+        return true;
+    }
 
-	@Override
-	public boolean hasTileEntity(final BlockState state) {
-		return true;
-	}
+    @SuppressWarnings("deprecation")
+    @Override
+    public BlockState mirror(final BlockState state, final Mirror mirrorIn) {
+        return state.rotate(mirrorIn.toRotation(state.get(HORIZONTAL_FACING)));
+    }
 
-	@SuppressWarnings("deprecation")
-	@Override
-	public BlockState mirror(final BlockState state, final Mirror mirrorIn) {
-		return state.rotate(mirrorIn.toRotation(state.get(HORIZONTAL_FACING)));
-	}
+    @Override
+    public ActionResultType onBlockActivated(final BlockState state, final World worldIn, final BlockPos pos,
+            final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
+        if (!worldIn.isRemote) {
+            final TileEntity tileEntity = worldIn.getTileEntity(pos);
+            if (tileEntity instanceof FractionalDistillerTileEntity) {
+                NetworkHooks.openGui((ServerPlayerEntity) player, (FractionalDistillerTileEntity) tileEntity,
+                        pos);
+                player.addStat(StatsInit.INTERACT_WITH_FRACTIONAL_DISTILLER);
+            }
+        }
+        return ActionResultType.SUCCESS;
+    }
 
-	@Override
-	public ActionResultType onBlockActivated(final BlockState state, final World worldIn, final BlockPos pos,
-			final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
-		if (!worldIn.isRemote) {
-			final TileEntity tileEntity = worldIn.getTileEntity(pos);
-			if (tileEntity instanceof FractionalDistillerTileEntity) {
-				NetworkHooks.openGui((ServerPlayerEntity) player, (FractionalDistillerTileEntity) tileEntity, pos);
-				player.addStat(StatsInit.INTERACT_WITH_FRACTIONAL_DISTILLER);
-			}
-		}
-		return ActionResultType.SUCCESS;
-	}
+    @Override
+    public void onReplaced(final BlockState oldState, final World worldIn, final BlockPos pos,
+            final BlockState newState, final boolean isMoving) {
+        if (oldState.getBlock() != newState.getBlock()) {
+            final TileEntity tileEntity = worldIn.getTileEntity(pos);
+            if (tileEntity instanceof FractionalDistillerTileEntity) {
+                final ItemStackHandler inventory = ((FractionalDistillerTileEntity) tileEntity).inventory;
+                for (int slot = 0; slot < inventory.getSlots(); ++slot) {
+                    final ItemEntity ie = new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(),
+                            inventory.getStackInSlot(slot));
+                    worldIn.addEntity(ie);
+                }
+            }
+        }
 
-	@Override
-	public void onReplaced(final BlockState oldState, final World worldIn, final BlockPos pos,
-			final BlockState newState, final boolean isMoving) {
-		if (oldState.getBlock() != newState.getBlock()) {
-			TileEntity tileEntity = worldIn.getTileEntity(pos);
-			if (tileEntity instanceof FractionalDistillerTileEntity) {
-				final ItemStackHandler inventory = ((FractionalDistillerTileEntity) tileEntity).inventory;
-				for (int slot = 0; slot < inventory.getSlots(); ++slot) {
-					ItemEntity ie = new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(),
-							inventory.getStackInSlot(slot));
-					worldIn.addEntity(ie);
-				}
-			}
-		}
+        if (oldState.hasTileEntity()
+                && (oldState.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
+            worldIn.removeTileEntity(pos);
+        }
+    }
 
-		if (oldState.hasTileEntity() && (oldState.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
-			worldIn.removeTileEntity(pos);
-		}
-	}
+    @Override
+    public BlockState rotate(final BlockState state, final Rotation rot) {
+        return state.with(HORIZONTAL_FACING, rot.rotate(state.get(HORIZONTAL_FACING)));
+    }
 
-	@Override
-	public BlockState rotate(final BlockState state, final Rotation rot) {
-		return state.with(HORIZONTAL_FACING, rot.rotate(state.get(HORIZONTAL_FACING)));
-	}
+    @Override
+    protected void fillStateContainer(final StateContainer.Builder<Block, BlockState> builder) {
+        super.fillStateContainer(builder);
+        builder.add(HORIZONTAL_FACING, PROCESSING);
+    }
 }

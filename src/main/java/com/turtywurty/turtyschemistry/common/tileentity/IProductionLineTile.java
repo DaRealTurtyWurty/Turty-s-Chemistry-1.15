@@ -11,8 +11,8 @@ import net.minecraft.world.World;
 
 public interface IProductionLineTile {
 
-	public final Set<Direction> HORIZONTAL_DIRECTIONS = Sets.newHashSet(Direction.NORTH, Direction.EAST, Direction.SOUTH,
-			Direction.WEST);
+    Set<Direction> HORIZONTAL_DIRECTIONS = Sets.newHashSet(Direction.NORTH, Direction.EAST, Direction.SOUTH,
+            Direction.WEST);
 
-	public boolean hasValidNeighbours(World world, BlockPos pos, Block... exludingBlocks);
+    boolean hasValidNeighbours(World world, BlockPos pos, Block... exludingBlocks);
 }

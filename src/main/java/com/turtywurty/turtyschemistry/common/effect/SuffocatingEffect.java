@@ -7,19 +7,19 @@ import net.minecraft.util.DamageSource;
 
 public class SuffocatingEffect extends Effect {
 
-	private int time = 0;
+    private int time = 0;
 
-	public SuffocatingEffect(EffectType typeIn, int liquidColorIn) {
-		super(typeIn, liquidColorIn);
-	}
+    public SuffocatingEffect(final EffectType typeIn, final int liquidColorIn) {
+        super(typeIn, liquidColorIn);
+    }
 
-	@Override
-	public void performEffect(LivingEntity entityLivingBaseIn, int amplifier) {
-		super.performEffect(entityLivingBaseIn, amplifier);
-		time++;
-		if (time > 100) {
-			time = 0;
-			entityLivingBaseIn.attackEntityFrom(DamageSource.DROWN, 1f);
-		}
-	}
+    @Override
+    public void performEffect(final LivingEntity entityLivingBaseIn, final int amplifier) {
+        super.performEffect(entityLivingBaseIn, amplifier);
+        this.time++;
+        if (this.time > 100) {
+            this.time = 0;
+            entityLivingBaseIn.attackEntityFrom(DamageSource.DROWN, 1f);
+        }
+    }
 }

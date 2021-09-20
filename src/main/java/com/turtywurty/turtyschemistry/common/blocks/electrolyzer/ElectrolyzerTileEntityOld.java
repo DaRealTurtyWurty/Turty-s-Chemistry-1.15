@@ -5,6 +5,7 @@ import com.turtywurty.turtyschemistry.common.tileentity.InventoryTile;
 import com.turtywurty.turtyschemistry.core.init.ItemInit;
 import com.turtywurty.turtyschemistry.core.init.TileEntityTypeInit;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.ItemStack;
@@ -14,232 +15,232 @@ import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
-public class ElectrolyzerTileEntity extends InventoryTile {
+public class ElectrolyzerTileEntityOld extends InventoryTile {
 
-	private int storedHydrogen, storedOxygen, storedWater;
-	private boolean converting = false, reachedMax = false;
-	private int runningTime;
+    private int storedHydrogen, storedOxygen, storedWater;
+    private boolean converting = false, reachedMax = false;
+    private int runningTime;
 
-	private int maxRunningTime = 40, maxHydrogen = 10000, maxOxygen = 10000, maxWater = 10000;
-	private final int bucketHydrogen = 500, bucketOxygen = 250;
+    private int maxRunningTime = 40, maxHydrogen = 10000, maxOxygen = 10000, maxWater = 10000;
+    private final int bucketHydrogen = 500, bucketOxygen = 250;
 
-	public ElectrolyzerTileEntity(TileEntityType<?> tileEntityTypeIn) {
-		super(tileEntityTypeIn, 3);
-	}
+    public ElectrolyzerTileEntityOld() {
+        this(TileEntityTypeInit.ELECTROLYZER.get());
+    }
 
-	public ElectrolyzerTileEntity() {
-		this(TileEntityTypeInit.ELECTROLYZER.get());
-	}
+    public ElectrolyzerTileEntityOld(final TileEntityType<?> tileEntityTypeIn) {
+        super(tileEntityTypeIn, 3);
+    }
 
-	@Override
-	public void tick() {
-		super.tick();
+    public ITextComponent getDisplayName() {
+        return new TranslationTextComponent("container." + TurtyChemistry.MOD_ID + ".electrolyzer");
+    }
 
-		boolean dirty = false;
+    public int getMaxHydrogen() {
+        return this.maxHydrogen;
+    }
 
-		if (this.getItemInSlot(0).getItem() instanceof BucketItem && this.storedWater <= this.maxWater - 1000) {
-			BucketItem bucket = ((BucketItem) this.getItemInSlot(0).getItem());
-			if (bucket.getFluid().equals(Fluids.FLOWING_WATER) || bucket.getFluid().equals(Fluids.WATER)) {
-				this.getInventory().setStackInSlot(0, new ItemStack(Items.BUCKET));
-				this.converting = true;
-				this.storedWater += 1000;
-				dirty = true;
-			}
-		}
+    public int getMaxOxygen() {
+        return this.maxOxygen;
+    }
 
-		if (this.storedWater <= 0)
-			this.converting = false;
+    public int getMaxRunningTime() {
+        return this.maxRunningTime;
+    }
 
-		if (this.runningTime > this.maxRunningTime)
-			this.runningTime = 0;
+    public int getMaxWater() {
+        return this.maxWater;
+    }
 
-		if (this.converting) {
-			if (this.world.isBlockPowered(pos) && !this.reachedMax) {
-				this.runningTime++;
-				if (this.timer % 2 == 0) {
-					this.storedWater--;
-					if (this.storedWater % 2 == 0) {
-						if (this.storedHydrogen != this.maxHydrogen) {
-							this.storedHydrogen += this.world.rand.nextInt(2);
-						} else {
-							this.reachedMax = true;
-						}
+    public int getRunningTime() {
+        return this.runningTime;
+    }
 
-						if (this.storedWater % 4 == 0) {
-							if (this.storedOxygen != this.maxOxygen) {
-								this.storedOxygen += this.world.rand.nextInt(2);
-							} else {
-								this.reachedMax = true;
-							}
-						}
-					}
-					dirty = true;
-				}
-			} else {
-				this.runningTime = 0;
-			}
-		} else {
-			this.runningTime = 0;
-		}
+    public int getStoredHydrogen() {
+        return this.storedHydrogen;
+    }
 
-		if (this.timer % 40 == 0) {
-			if (this.storedHydrogen > 0 && this.world.rand.nextInt(5) == 0)
-				this.storedHydrogen--;
+    public int getStoredOxygen() {
+        return this.storedOxygen;
+    }
 
-			if (this.storedOxygen > 0 && this.world.rand.nextInt(7) == 0)
-				this.storedOxygen--;
-		}
+    public int getStoredWater() {
+        return this.storedWater;
+    }
 
-		if (this.storedHydrogen < 0) {
-			this.storedHydrogen = 0;
-			dirty = true;
-		}
+    public boolean isConverting() {
+        return this.converting;
+    }
 
-		if (this.storedOxygen < 0) {
-			this.storedOxygen = 0;
-			dirty = true;
-		}
+    @Override
+    public void read(final BlockState state, final CompoundNBT compound) {
+        super.read(state, compound);
+        this.storedHydrogen = compound.getInt("StoredHydrogen");
+        this.storedOxygen = compound.getInt("StoredOxygen");
+        this.storedWater = compound.getInt("StoredWater");
+        this.runningTime = compound.getInt("RunningProgress");
+        this.converting = compound.getBoolean("Converting");
+        this.reachedMax = compound.getBoolean("ReachedMax");
+    }
 
-		if (this.storedWater < 0) {
-			this.storedWater = 0;
-			dirty = true;
-		}
+    @Override
+    public void remove() {
+        super.remove();
+        invalidateCaps();
+        warnInvalidBlock();
+    }
 
-		if (this.getItemInSlot(1).getItem().equals(ItemInit.GAS_CANISTER_S.get())
-				|| this.getItemInSlot(1).getItem().equals(ItemInit.GAS_CANISTER_L.get())) {
-			CompoundNBT nbt = this.getItemInSlot(1).getOrCreateChildTag("BlockEntityTag");
-			if (nbt.contains("GasName")) {
-				if (nbt.getString("GasName").equalsIgnoreCase("turtychemistry:hydrogen")) {
-					if (nbt.getInt("GasStored") < nbt.getInt("MaxAmount") && this.storedHydrogen > 0) {
-						nbt.putInt("GasStored", nbt.getInt("GasStored") + 1);
-						this.storedHydrogen--;
-					}
-				}
-			} else {
-				nbt.putString("GasName", "turtychemistry:hydrogen");
-			}
-		}
+    public void setConverting(final boolean converting) {
+        this.converting = converting;
+    }
 
-		if (this.getItemInSlot(2).getItem().equals(ItemInit.GAS_CANISTER_S.get())
-				|| this.getItemInSlot(2).getItem().equals(ItemInit.GAS_CANISTER_L.get())) {
-			CompoundNBT nbt = this.getItemInSlot(2).getOrCreateChildTag("BlockEntityTag");
-			if (nbt.contains("GasName")) {
-				if (nbt.getString("GasName").equalsIgnoreCase("turtychemistry:oxygen")
-						&& nbt.getInt("GasStored") < nbt.getInt("MaxAmount") && this.storedOxygen > 0) {
-					nbt.putInt("GasStored", nbt.getInt("GasStored") + 1);
-					this.storedOxygen--;
-				}
-			} else {
-				nbt.putString("GasName", "turtychemistry:oxygen");
-			}
-		}
+    public void setMaxHydrogen(final int maxHydrogen) {
+        this.maxHydrogen = maxHydrogen;
+    }
 
-		if (dirty)
-			this.markDirty();
-	}
+    public void setMaxOxygen(final int maxOxygen) {
+        this.maxOxygen = maxOxygen;
+    }
 
-	@Override
-	public void read(CompoundNBT compound) {
-		super.read(compound);
-		this.storedHydrogen = compound.getInt("StoredHydrogen");
-		this.storedOxygen = compound.getInt("StoredOxygen");
-		this.storedWater = compound.getInt("StoredWater");
-		this.runningTime = compound.getInt("RunningProgress");
-		this.converting = compound.getBoolean("Converting");
-		this.reachedMax = compound.getBoolean("ReachedMax");
-	}
+    public void setMaxRunningTime(final int maxRunningTime) {
+        this.maxRunningTime = maxRunningTime;
+    }
 
-	@Override
-	public CompoundNBT write(CompoundNBT compound) {
-		compound.putInt("StoredHydrogen", this.storedHydrogen);
-		compound.putInt("StoredOxygen", this.storedOxygen);
-		compound.putInt("StoredWater", this.storedWater);
-		compound.putInt("RunningProgress", this.runningTime);
-		compound.putBoolean("Converting", this.converting);
-		compound.putBoolean("ReachedMax", this.reachedMax);
-		return super.write(compound);
-	}
+    public void setMaxWater(final int maxWater) {
+        this.maxWater = maxWater;
+    }
 
-	@Override
-	public void remove() {
-		super.remove();
-		this.invalidateCaps();
-		this.warnInvalidBlock();
-	}
+    public void setRunningTime(final int runningTime) {
+        this.runningTime = runningTime;
+    }
 
-	public ITextComponent getDisplayName() {
-		return new TranslationTextComponent("container." + TurtyChemistry.MOD_ID + ".electrolyzer");
-	}
+    public void setStoredHydrogen(final int storedHydrogen) {
+        this.storedHydrogen = storedHydrogen;
+    }
 
-	public int getStoredHydrogen() {
-		return this.storedHydrogen;
-	}
+    public void setStoredOxygen(final int storedOxygen) {
+        this.storedOxygen = storedOxygen;
+    }
 
-	public void setStoredHydrogen(int storedHydrogen) {
-		this.storedHydrogen = storedHydrogen;
-	}
+    public void setStoredWater(final int storedWater) {
+        this.storedWater = storedWater;
+    }
 
-	public boolean isConverting() {
-		return this.converting;
-	}
+    @Override
+    public void tick() {
+        super.tick();
 
-	public void setConverting(boolean converting) {
-		this.converting = converting;
-	}
+        boolean dirty = false;
 
-	public int getStoredOxygen() {
-		return this.storedOxygen;
-	}
+        if (getItemInSlot(0).getItem() instanceof BucketItem && this.storedWater <= this.maxWater - 1000) {
+            final BucketItem bucket = (BucketItem) getItemInSlot(0).getItem();
+            if (bucket.getFluid().equals(Fluids.FLOWING_WATER) || bucket.getFluid().equals(Fluids.WATER)) {
+                getInventory().setStackInSlot(0, new ItemStack(Items.BUCKET));
+                this.converting = true;
+                this.storedWater += 1000;
+                dirty = true;
+            }
+        }
 
-	public void setStoredOxygen(int storedOxygen) {
-		this.storedOxygen = storedOxygen;
-	}
+        if (this.storedWater <= 0) {
+            this.converting = false;
+        }
 
-	public int getStoredWater() {
-		return this.storedWater;
-	}
+        if (this.runningTime > this.maxRunningTime) {
+            this.runningTime = 0;
+        }
 
-	public void setStoredWater(int storedWater) {
-		this.storedWater = storedWater;
-	}
+        if (this.converting && (this.world.isBlockPowered(this.pos) && !this.reachedMax)) {
+            this.runningTime++;
+            if (this.timer % 2 == 0) {
+                this.storedWater--;
+                if (this.storedWater % 2 == 0) {
+                    if (this.storedHydrogen != this.maxHydrogen) {
+                        this.storedHydrogen += this.world.rand.nextInt(2);
+                    } else {
+                        this.reachedMax = true;
+                    }
 
-	public int getMaxRunningTime() {
-		return this.maxRunningTime;
-	}
+                    if (this.storedWater % 4 == 0) {
+                        if (this.storedOxygen != this.maxOxygen) {
+                            this.storedOxygen += this.world.rand.nextInt(2);
+                        } else {
+                            this.reachedMax = true;
+                        }
+                    }
+                }
+                dirty = true;
+            }
+        } else {
+            this.runningTime = 0;
+        }
 
-	public void setRunningTime(int runningTime) {
-		this.runningTime = runningTime;
-	}
+        if (this.timer % 40 == 0) {
+            if (this.storedHydrogen > 0 && this.world.rand.nextInt(5) == 0) {
+                this.storedHydrogen--;
+            }
 
-	public void setMaxRunningTime(int maxRunningTime) {
-		this.maxRunningTime = maxRunningTime;
-	}
+            if (this.storedOxygen > 0 && this.world.rand.nextInt(7) == 0) {
+                this.storedOxygen--;
+            }
+        }
 
-	public int getRunningTime() {
-		return this.runningTime;
-	}
+        if (this.storedHydrogen < 0) {
+            this.storedHydrogen = 0;
+            dirty = true;
+        }
 
-	public int getMaxHydrogen() {
-		return this.maxHydrogen;
-	}
+        if (this.storedOxygen < 0) {
+            this.storedOxygen = 0;
+            dirty = true;
+        }
 
-	public int getMaxOxygen() {
-		return this.maxOxygen;
-	}
+        if (this.storedWater < 0) {
+            this.storedWater = 0;
+            dirty = true;
+        }
 
-	public int getMaxWater() {
-		return this.maxWater;
-	}
+        if (getItemInSlot(1).getItem().equals(ItemInit.GAS_CANISTER_S.get())
+                || getItemInSlot(1).getItem().equals(ItemInit.GAS_CANISTER_L.get())) {
+            final CompoundNBT nbt = getItemInSlot(1).getOrCreateChildTag("BlockEntityTag");
+            if (nbt.contains("GasName")) {
+                if ("turtychemistry:hydrogen".equalsIgnoreCase(nbt.getString("GasName"))
+                        && nbt.getInt("GasStored") < nbt.getInt("MaxAmount") && this.storedHydrogen > 0) {
+                    nbt.putInt("GasStored", nbt.getInt("GasStored") + 1);
+                    this.storedHydrogen--;
+                }
+            } else {
+                nbt.putString("GasName", "turtychemistry:hydrogen");
+            }
+        }
 
-	public void setMaxWater(int maxWater) {
-		this.maxWater = maxWater;
-	}
+        if (getItemInSlot(2).getItem().equals(ItemInit.GAS_CANISTER_S.get())
+                || getItemInSlot(2).getItem().equals(ItemInit.GAS_CANISTER_L.get())) {
+            final CompoundNBT nbt = getItemInSlot(2).getOrCreateChildTag("BlockEntityTag");
+            if (nbt.contains("GasName")) {
+                if ("turtychemistry:oxygen".equalsIgnoreCase(nbt.getString("GasName"))
+                        && nbt.getInt("GasStored") < nbt.getInt("MaxAmount") && this.storedOxygen > 0) {
+                    nbt.putInt("GasStored", nbt.getInt("GasStored") + 1);
+                    this.storedOxygen--;
+                }
+            } else {
+                nbt.putString("GasName", "turtychemistry:oxygen");
+            }
+        }
 
-	public void setMaxHydrogen(int maxHydrogen) {
-		this.maxHydrogen = maxHydrogen;
-	}
+        if (dirty) {
+            markDirty();
+        }
+    }
 
-	public void setMaxOxygen(int maxOxygen) {
-		this.maxOxygen = maxOxygen;
-	}
+    @Override
+    public CompoundNBT write(final CompoundNBT compound) {
+        compound.putInt("StoredHydrogen", this.storedHydrogen);
+        compound.putInt("StoredOxygen", this.storedOxygen);
+        compound.putInt("StoredWater", this.storedWater);
+        compound.putInt("RunningProgress", this.runningTime);
+        compound.putBoolean("Converting", this.converting);
+        compound.putBoolean("ReachedMax", this.reachedMax);
+        return super.write(compound);
+    }
 }

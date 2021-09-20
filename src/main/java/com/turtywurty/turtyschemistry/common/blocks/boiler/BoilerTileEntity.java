@@ -36,163 +36,165 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public class BoilerTileEntity extends InventoryTile {
 
-	private int runningTime;
-	private int maxRunningTime = 400;
-	private int temperature;
-	private Block outputGas = Blocks.AIR;
+    private int runningTime;
+    private int maxRunningTime = 400;
+    private int temperature;
+    private Block outputGas = Blocks.AIR;
 
-	private final TankFluidStackHandler fluidHandler = new TankFluidStackHandler(2, 1000) {
-		@Override
-		public void onContentsChanged() {
-			super.onContentsChanged();
-			BoilerTileEntity.this.markDirty();
-		}
-	};
-	private final LazyOptional<FluidStackHandler> optional = LazyOptional.of(() -> this.fluidHandler);
+    private final TankFluidStackHandler fluidHandler = new TankFluidStackHandler(2, 1000) {
+        @Override
+        public void onContentsChanged() {
+            super.onContentsChanged();
+            BoilerTileEntity.this.markDirty();
+        }
+    };
+    private final LazyOptional<FluidStackHandler> optional = LazyOptional.of(() -> this.fluidHandler);
 
-	public BoilerTileEntity() {
-		this(TileEntityTypeInit.BOILER.get());
-	}
+    public BoilerTileEntity() {
+        this(TileEntityTypeInit.BOILER.get());
+    }
 
-	public BoilerTileEntity(final TileEntityType<?> tileEntityTypeIn) {
-		super(tileEntityTypeIn, 3);
-	}
+    public BoilerTileEntity(final TileEntityType<?> tileEntityTypeIn) {
+        super(tileEntityTypeIn, 3);
+    }
 
-	public void drainTanks() {
-		for (int tank = 0; tank < getFluidHandler().getTanks(); tank++) {
-			getFluidHandler().drain(tank, 10000, FluidAction.EXECUTE);
-		}
-	}
+    public void drainTanks() {
+        for (int tank = 0; tank < getFluidHandler().getTanks(); tank++) {
+            getFluidHandler().drain(tank, 10000, FluidAction.EXECUTE);
+        }
+    }
 
-	@Override
-	public <T> LazyOptional<T> getCapability(final Capability<T> cap, final Direction side) {
-		super.getCapability(cap, side);
-		return cap == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY ? this.optional.cast()
-				: super.getCapability(cap, side);
-	}
+    @Override
+    public <T> LazyOptional<T> getCapability(final Capability<T> cap, final Direction side) {
+        super.getCapability(cap, side);
+        return cap == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY ? this.optional.cast()
+                : super.getCapability(cap, side);
+    }
 
-	public ITextComponent getDisplayName() {
-		return new TranslationTextComponent("container." + TurtyChemistry.MOD_ID + ".boiler");
-	}
+    public ITextComponent getDisplayName() {
+        return new TranslationTextComponent("container." + TurtyChemistry.MOD_ID + ".boiler");
+    }
 
-	public TankFluidStackHandler getFluidHandler() {
-		return this.fluidHandler;
-	}
+    public TankFluidStackHandler getFluidHandler() {
+        return this.fluidHandler;
+    }
 
-	public int getMaxRunningTime() {
-		return this.maxRunningTime;
-	}
+    public int getMaxRunningTime() {
+        return this.maxRunningTime;
+    }
 
-	private List<BoilerRecipe> getRecipes() {
-		List<BoilerRecipe> rData = new ArrayList<>();
-		ClientUtils.BOILER_DATA.getData().forEach((name, data) -> rData.add(data));
-		return rData;
-	}
+    public int getRunningTime() {
+        return this.runningTime;
+    }
 
-	public int getRunningTime() {
-		return this.runningTime;
-	}
+    public int getTemperature() {
+        return this.temperature;
+    }
 
-	public int getTemperature() {
-		return this.temperature;
-	}
+    public void loadRestorable(@Nullable final CompoundNBT compound) {
+        if (compound != null && compound.contains("FluidInv")) {
+            final CompoundNBT tanks = (CompoundNBT) compound.get("FluidInv");
+            this.fluidHandler.deserializeNBT(tanks);
+        }
+    }
 
-	public void loadRestorable(@Nullable final CompoundNBT compound) {
-		if (compound != null && compound.contains("FluidInv")) {
-			CompoundNBT tanks = (CompoundNBT) compound.get("FluidInv");
-			this.fluidHandler.deserializeNBT(tanks);
-		}
-	}
+    @Override
+    public void read(final BlockState state, final CompoundNBT compound) {
+        super.read(state, compound);
+        loadRestorable(compound);
+        this.runningTime = compound.getInt("RunningTime");
+        this.maxRunningTime = compound.getInt("MaxRunningTime");
+        this.temperature = compound.getInt("Temperature");
+        this.outputGas = ForgeRegistries.BLOCKS
+                .getValue(new ResourceLocation(compound.getString("OutputGas"))) instanceof Block
+                        ? ForgeRegistries.BLOCKS
+                                .getValue(new ResourceLocation(compound.getString("OutputGas")))
+                        : BlockInit.HELIUM_GAS.get();
+    }
 
-	@Override
-	public void read(final BlockState state, final CompoundNBT compound) {
-		super.read(state, compound);
-		loadRestorable(compound);
-		this.runningTime = compound.getInt("RunningTime");
-		this.maxRunningTime = compound.getInt("MaxRunningTime");
-		this.temperature = compound.getInt("Temperature");
-		this.outputGas = ForgeRegistries.BLOCKS
-				.getValue(new ResourceLocation(compound.getString("OutputGas"))) instanceof Block
-						? ForgeRegistries.BLOCKS.getValue(new ResourceLocation(compound.getString("OutputGas")))
-						: BlockInit.HELIUM_GAS.get();
-	}
+    @Override
+    public void remove() {
+        super.remove();
+        this.optional.invalidate();
+    }
 
-	@Override
-	public void remove() {
-		super.remove();
-		this.optional.invalidate();
-	}
+    public void setMaxRunningTime(final int maxRunningTime) {
+        this.maxRunningTime = maxRunningTime;
+    }
 
-	public void setMaxRunningTime(final int maxRunningTime) {
-		this.maxRunningTime = maxRunningTime;
-	}
+    public void setRunningTime(final int runningTime) {
+        this.runningTime = runningTime;
+    }
 
-	public void setRunningTime(final int runningTime) {
-		this.runningTime = runningTime;
-	}
+    public void setTemperature(final int temperature) {
+        this.temperature = temperature;
+    }
 
-	public void setTemperature(final int temperature) {
-		this.temperature = temperature;
-	}
+    @Override
+    public void tick() {
+        super.tick();
+        boolean dirty = false;
 
-	@Override
-	public void tick() {
-		super.tick();
-		boolean dirty = false;
+        if (!this.world.isRemote) {
+            if (getItemInSlot(0).getItem() instanceof BucketItem) {
+                final BucketItem bucket = (BucketItem) getItemInSlot(0).getItem();
+                if (!bucket.getFluid().equals(Fluids.EMPTY)
+                        && getFluidHandler().getFluidInTank(0).isEmpty()) {
+                    getFluidHandler().fill(0, new FluidStack(bucket.getFluid(), 1000), FluidAction.EXECUTE);
+                    getInventory().setStackInSlot(0, new ItemStack(Items.BUCKET));
+                    this.world.notifyBlockUpdate(getPos(), getBlockState(), getBlockState(),
+                            Constants.BlockFlags.BLOCK_UPDATE);
+                }
+            }
 
-		if (!this.world.isRemote) {
-			if (getItemInSlot(0).getItem() instanceof BucketItem) {
-				BucketItem bucket = (BucketItem) getItemInSlot(0).getItem();
-				if (!bucket.getFluid().equals(Fluids.EMPTY) && getFluidHandler().getFluidInTank(0).isEmpty()) {
-					getFluidHandler().fill(0, new FluidStack(bucket.getFluid(), 1000), FluidAction.EXECUTE);
-					getInventory().setStackInSlot(0, new ItemStack(Items.BUCKET));
-					this.world.notifyBlockUpdate(getPos(), getBlockState(), getBlockState(),
-							Constants.BlockFlags.BLOCK_UPDATE);
-				}
-			}
+            if (!this.fluidHandler.isEmpty()) {
+                for (final BoilerRecipe recipe : getRecipes()) {
+                    if (this.fluidHandler.getFluidInTank(0).getFluid() == ForgeRegistries.FLUIDS
+                            .getValue(new ResourceLocation(recipe.getInputFluid()))) {
+                        if (this.runningTime < this.maxRunningTime) {
+                            this.runningTime++;
+                            dirty = true;
+                        }
 
-			if (!this.fluidHandler.isEmpty()) {
-				for (BoilerRecipe recipe : getRecipes()) {
-					if (this.fluidHandler.getFluidInTank(0).getFluid() == ForgeRegistries.FLUIDS
-							.getValue(new ResourceLocation(recipe.getInputFluid()))) {
-						if (this.runningTime < this.maxRunningTime) {
-							this.runningTime++;
-							dirty = true;
-						}
+                        if (this.runningTime >= this.maxRunningTime) {
+                            this.runningTime = 0;
+                            drainTanks();
+                            getFluidHandler().fill(1,
+                                    new FluidStack(ForgeRegistries.FLUIDS
+                                            .getValue(new ResourceLocation(recipe.getOutputFluid())), 1000),
+                                    FluidAction.EXECUTE);
+                            getFluidHandler().fill(1,
+                                    new FluidStack(ForgeRegistries.FLUIDS
+                                            .getValue(new ResourceLocation(recipe.getOutputFluid2())), 1000),
+                                    FluidAction.EXECUTE);
+                            this.world.notifyBlockUpdate(getPos(), getBlockState(), getBlockState(),
+                                    Constants.BlockFlags.BLOCK_UPDATE);
+                        }
+                    }
+                }
+            }
+        }
 
-						if (this.runningTime >= this.maxRunningTime) {
-							this.runningTime = 0;
-							drainTanks();
-							getFluidHandler().fill(1,
-									new FluidStack(ForgeRegistries.FLUIDS
-											.getValue(new ResourceLocation(recipe.getOutputFluid())), 1000),
-									FluidAction.EXECUTE);
-							getFluidHandler().fill(1,
-									new FluidStack(ForgeRegistries.FLUIDS
-											.getValue(new ResourceLocation(recipe.getOutputFluid2())), 1000),
-									FluidAction.EXECUTE);
-							this.world.notifyBlockUpdate(getPos(), getBlockState(), getBlockState(),
-									Constants.BlockFlags.BLOCK_UPDATE);
-						}
-					}
-				}
-			}
-		}
+        if (dirty) {
+            markDirty();
+        }
+    }
 
-		if (dirty) {
-			markDirty();
-		}
-	}
+    @Override
+    public CompoundNBT write(final CompoundNBT compound) {
+        super.write(compound);
+        final CompoundNBT tanks = this.fluidHandler.serializeNBT();
+        compound.put("FluidInv", tanks);
+        compound.putInt("RunningTime", this.runningTime);
+        compound.putInt("MaxRunningTime", this.maxRunningTime);
+        compound.putInt("Temperature", this.temperature);
+        compound.putString("OutputGas", this.outputGas.getRegistryName().toString());
+        return compound;
+    }
 
-	@Override
-	public CompoundNBT write(final CompoundNBT compound) {
-		super.write(compound);
-		CompoundNBT tanks = this.fluidHandler.serializeNBT();
-		compound.put("FluidInv", tanks);
-		compound.putInt("RunningTime", this.runningTime);
-		compound.putInt("MaxRunningTime", this.maxRunningTime);
-		compound.putInt("Temperature", this.temperature);
-		compound.putString("OutputGas", this.outputGas.getRegistryName().toString());
-		return compound;
-	}
+    private List<BoilerRecipe> getRecipes() {
+        final List<BoilerRecipe> rData = new ArrayList<>();
+        ClientUtils.BOILER_DATA.getData().forEach((name, data) -> rData.add(data));
+        return rData;
+    }
 }

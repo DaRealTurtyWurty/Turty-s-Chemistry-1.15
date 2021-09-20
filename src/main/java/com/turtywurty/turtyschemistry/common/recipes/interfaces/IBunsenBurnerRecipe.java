@@ -12,22 +12,22 @@ import net.minecraft.util.registry.Registry;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
 
 public interface IBunsenBurnerRecipe extends IRecipe<RecipeWrapper> {
-	ResourceLocation TYPE_ID = new ResourceLocation(TurtyChemistry.MOD_ID, "bunsen_burner");
+    ResourceLocation TYPE_ID = new ResourceLocation(TurtyChemistry.MOD_ID, "bunsen_burner");
 
-	@Override
-	default boolean canFit(final int width, final int height) {
-		return false;
-	}
+    @Override
+    default boolean canFit(final int width, final int height) {
+        return false;
+    }
 
-	Ingredient getInput();
+    Ingredient getInput();
 
-	int getProcessTime();
+    int getProcessTime();
 
-	String getSpecialEffect();
+    String getSpecialEffect();
 
-	@Nonnull
-	@Override
-	default IRecipeType<?> getType() {
-		return Registry.RECIPE_TYPE.getOrDefault(TYPE_ID);
-	}
+    @Nonnull
+    @Override
+    default IRecipeType<?> getType() {
+        return Registry.RECIPE_TYPE.getOrDefault(TYPE_ID);
+    }
 }

@@ -19,75 +19,75 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 @Mod.EventBusSubscriber(modid = TurtyChemistry.MOD_ID, bus = Bus.FORGE)
 public final class ElementReactWithWaterEvent {
 
-	private ElementReactWithWaterEvent() {
-	}
+    private static ItemEntity ie;
 
-	private static ItemEntity ie;
+    private ElementReactWithWaterEvent() {
+    }
 
-	@SubscribeEvent
-	public static void itemEnterWater(ClientTickEvent event) {
-		if (event.phase == Phase.END && ClientUtils.getClientWorld() != null) {
-			ClientWorld world = ClientUtils.getClientWorld();
-			world.getAllEntities().forEach(entity -> {
-				if (entity instanceof ItemEntity) {
-					ie = (ItemEntity) entity;
-				}
-			});
-		}
-	}
+    @SubscribeEvent
+    public static void doStuff(final TickEvent.WorldTickEvent event) {
+        final World world = event.world;
+        if (ie != null) {
+            final ItemEntity itemEntity = ie;
+            if (itemEntity.isInWater()) {
+                if (itemEntity.getItem().getItem() == ItemInit.LITHIUM.get()) {
+                    world.addParticle(ParticleTypes.FLAME, itemEntity.getPosX(), itemEntity.getPosY(),
+                            itemEntity.getPosZ(), 0.0f, 0.3f, 0.0f);
+                    itemEntity.remove();
+                } else if (itemEntity.getItem().getItem() == ItemInit.SODIUM.get()) {
+                    for (int particle = 0; particle < 3; particle++) {
+                        world.addParticle(ParticleTypes.FLAME, itemEntity.getPosX(), itemEntity.getPosY(),
+                                itemEntity.getPosZ(), 0.0f, 0.3f, 0.0f);
+                    }
+                    itemEntity.remove();
+                } else if (itemEntity.getItem().getItem() == ItemInit.POTASSIUM.get()) {
+                    for (int particle = 0; particle < 3; particle++) {
+                        world.addParticle(ParticleTypes.FLAME, itemEntity.getPosX(), itemEntity.getPosY(),
+                                itemEntity.getPosZ(), 0.0f, 0.3f, 0.0f);
+                    }
+                    world.createExplosion(itemEntity, itemEntity.getPosX(), itemEntity.getPosY(),
+                            itemEntity.getPosZ(), 5, false, Mode.DESTROY);
+                    itemEntity.remove();
+                } else if (itemEntity.getItem().getItem() == ItemInit.RUBIDIUM.get()) {
+                    for (int particle = 0; particle < 3; particle++) {
+                        world.addParticle(ParticleTypes.FLAME, itemEntity.getPosX(), itemEntity.getPosY(),
+                                itemEntity.getPosZ(), 0.0f, 0.3f, 0.0f);
+                    }
+                    world.createExplosion(itemEntity, itemEntity.getPosX(), itemEntity.getPosY(),
+                            itemEntity.getPosZ(), 10, false, Mode.DESTROY);
+                    itemEntity.remove();
+                } else if (itemEntity.getItem().getItem() == ItemInit.CESIUM.get()) {
+                    for (int particle = 0; particle < 6; particle++) {
+                        world.addParticle(ParticleTypes.FLAME, itemEntity.getPosX(), itemEntity.getPosY(),
+                                itemEntity.getPosZ(), 0.0f, 0.3f, 0.0f);
+                    }
+                    world.createExplosion(itemEntity, itemEntity.getPosX(), itemEntity.getPosY(),
+                            itemEntity.getPosZ(), 10, true, Mode.DESTROY);
+                    world.createExplosion(itemEntity, itemEntity.getPosX(), itemEntity.getPosY(),
+                            itemEntity.getPosZ(), 10, true, Mode.DESTROY);
+                    itemEntity.remove();
+                } else if (itemEntity.getItem().getItem() == ItemInit.FRANCIUM.get()) {
+                    for (int particle = 0; particle < 12; particle++) {
+                        world.addParticle(ParticleTypes.FLAME, itemEntity.getPosX(), itemEntity.getPosY(),
+                                itemEntity.getPosZ(), 0.0f, 0.3f, 0.0f);
+                    }
+                    world.createExplosion(itemEntity, itemEntity.getPosX(), itemEntity.getPosY(),
+                            itemEntity.getPosZ(), 100, true, Mode.DESTROY);
+                    itemEntity.remove();
+                }
+            }
+        }
+    }
 
-	@SubscribeEvent
-	public static void doStuff(TickEvent.WorldTickEvent event) {
-		World world = event.world;
-		if (ie != null) {
-			ItemEntity itemEntity = ie;
-			if (itemEntity.isInWater()) {
-				if (itemEntity.getItem().getItem() == ItemInit.LITHIUM.get()) {
-					world.addParticle(ParticleTypes.FLAME, itemEntity.getPosX(), itemEntity.getPosY(), itemEntity.getPosZ(),
-							0.0f, 0.3f, 0.0f);
-					itemEntity.remove();
-				} else if (itemEntity.getItem().getItem() == ItemInit.SODIUM.get()) {
-					for (int particle = 0; particle < 3; particle++) {
-						world.addParticle(ParticleTypes.FLAME, itemEntity.getPosX(), itemEntity.getPosY(),
-								itemEntity.getPosZ(), 0.0f, 0.3f, 0.0f);
-					}
-					itemEntity.remove();
-				} else if (itemEntity.getItem().getItem() == ItemInit.POTASSIUM.get()) {
-					for (int particle = 0; particle < 3; particle++) {
-						world.addParticle(ParticleTypes.FLAME, itemEntity.getPosX(), itemEntity.getPosY(),
-								itemEntity.getPosZ(), 0.0f, 0.3f, 0.0f);
-					}
-					world.createExplosion(itemEntity, itemEntity.getPosX(), itemEntity.getPosY(), itemEntity.getPosZ(), 5,
-							false, Mode.DESTROY);
-					itemEntity.remove();
-				} else if (itemEntity.getItem().getItem() == ItemInit.RUBIDIUM.get()) {
-					for (int particle = 0; particle < 3; particle++) {
-						world.addParticle(ParticleTypes.FLAME, itemEntity.getPosX(), itemEntity.getPosY(),
-								itemEntity.getPosZ(), 0.0f, 0.3f, 0.0f);
-					}
-					world.createExplosion(itemEntity, itemEntity.getPosX(), itemEntity.getPosY(), itemEntity.getPosZ(), 10,
-							false, Mode.DESTROY);
-					itemEntity.remove();
-				} else if (itemEntity.getItem().getItem() == ItemInit.CESIUM.get()) {
-					for (int particle = 0; particle < 6; particle++) {
-						world.addParticle(ParticleTypes.FLAME, itemEntity.getPosX(), itemEntity.getPosY(),
-								itemEntity.getPosZ(), 0.0f, 0.3f, 0.0f);
-					}
-					world.createExplosion(itemEntity, itemEntity.getPosX(), itemEntity.getPosY(), itemEntity.getPosZ(), 10,
-							true, Mode.DESTROY);
-					world.createExplosion(itemEntity, itemEntity.getPosX(), itemEntity.getPosY(), itemEntity.getPosZ(), 10,
-							true, Mode.DESTROY);
-					itemEntity.remove();
-				} else if (itemEntity.getItem().getItem() == ItemInit.FRANCIUM.get()) {
-					for (int particle = 0; particle < 12; particle++) {
-						world.addParticle(ParticleTypes.FLAME, itemEntity.getPosX(), itemEntity.getPosY(),
-								itemEntity.getPosZ(), 0.0f, 0.3f, 0.0f);
-					}
-					world.createExplosion(itemEntity, itemEntity.getPosX(), itemEntity.getPosY(), itemEntity.getPosZ(), 100,
-							true, Mode.DESTROY);
-					itemEntity.remove();
-				}
-			}
-		}
-	}
+    @SubscribeEvent
+    public static void itemEnterWater(final ClientTickEvent event) {
+        if (event.phase == Phase.END && ClientUtils.getClientWorld() != null) {
+            final ClientWorld world = ClientUtils.getClientWorld();
+            world.getAllEntities().forEach(entity -> {
+                if (entity instanceof ItemEntity) {
+                    ie = (ItemEntity) entity;
+                }
+            });
+        }
+    }
 }

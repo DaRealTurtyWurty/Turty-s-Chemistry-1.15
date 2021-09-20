@@ -6,13 +6,13 @@ import net.minecraft.inventory.container.ContainerType;
 
 public class SolarPanelContainer extends Container {
 
-	public SolarPanelContainer(ContainerType<?> type, int id) {
-		super(type, id);
-	}
+    public SolarPanelContainer(final ContainerType<?> type, final int id) {
+        super(type, id);
+    }
 
-	@Override
-	public boolean canInteractWith(PlayerEntity playerIn) {
-		return false;
-	}
+    @Override
+    public boolean canInteractWith(final PlayerEntity playerIn) {
+        return false;
+    }
 
 }

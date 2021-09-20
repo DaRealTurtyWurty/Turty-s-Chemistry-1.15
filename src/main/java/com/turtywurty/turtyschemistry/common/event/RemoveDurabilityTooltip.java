@@ -13,15 +13,16 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 
 @Mod.EventBusSubscriber(modid = TurtyChemistry.MOD_ID, bus = Bus.FORGE, value = Dist.CLIENT)
 public final class RemoveDurabilityTooltip {
-	
-	private RemoveDurabilityTooltip() {}
 
-	@SubscribeEvent
-	public static void removeDurability(ItemTooltipEvent event) {
-		ItemStack stack = event.getItemStack();
-		if (stack.getItem() instanceof GasCanisterItem) {
-			event.getToolTip().remove(new TranslationTextComponent("item.durability",
-					stack.getMaxDamage() - stack.getDamage(), stack.getMaxDamage()));
-		}
-	}
+    private RemoveDurabilityTooltip() {
+    }
+
+    @SubscribeEvent
+    public static void removeDurability(final ItemTooltipEvent event) {
+        final ItemStack stack = event.getItemStack();
+        if (stack.getItem() instanceof GasCanisterItem) {
+            event.getToolTip().remove(new TranslationTextComponent("item.durability",
+                    stack.getMaxDamage() - stack.getDamage(), stack.getMaxDamage()));
+        }
+    }
 }

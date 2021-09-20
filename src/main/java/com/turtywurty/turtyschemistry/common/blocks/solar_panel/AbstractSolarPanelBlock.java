@@ -21,70 +21,68 @@ import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
-import net.minecraft.block.AbstractBlock.Properties;
-
 public abstract class AbstractSolarPanelBlock extends BaseHorizontalBlock {
 
-	protected AbstractSolarPanelBlock(Properties properties) {
-		super(properties);
-	}
+    protected AbstractSolarPanelBlock(final Properties properties) {
+        super(properties);
+    }
 
-	@Override
-	public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn,
-			BlockRayTraceResult hit) {
-		if (worldIn.getTileEntity(pos) instanceof AbstractSolarPanelTileEntity) {
-			if (player instanceof ClientPlayerEntity && FMLEnvironment.dist == Dist.CLIENT
-					&& this.getPanelInfo().get() != null) {
-				// TODO: Open GUI
-			}
-		} else {
-			TurtyChemistry.LOGGER.warn("No valid solar panel tile entity found at X: %s, Y: %s, Z: %s!", pos.getX(),
-					pos.getY(), pos.getZ());
-		}
-		return ActionResultType.SUCCESS;
-	}
+    @Override
+    public TileEntity createTileEntity(final BlockState state, final IBlockReader world) {
+        return getPanelInfo().get().getTileType().create();
+    }
 
-	@Override
-	public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-		return this.getPanelInfo().get().getTileType().create();
-	}
+    public abstract Supplier<PanelInfo<? extends AbstractSolarPanelTileEntity>> getPanelInfo();
 
-	@Override
-	public boolean hasTileEntity(BlockState state) {
-		return true;
-	}
+    @Override
+    public boolean hasTileEntity(final BlockState state) {
+        return true;
+    }
 
-	public abstract Supplier<PanelInfo<? extends AbstractSolarPanelTileEntity>> getPanelInfo();
+    @Override
+    public ActionResultType onBlockActivated(final BlockState state, final World worldIn, final BlockPos pos,
+            final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
+        if (worldIn.getTileEntity(pos) instanceof AbstractSolarPanelTileEntity) {
+            if (player instanceof ClientPlayerEntity && FMLEnvironment.dist == Dist.CLIENT
+                    && getPanelInfo().get() != null) {
+                // TODO: Open GUI
+            }
+        } else {
+            TurtyChemistry.LOGGER.warn("No valid solar panel tile entity found at X: %s, Y: %s, Z: %s!",
+                    pos.getX(), pos.getY(), pos.getZ());
+        }
+        return ActionResultType.SUCCESS;
+    }
 
-	protected class PanelInfo<TILE extends AbstractSolarPanelTileEntity> {
+    protected class PanelInfo<TILE extends AbstractSolarPanelTileEntity> {
 
-		private final IContainerProvider containerProvider;
-		private final ITextComponent displayName;
-		private final int amountPerTick;
-		private final TileEntityType<TILE> tileType;
+        private final IContainerProvider containerProvider;
+        private final ITextComponent displayName;
+        private final int amountPerTick;
+        private final TileEntityType<TILE> tileType;
 
-		public PanelInfo(final IContainerProvider containerProviderIn, final ITextComponent displayNameIn,
-				final int amountPerTickIn, TileEntityType<TILE> tileTypeIn) {
-			this.containerProvider = containerProviderIn;
-			this.displayName = displayNameIn;
-			this.amountPerTick = amountPerTickIn;
-			this.tileType = tileTypeIn;
-		}
+        public PanelInfo(final IContainerProvider containerProviderIn, final ITextComponent displayNameIn,
+                final int amountPerTickIn, final TileEntityType<TILE> tileTypeIn) {
+            this.containerProvider = containerProviderIn;
+            this.displayName = displayNameIn;
+            this.amountPerTick = amountPerTickIn;
+            this.tileType = tileTypeIn;
+        }
 
-		public IContainerProvider getContainerProvider() {
-			return this.containerProvider;
-		}
+        public IContainerProvider getContainerProvider() {
+            return this.containerProvider;
+        }
 
-		public ITextComponent getDisplayName() {
-			return this.displayName;
-		}
+        public ITextComponent getDisplayName() {
+            return this.displayName;
+        }
 
-		public int perTick() {
-			return this.amountPerTick;
-		}
+        public TileEntityType<TILE> getTileType() {
+            return this.tileType;
+        }
 
-		public TileEntityType<TILE> getTileType() {
-			return this.tileType;
-		}
-	}
+        public int perTick() {
+            return this.amountPerTick;
+        }
+    }
 }

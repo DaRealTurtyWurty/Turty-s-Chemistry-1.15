@@ -9,17 +9,17 @@ import net.minecraftforge.fml.network.NetworkHooks;
 
 public class FireResistantItemEntity extends ItemEntity {
 
-	public FireResistantItemEntity(EntityType<? extends ItemEntity> type, World world) {
-		super(type, world);
-	}
+    public FireResistantItemEntity(final EntityType<? extends ItemEntity> type, final World world) {
+        super(type, world);
+    }
 
-	@Override
-	public boolean isInvulnerableTo(DamageSource source) {
-		return source.isFireDamage();
-	}
-	
-	@Override
-	public IPacket<?> createSpawnPacket() {
-		return NetworkHooks.getEntitySpawningPacket(this);
-	}
+    @Override
+    public IPacket<?> createSpawnPacket() {
+        return NetworkHooks.getEntitySpawningPacket(this);
+    }
+
+    @Override
+    public boolean isInvulnerableTo(final DamageSource source) {
+        return source.isFireDamage();
+    }
 }

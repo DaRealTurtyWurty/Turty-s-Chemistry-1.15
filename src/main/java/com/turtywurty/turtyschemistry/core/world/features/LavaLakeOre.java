@@ -10,14 +10,14 @@ import net.minecraft.world.gen.feature.OreFeatureConfig;
 
 public class LavaLakeOre extends OreFeature {
 
-	public LavaLakeOre() {
-		super(OreFeatureConfig.CODEC);
-	}
+    public LavaLakeOre() {
+        super(OreFeatureConfig.CODEC);
+    }
 
-	@Override
-	public boolean generate(final ISeedReader worldIn, final ChunkGenerator generator, final Random rand,
-			final BlockPos pos, final OreFeatureConfig config) {
-		// TODO: Work out the placement stuff.
-		return super.generate(worldIn, generator, rand, pos, config);
-	}
+    @Override
+    public boolean generate(final ISeedReader worldIn, final ChunkGenerator generator, final Random rand,
+            final BlockPos pos, final OreFeatureConfig config) {
+        // TODO: Work out the placement stuff.
+        return super.generate(worldIn, generator, rand, pos, config);
+    }
 }

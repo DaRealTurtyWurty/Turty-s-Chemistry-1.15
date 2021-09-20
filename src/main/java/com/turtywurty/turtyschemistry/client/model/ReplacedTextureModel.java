@@ -21,89 +21,90 @@ import net.minecraftforge.client.model.data.EmptyModelData;
 
 public class ReplacedTextureModel implements IBakedModel {
 
-	private static BakedQuad replaceUV(final TextureAtlasSprite newTexture, final BakedQuad oldQuad) {
-		if (newTexture.equals(oldQuad.getSprite()))
-			return oldQuad;
-		int[] vertexData = oldQuad.getVertexData();
-		int j = 8;
-		int k = vertexData.length / j;
+    private final IBakedModel model;
 
-		TextureAtlasSprite oldTexture = oldQuad.getSprite();
+    private final List<BakedQuad> generalQuads;
+    private final Map<Direction, List<BakedQuad>> sideQuads = new EnumMap<>(Direction.class);
 
-		for (int i = 0; i < k; i++) {
-			float oldU = Float.intBitsToFloat(vertexData[4 + i * 8]);
-			float oldV = Float.intBitsToFloat(vertexData[5 + i * 8]);
-			float newUnscaledU = oldU - oldTexture.getMinU();
-			float newUnscaledV = oldV - oldTexture.getMinV();
-			vertexData[4 + i * 8] = Float.floatToIntBits(newTexture.getMinU() + newUnscaledU);
-			vertexData[5 + i * 8] = Float.floatToIntBits(newTexture.getMinV() + newUnscaledV);
-		}
+    public ReplacedTextureModel(final IBakedModel modelIn, final TextureAtlasSprite newTexture) {
+        this.model = modelIn;
 
-		return new BakedQuad(vertexData, oldQuad.getTintIndex(), oldQuad.getFace(), newTexture,
-				oldQuad.applyDiffuseLighting());
-	}
+        this.generalQuads = modelIn.getQuads(null, null, ThreadLocalRandom.current(),
+                EmptyModelData.INSTANCE);
+        Arrays.stream(Direction.values()).forEach(dir -> this.sideQuads.put(dir,
+                modelIn.getQuads(null, dir, ThreadLocalRandom.current(), EmptyModelData.INSTANCE)));
 
-	private final IBakedModel model;
-	private final List<BakedQuad> generalQuads;
+        for (int i = 0; i < this.generalQuads.size(); i++) {
+            final BakedQuad quad = this.generalQuads.get(i);
 
-	private final Map<Direction, List<BakedQuad>> sideQuads = new EnumMap<>(Direction.class);
+            this.generalQuads.set(i, replaceUV(newTexture, new BakedQuad(quad.getVertexData(),
+                    quad.getTintIndex(), quad.getFace(), quad.getSprite(), quad.applyDiffuseLighting())));
+        }
 
-	public ReplacedTextureModel(final IBakedModel modelIn, final TextureAtlasSprite newTexture) {
-		this.model = modelIn;
+        for (final Map.Entry<Direction, List<BakedQuad>> quadSide : this.sideQuads.entrySet()) {
+            final List<BakedQuad> value = quadSide.getValue();
+            for (int i = 0; i < value.size(); i++) {
+                final BakedQuad quad = value.get(i);
+                value.set(i, replaceUV(newTexture, new BakedQuad(quad.getVertexData(), quad.getTintIndex(),
+                        quad.getFace(), quad.getSprite(), quad.applyDiffuseLighting())));
+            }
+        }
+    }
 
-		this.generalQuads = modelIn.getQuads(null, null, ThreadLocalRandom.current(), EmptyModelData.INSTANCE);
-		Arrays.stream(Direction.values()).forEach(dir -> this.sideQuads.put(dir,
-				modelIn.getQuads(null, dir, ThreadLocalRandom.current(), EmptyModelData.INSTANCE)));
+    private static BakedQuad replaceUV(final TextureAtlasSprite newTexture, final BakedQuad oldQuad) {
+        if (newTexture.equals(oldQuad.getSprite()))
+            return oldQuad;
+        final int[] vertexData = oldQuad.getVertexData();
+        final int j = 8;
+        final int k = vertexData.length / j;
 
-		for (int i = 0; i < this.generalQuads.size(); i++) {
-			BakedQuad quad = this.generalQuads.get(i);
+        final TextureAtlasSprite oldTexture = oldQuad.getSprite();
 
-			this.generalQuads.set(i, replaceUV(newTexture, new BakedQuad(quad.getVertexData(), quad.getTintIndex(),
-					quad.getFace(), quad.getSprite(), quad.applyDiffuseLighting())));
-		}
+        for (int i = 0; i < k; i++) {
+            final float oldU = Float.intBitsToFloat(vertexData[4 + i * 8]);
+            final float oldV = Float.intBitsToFloat(vertexData[5 + i * 8]);
+            final float newUnscaledU = oldU - oldTexture.getMinU();
+            final float newUnscaledV = oldV - oldTexture.getMinV();
+            vertexData[4 + i * 8] = Float.floatToIntBits(newTexture.getMinU() + newUnscaledU);
+            vertexData[5 + i * 8] = Float.floatToIntBits(newTexture.getMinV() + newUnscaledV);
+        }
 
-		for (Map.Entry<Direction, List<BakedQuad>> quadSide : this.sideQuads.entrySet()) {
-			List<BakedQuad> value = quadSide.getValue();
-			for (int i = 0; i < value.size(); i++) {
-				BakedQuad quad = value.get(i);
-				value.set(i, replaceUV(newTexture, new BakedQuad(quad.getVertexData(), quad.getTintIndex(),
-						quad.getFace(), quad.getSprite(), quad.applyDiffuseLighting())));
-			}
-		}
-	}
+        return new BakedQuad(vertexData, oldQuad.getTintIndex(), oldQuad.getFace(), newTexture,
+                oldQuad.applyDiffuseLighting());
+    }
 
-	@Override
-	public ItemOverrideList getOverrides() {
-		return this.model.getOverrides();
-	}
+    @Override
+    public ItemOverrideList getOverrides() {
+        return this.model.getOverrides();
+    }
 
-	@Override
-	public TextureAtlasSprite getParticleTexture() {
-		return this.model.getParticleTexture(EmptyModelData.INSTANCE);
-	}
+    @Override
+    public TextureAtlasSprite getParticleTexture() {
+        return this.model.getParticleTexture(EmptyModelData.INSTANCE);
+    }
 
-	@Override
-	public List<BakedQuad> getQuads(final BlockState state, final Direction side, final Random rand) {
-		return side == null ? this.generalQuads : this.sideQuads.get(side);
-	}
+    @Override
+    public List<BakedQuad> getQuads(final BlockState state, final Direction side, final Random rand) {
+        return side == null ? this.generalQuads : this.sideQuads.get(side);
+    }
 
-	@Override
-	public boolean isAmbientOcclusion() {
-		return this.model.isAmbientOcclusion();
-	}
+    @Override
+    public boolean isAmbientOcclusion() {
+        return this.model.isAmbientOcclusion();
+    }
 
-	@Override
-	public boolean isBuiltInRenderer() {
-		return this.model.isBuiltInRenderer();
-	}
+    @Override
+    public boolean isBuiltInRenderer() {
+        return this.model.isBuiltInRenderer();
+    }
 
-	@Override
-	public boolean isGui3d() {
-		return this.model.isGui3d();
-	}
+    @Override
+    public boolean isGui3d() {
+        return this.model.isGui3d();
+    }
 
-	@Override
-	public boolean isSideLit() {
-		return this.model.isSideLit();
-	}
+    @Override
+    public boolean isSideLit() {
+        return this.model.isSideLit();
+    }
 }

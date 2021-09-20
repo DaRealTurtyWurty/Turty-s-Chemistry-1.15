@@ -12,41 +12,44 @@ import net.minecraft.util.text.ITextComponent;
 
 public class BalerScreen extends ContainerScreen<BalerContainer> {
 
-	private static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation(TurtyChemistry.MOD_ID,
-			"textures/gui/baler.png");
+    private static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation(TurtyChemistry.MOD_ID,
+            "textures/gui/baler.png");
 
-	public BalerScreen(final BalerContainer screenContainer, final PlayerInventory inv, final ITextComponent titleIn) {
-		super(screenContainer, inv, titleIn);
-		this.guiLeft = 0;
-		this.guiTop = 0;
-		this.xSize = 176;
-		this.ySize = 166;
-	}
+    public BalerScreen(final BalerContainer screenContainer, final PlayerInventory inv,
+            final ITextComponent titleIn) {
+        super(screenContainer, inv, titleIn);
+        this.guiLeft = 0;
+        this.guiTop = 0;
+        this.xSize = 176;
+        this.ySize = 166;
+    }
 
-	@Override
-	protected void drawGuiContainerBackgroundLayer(final MatrixStack stack, final float partialTicks, final int mouseX,
-			final int mouseY) {
-		super.drawGuiContainerForegroundLayer(stack, mouseX, mouseY);
+    @Override
+    public void render(final MatrixStack stack, final int mouseX, final int mouseY,
+            final float partialTicks) {
+        this.renderBackground(stack);
+        super.render(stack, mouseX, mouseY, partialTicks);
+        renderHoveredTooltip(stack, mouseX, mouseY);
+    }
 
-		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-		getMinecraft().getTextureManager().bindTexture(BACKGROUND_TEXTURE);
+    @Override
+    protected void drawGuiContainerBackgroundLayer(final MatrixStack stack, final float partialTicks,
+            final int mouseX, final int mouseY) {
+        super.drawGuiContainerForegroundLayer(stack, mouseX, mouseY);
 
-		ClientUtils.blit(stack, this, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
-	}
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        getMinecraft().getTextureManager().bindTexture(BACKGROUND_TEXTURE);
 
-	@Override
-	protected void drawGuiContainerForegroundLayer(final MatrixStack stack, final int mouseX, final int mouseY) {
-		final BalerTileEntity tileEntity = this.container.tileEntity;
-		if (tileEntity.compressingTime > 0) {
-			this.font.drawString(stack, tileEntity.compressingTime + " / " + tileEntity.maxCompressingTime, 6.0f, 6.0f,
-					0x404040);
-		}
-	}
+        ClientUtils.blit(stack, this, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
+    }
 
-	@Override
-	public void render(final MatrixStack stack, final int mouseX, final int mouseY, final float partialTicks) {
-		this.renderBackground(stack);
-		super.render(stack, mouseX, mouseY, partialTicks);
-		renderHoveredTooltip(stack, mouseX, mouseY);
-	}
+    @Override
+    protected void drawGuiContainerForegroundLayer(final MatrixStack stack, final int mouseX,
+            final int mouseY) {
+        final BalerTileEntity tileEntity = this.container.tileEntity;
+        if (tileEntity.compressingTime > 0) {
+            this.font.drawString(stack, tileEntity.compressingTime + " / " + tileEntity.maxCompressingTime,
+                    6.0f, 6.0f, 0x404040);
+        }
+    }
 }

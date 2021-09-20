@@ -16,100 +16,109 @@ import net.minecraft.util.text.StringTextComponent;
 
 public class ElectrolyzerScreen extends ContainerScreen<ElectrolyzerContainer> {
 
-	private static final ResourceLocation TEXTURE = new ResourceLocation(TurtyChemistry.MOD_ID,
-			"textures/gui/electrolyzer.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation(TurtyChemistry.MOD_ID,
+            "textures/gui/electrolyzer.png");
 
-	public ElectrolyzerScreen(final ElectrolyzerContainer screenContainer, final PlayerInventory inv,
-			final ITextComponent titleIn) {
-		super(screenContainer, inv, titleIn);
-		this.guiLeft = 0;
-		this.guiTop = 0;
-		this.xSize = 176;
-		this.ySize = 166;
-	}
+    public ElectrolyzerScreen(final ElectrolyzerContainer screenContainer, final PlayerInventory inv,
+            final ITextComponent titleIn) {
+        super(screenContainer, inv, titleIn);
+        this.guiLeft = 0;
+        this.guiTop = 0;
+        this.xSize = 176;
+        this.ySize = 166;
+    }
 
-	@SuppressWarnings("deprecation")
-	public void drawFluids() {
-		int inputX = 9;
-		int output1X = 154;
-		int output2X = 100;
-		int y = 13;
-		int w = 13;
-		int h = 57;
+    @SuppressWarnings("deprecation")
+    public void drawFluids() {
+        final int inputX = 9;
+        final int output1X = 154;
+        final int output2X = 100;
+        final int y = 13;
+        final int w = 13;
+        final int h = 57;
 
-		RenderType renderType = ClientUtils.getGui(TEXTURE);
+        final RenderType renderType = ClientUtils.getGui(TEXTURE);
 
-		RenderSystem.pushMatrix();
-		int inputHeight = (int) (57 * (this.container.inputFluid.getAmount() / (float) this.container.data.get(2)));
-		int output1Height = (int) (57 * (this.container.outputFluid1.getAmount() / (float) this.container.data.get(3)));
-		int output2Height = (int) (57 * (this.container.outputFluid2.getAmount() / (float) this.container.data.get(4)));
+        RenderSystem.pushMatrix();
+        final int inputHeight = (int) (57
+                * (this.container.inputFluid.getAmount() / (float) this.container.data.get(2)));
+        final int output1Height = (int) (57
+                * (this.container.outputFluid1.getAmount() / (float) this.container.data.get(3)));
+        final int output2Height = (int) (57
+                * (this.container.outputFluid2.getAmount() / (float) this.container.data.get(4)));
 
-		IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer());
-		MatrixStack transform = new MatrixStack();
+        final IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer
+                .getImpl(Tessellator.getInstance().getBuffer());
+        final MatrixStack transform = new MatrixStack();
 
-		ClientUtils.drawRepeatedFluidSpriteGui(buffer, transform, this.container.inputFluid, inputX,
-				y + h - inputHeight, w, inputHeight);
-		ClientUtils.drawRepeatedFluidSpriteGui(buffer, transform, this.container.outputFluid1, output1X,
-				y + h - output1Height, w, output1Height);
-		ClientUtils.drawRepeatedFluidSpriteGui(buffer, transform, this.container.outputFluid2, output2X,
-				y + h - output2Height, w, output2Height);
+        ClientUtils.drawRepeatedFluidSpriteGui(buffer, transform, this.container.inputFluid, inputX,
+                y + h - inputHeight, w, inputHeight);
+        ClientUtils.drawRepeatedFluidSpriteGui(buffer, transform, this.container.outputFluid1, output1X,
+                y + h - output1Height, w, output1Height);
+        ClientUtils.drawRepeatedFluidSpriteGui(buffer, transform, this.container.outputFluid2, output2X,
+                y + h - output2Height, w, output2Height);
 
-		RenderSystem.color3f(1.0f, 1.0f, 1.0f);
-		ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, inputX, y, w, h, 256f, 0, 0, 0, 0);
-		ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, output1X, y, w, h, 256f, 0, 0, 0, 0);
-		ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, output2X, y, w, h, 256f, 0, 0, 0, 0);
+        RenderSystem.color3f(1.0f, 1.0f, 1.0f);
+        ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, inputX, y, w, h, 256f, 0, 0, 0,
+                0);
+        ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, output1X, y, w, h, 256f, 0, 0,
+                0, 0);
+        ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, output2X, y, w, h, 256f, 0, 0,
+                0, 0);
 
-		buffer.finish(renderType);
-		RenderSystem.popMatrix();
-	}
+        buffer.finish(renderType);
+        RenderSystem.popMatrix();
+    }
 
-	@SuppressWarnings("deprecation")
-	@Override
-	protected void drawGuiContainerBackgroundLayer(final MatrixStack stack, final float partialTicks, final int mouseX,
-			final int mouseY) {
-		RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
-		getMinecraft().getTextureManager().bindTexture(TEXTURE);
-		ClientUtils.blit(stack, this, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
+    @Override
+    public void render(final MatrixStack stack, final int mouseX, final int mouseY,
+            final float partialTicks) {
+        this.renderBackground(stack);
+        super.render(stack, mouseX, mouseY, partialTicks);
+        renderHoveredTooltip(stack, mouseX, mouseY);
 
-		ClientUtils.blit(stack, this, this.guiLeft + 49, this.guiTop + 32, 176, 0, this.container.getScaledProgress(),
-				17);
-	}
+        this.renderTooltip(stack,
+                this.container.inputFluid.getDisplayName().getString() + ": "
+                        + this.container.inputFluid.getAmount() + "/" + this.container.data.get(2),
+                mouseX, mouseY, 8, 22, 12, 70);
 
-	@Override
-	protected void drawGuiContainerForegroundLayer(final MatrixStack stack, final int mouseX, final int mouseY) {
-		this.font.drawString(stack, this.title.getString(), 7.0f, 3.0f, 0x404040);
-		this.font.drawString(stack, this.playerInventory.getDisplayName().getString(), 7.0f, 74.0f, 0x404040);
+        this.renderTooltip(stack,
+                this.container.outputFluid1.getDisplayName().getString() + ": "
+                        + this.container.outputFluid1.getAmount() + "/" + this.container.data.get(3),
+                mouseX, mouseY, 153, 167, 12, 70);
 
-		drawFluids();
-	}
+        this.renderTooltip(stack,
+                this.container.outputFluid2.getDisplayName().getString() + ": "
+                        + this.container.outputFluid2.getAmount() + "/" + this.container.data.get(4),
+                mouseX, mouseY, 99, 113, 12, 70);
+    }
 
-	@Override
-	public void render(final MatrixStack stack, final int mouseX, final int mouseY, final float partialTicks) {
-		this.renderBackground(stack);
-		super.render(stack, mouseX, mouseY, partialTicks);
-		renderHoveredTooltip(stack, mouseX, mouseY);
+    @SuppressWarnings("deprecation")
+    @Override
+    protected void drawGuiContainerBackgroundLayer(final MatrixStack stack, final float partialTicks,
+            final int mouseX, final int mouseY) {
+        RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        getMinecraft().getTextureManager().bindTexture(TEXTURE);
+        ClientUtils.blit(stack, this, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
 
-		this.renderTooltip(
-				stack, this.container.inputFluid.getDisplayName().getString() + ": "
-						+ this.container.inputFluid.getAmount() + "/" + this.container.data.get(2),
-				mouseX, mouseY, 8, 22, 12, 70);
+        ClientUtils.blit(stack, this, this.guiLeft + 49, this.guiTop + 32, 176, 0,
+                this.container.getScaledProgress(), 17);
+    }
 
-		this.renderTooltip(stack,
-				this.container.outputFluid1.getDisplayName().getString() + ": "
-						+ this.container.outputFluid1.getAmount() + "/" + this.container.data.get(3),
-				mouseX, mouseY, 153, 167, 12, 70);
+    @Override
+    protected void drawGuiContainerForegroundLayer(final MatrixStack stack, final int mouseX,
+            final int mouseY) {
+        this.font.drawString(stack, this.title.getString(), 7.0f, 3.0f, 0x404040);
+        this.font.drawString(stack, this.playerInventory.getDisplayName().getString(), 7.0f, 74.0f, 0x404040);
 
-		this.renderTooltip(stack,
-				this.container.outputFluid2.getDisplayName().getString() + ": "
-						+ this.container.outputFluid2.getAmount() + "/" + this.container.data.get(4),
-				mouseX, mouseY, 99, 113, 12, 70);
-	}
+        drawFluids();
+    }
 
-	protected void renderTooltip(final MatrixStack stack, final String tooltip, final int mouseX, final int mouseY,
-			final int xLeft, final int xRight, final int yTop, final int yBottom) {
-		if (mouseX > this.guiLeft + xLeft && mouseX < this.guiLeft + xRight && mouseY > this.guiTop + yTop
-				&& mouseY < this.guiTop + yBottom) {
-			super.renderTooltip(stack, new StringTextComponent(tooltip), mouseX, mouseY);
-		}
-	}
+    protected void renderTooltip(final MatrixStack stack, final String tooltip, final int mouseX,
+            final int mouseY, final int xLeft, final int xRight, final int yTop, final int yBottom) {
+        if (mouseX > this.guiLeft + xLeft && mouseX < this.guiLeft + xRight && mouseY > this.guiTop + yTop
+                && mouseY < this.guiTop + yBottom) {
+            super.renderTooltip(stack, new StringTextComponent(tooltip), mouseX, mouseY);
+        }
+    }
 }

@@ -28,79 +28,79 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.network.NetworkHooks;
 
-import net.minecraft.block.AbstractBlock.Properties;
-
 public class ElectrolyzerBlock extends Block {
 
-	public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-	public ElectrolyzerBlock(final Properties properties) {
-		super(properties);
-		setDefaultState(this.stateContainer.getBaseState().with(FACING, Direction.NORTH));
-	}
+    public ElectrolyzerBlock(final Properties properties) {
+        super(properties);
+        setDefaultState(this.stateContainer.getBaseState().with(FACING, Direction.NORTH));
+    }
 
-	@Override
-	public TileEntity createTileEntity(final BlockState state, final IBlockReader world) {
-		return TileEntityTypeInit.ELECTROLYZER.get().create();
-	}
+    @Override
+    public TileEntity createTileEntity(final BlockState state, final IBlockReader world) {
+        return TileEntityTypeInit.ELECTROLYZER.get().create();
+    }
 
-	@Override
-	protected void fillStateContainer(final Builder<Block, BlockState> builder) {
-		super.fillStateContainer(builder);
-		builder.add(FACING);
-	}
+    @Override
+    public BlockState getStateForPlacement(final BlockItemUseContext context) {
+        return getDefaultState().with(FACING, context.getPlacementHorizontalFacing().getOpposite());
+    }
 
-	@Override
-	public BlockState getStateForPlacement(final BlockItemUseContext context) {
-		return getDefaultState().with(FACING, context.getPlacementHorizontalFacing().getOpposite());
-	}
+    @Override
+    public boolean hasTileEntity(final BlockState state) {
+        return true;
+    }
 
-	@Override
-	public boolean hasTileEntity(final BlockState state) {
-		return true;
-	}
+    @Override
+    public ActionResultType onBlockActivated(final BlockState state, final World worldIn, final BlockPos pos,
+            final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
+        if (!worldIn.isRemote && worldIn.getTileEntity(pos) instanceof ElectrolyzerTileEntity) {
+            final ElectrolyzerTileEntity tile = (ElectrolyzerTileEntity) worldIn.getTileEntity(pos);
+            final ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+            final IContainerProvider provider = ElectrolyzerContainer.getServerContainerProvider(tile, pos);
+            final INamedContainerProvider namedProvider = new SimpleNamedContainerProvider(provider,
+                    tile.getDisplayName());
+            NetworkHooks.openGui(serverPlayer, namedProvider, pos);
+        }
+        return ActionResultType.SUCCESS;
+    }
 
-	@Override
-	public ActionResultType onBlockActivated(final BlockState state, final World worldIn, final BlockPos pos,
-			final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
-		if (!worldIn.isRemote && worldIn.getTileEntity(pos) instanceof ElectrolyzerTileEntity) {
-			ElectrolyzerTileEntity tile = (ElectrolyzerTileEntity) worldIn.getTileEntity(pos);
-			ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
-			IContainerProvider provider = ElectrolyzerContainer.getServerContainerProvider(tile, pos);
-			INamedContainerProvider namedProvider = new SimpleNamedContainerProvider(provider, tile.getDisplayName());
-			NetworkHooks.openGui(serverPlayer, namedProvider, pos);
-		}
-		return ActionResultType.SUCCESS;
-	}
+    @Override
+    public void onReplaced(final BlockState state, final World worldIn, final BlockPos pos,
+            final BlockState newState, final boolean isMoving) {
+        if (worldIn.getTileEntity(pos) instanceof ElectrolyzerTileEntity) {
+            final ElectrolyzerTileEntity tile = (ElectrolyzerTileEntity) worldIn.getTileEntity(pos);
+            for (int index = 0; index < tile.getInventory().getSlots(); index++) {
+                final ItemEntity itemEntity = new ItemEntity(worldIn, pos.getX() + 0.5D, pos.getY() + 0.5D,
+                        pos.getZ() + 0.5D, tile.getItemInSlot(index));
+                worldIn.addEntity(itemEntity);
+            }
 
-	@Override
-	public void onReplaced(final BlockState state, final World worldIn, final BlockPos pos, final BlockState newState,
-			final boolean isMoving) {
-		if (worldIn.getTileEntity(pos) instanceof ElectrolyzerTileEntity) {
-			ElectrolyzerTileEntity tile = (ElectrolyzerTileEntity) worldIn.getTileEntity(pos);
-			for (int index = 0; index < tile.getInventory().getSlots(); index++) {
-				ItemEntity ie = new ItemEntity(worldIn, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
-						tile.getItemInSlot(index));
-				worldIn.addEntity(ie);
-			}
+            if (!worldIn.isRemote && !tile.fluidInventory.isEmpty()) {
+                ((ServerWorld) worldIn).spawnParticle(ParticleTypes.SMOKE, pos.getX() + 0.5D,
+                        pos.getY() + 0.5D, pos.getZ() + 0.5D, 100, 0.5D, 0.5D, 0.5D, 0.5D);
+            }
+        }
 
-			if (!worldIn.isRemote && !tile.fluidInventory.isEmpty()) {
-				((ServerWorld) worldIn).spawnParticle(ParticleTypes.SMOKE, pos.getX() + 0.5D, pos.getY() + 0.5D,
-						pos.getZ() + 0.5D, 100, 0.5D, 0.5D, 0.5D, 0.5D);
-			}
-		}
+        if (state.hasTileEntity() && (state.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
+            worldIn.removeTileEntity(pos);
+        }
+    }
 
-		if (state.hasTileEntity() && (state.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
-			worldIn.removeTileEntity(pos);
-		}
-	}
+    @Override
+    public void randomTick(final BlockState state, final ServerWorld worldIn, final BlockPos pos,
+            final Random random) {
+        if (worldIn.getTileEntity(pos) instanceof ElectrolyzerTileEntity
+                && ((ElectrolyzerTileEntity) worldIn.getTileEntity(pos)).converting) {
+            worldIn.spawnParticle(ParticleTypes.POOF, pos.getX(), pos.getY(), pos.getZ(), 20,
+                    random.nextDouble() - 0.5D, 0.0D, random.nextDouble() - 0.5D, 0.01D);
+        }
+    }
 
-	@Override
-	public void randomTick(final BlockState state, final ServerWorld worldIn, final BlockPos pos, final Random random) {
-		if (worldIn.getTileEntity(pos) instanceof ElectrolyzerTileEntity
-				&& ((ElectrolyzerTileEntity) worldIn.getTileEntity(pos)).converting) {
-			worldIn.spawnParticle(ParticleTypes.POOF, pos.getX(), pos.getY(), pos.getZ(), 20,
-					random.nextDouble() - 0.5D, 0.0D, random.nextDouble() - 0.5D, 0.01D);
-		}
-	}
+    @Override
+    protected void fillStateContainer(final Builder<Block, BlockState> builder) {
+        super.fillStateContainer(builder);
+        builder.add(FACING);
+    }
 }

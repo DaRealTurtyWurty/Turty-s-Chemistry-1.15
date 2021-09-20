@@ -8,29 +8,29 @@ import net.minecraftforge.common.capabilities.CapabilityInject;
 
 public final class GuideBookDataCap {
 
-	public static class Storage implements Capability.IStorage<IGuideBookData> {
-		public static final String UUID = "uuid";
+    @CapabilityInject(IGuideBookData.class)
+    public static final Capability<IGuideBookData> INSTANCE = null;
 
-		@Override
-		public void readNBT(final Capability<IGuideBookData> capability, final IGuideBookData instance,
-				final Direction side, final INBT nbt) {
-			if (nbt instanceof CompoundNBT) {
-				// instance.setPlayerUUID(((CompoundNBT) nbt).getUniqueId(UUID));
-			}
-		}
+    private GuideBookDataCap() {
+    }
 
-		@Override
-		public INBT writeNBT(final Capability<IGuideBookData> capability, final IGuideBookData instance,
-				final Direction side) {
+    public static class Storage implements Capability.IStorage<IGuideBookData> {
+        public static final String UUID = "uuid";
 
-			// nbt.putUniqueId(UUID, instance.getPlayerUUID());
-			return new CompoundNBT();
-		}
-	}
+        @Override
+        public void readNBT(final Capability<IGuideBookData> capability, final IGuideBookData instance,
+                final Direction side, final INBT nbt) {
+            if (nbt instanceof CompoundNBT) {
+                // instance.setPlayerUUID(((CompoundNBT) nbt).getUniqueId(UUID));
+            }
+        }
 
-	@CapabilityInject(IGuideBookData.class)
-	public static final Capability<IGuideBookData> INSTANCE = null;
+        @Override
+        public INBT writeNBT(final Capability<IGuideBookData> capability, final IGuideBookData instance,
+                final Direction side) {
 
-	private GuideBookDataCap() {
-	}
+            // nbt.putUniqueId(UUID, instance.getPlayerUUID());
+            return new CompoundNBT();
+        }
+    }
 }

@@ -12,40 +12,42 @@ import net.minecraft.util.Direction;
 import net.minecraftforge.client.model.data.ModelProperty;
 
 public final class ModBlockProperties {
-	
-	private ModBlockProperties() {} 
 
-	public static final PropertyBoolInverted MULTIBLOCKSLAVE = PropertyBoolInverted.create("multiblockslave");
-	public static final PropertyBoolInverted MIRRORED = PropertyBoolInverted.create("mirrored");
-	public static final ModelProperty<TileEntity> TILEENTITY_PASSTHROUGH = new ModelProperty<>();
-	public static final DirectionProperty FACING_HORIZONTAL = DirectionProperty.create("facing",
-			Direction.Plane.HORIZONTAL);
+    public static final PropertyBoolInverted MULTIBLOCKSLAVE = PropertyBoolInverted.create("multiblockslave");
 
-	public static class PropertyBoolInverted extends Property<Boolean> {
-		private static final ImmutableList<Boolean> ALLOWED_VALUES = ImmutableList.of(false, true);
+    public static final PropertyBoolInverted MIRRORED = PropertyBoolInverted.create("mirrored");
+    public static final ModelProperty<TileEntity> TILEENTITY_PASSTHROUGH = new ModelProperty<>();
+    public static final DirectionProperty FACING_HORIZONTAL = DirectionProperty.create("facing",
+            Direction.Plane.HORIZONTAL);
 
-		protected PropertyBoolInverted(String name) {
-			super(name, Boolean.class);
-		}
+    private ModBlockProperties() {
+    }
 
-		@Override
-		public Collection<Boolean> getAllowedValues() {
-			return ALLOWED_VALUES;
-		}
+    public static class PropertyBoolInverted extends Property<Boolean> {
+        private static final ImmutableList<Boolean> ALLOWED_VALUES = ImmutableList.of(false, true);
 
-		@Override
-		public Optional<Boolean> parseValue(String value) {
-			return Optional.of(Boolean.parseBoolean(value));
-		}
+        protected PropertyBoolInverted(final String name) {
+            super(name, Boolean.class);
+        }
 
-		public static PropertyBoolInverted create(String name) {
-			return new PropertyBoolInverted(name);
-		}
+        public static PropertyBoolInverted create(final String name) {
+            return new PropertyBoolInverted(name);
+        }
 
-		@Override
-		public String getName(Boolean value) {
-			return value.toString();
-		}
-	}
+        @Override
+        public Collection<Boolean> getAllowedValues() {
+            return ALLOWED_VALUES;
+        }
+
+        @Override
+        public String getName(final Boolean value) {
+            return value.toString();
+        }
+
+        @Override
+        public Optional<Boolean> parseValue(final String value) {
+            return Optional.of(Boolean.parseBoolean(value));
+        }
+    }
 
 }

@@ -12,22 +12,21 @@ import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.IBlockReader;
 
-import net.minecraft.block.AbstractBlock.Properties;
-
 public class BriquettingPressPart extends BaseHorizontalBlock {
 
-	protected static final Map<Direction, VoxelShape> SHAPES = new EnumMap<>(Direction.class);
+    protected static final Map<Direction, VoxelShape> SHAPES = new EnumMap<>(Direction.class);
 
-	private VoxelShape shape;
+    private final VoxelShape shape;
 
-	public BriquettingPressPart(Properties builder, VoxelShape shapeIn) {
-		super(builder);
-		this.shape = shapeIn;
-		runCalculation(SHAPES, this.shape);
-	}
+    public BriquettingPressPart(final Properties builder, final VoxelShape shapeIn) {
+        super(builder);
+        this.shape = shapeIn;
+        runCalculation(SHAPES, this.shape);
+    }
 
-	@Override
-	public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
-		return SHAPES.get(state.get(HORIZONTAL_FACING));
-	}
+    @Override
+    public VoxelShape getShape(final BlockState state, final IBlockReader worldIn, final BlockPos pos,
+            final ISelectionContext context) {
+        return SHAPES.get(state.get(HORIZONTAL_FACING));
+    }
 }

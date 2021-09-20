@@ -27,60 +27,63 @@ import net.minecraft.world.World;
 
 public class GreenAlgaeItem extends Item {
 
-	public GreenAlgaeItem(final Properties properties) {
-		super(properties);
-	}
+    public GreenAlgaeItem(final Properties properties) {
+        super(properties);
+    }
 
-	@Override
-	public ActionResult<ItemStack> onItemRightClick(final World worldIn, final PlayerEntity playerIn,
-			final Hand handIn) {
-		ItemStack itemstack = playerIn.getHeldItem(handIn);
-		RayTraceResult raytraceresult = rayTrace(worldIn, playerIn, RayTraceContext.FluidMode.SOURCE_ONLY);
-		if (raytraceresult.getType() == RayTraceResult.Type.MISS)
-			return ActionResult.resultPass(itemstack);
-		if (raytraceresult.getType() == RayTraceResult.Type.BLOCK) {
-			BlockRayTraceResult blockraytraceresult = (BlockRayTraceResult) raytraceresult;
-			BlockPos blockpos = blockraytraceresult.getPos();
-			Direction direction = blockraytraceresult.getFace();
-			if (!worldIn.isBlockModifiable(playerIn, blockpos)
-					|| !playerIn.canPlayerEdit(blockpos.offset(direction), direction, itemstack))
-				return ActionResult.resultFail(itemstack);
+    @Override
+    public ActionResult<ItemStack> onItemRightClick(final World worldIn, final PlayerEntity playerIn,
+            final Hand handIn) {
+        final ItemStack itemstack = playerIn.getHeldItem(handIn);
+        final RayTraceResult raytraceresult = rayTrace(worldIn, playerIn,
+                RayTraceContext.FluidMode.SOURCE_ONLY);
+        if (raytraceresult.getType() == RayTraceResult.Type.MISS)
+            return ActionResult.resultPass(itemstack);
+        if (raytraceresult.getType() == RayTraceResult.Type.BLOCK) {
+            final BlockRayTraceResult blockraytraceresult = (BlockRayTraceResult) raytraceresult;
+            final BlockPos blockpos = blockraytraceresult.getPos();
+            final Direction direction = blockraytraceresult.getFace();
+            if (!worldIn.isBlockModifiable(playerIn, blockpos)
+                    || !playerIn.canPlayerEdit(blockpos.offset(direction), direction, itemstack))
+                return ActionResult.resultFail(itemstack);
 
-			BlockPos blockpos1 = blockpos.up();
-			BlockState blockstate = worldIn.getBlockState(blockpos);
-			Material material = blockstate.getMaterial();
-			FluidState fluidstate = worldIn.getFluidState(blockpos);
-			if ((fluidstate.getFluid() == Fluids.WATER || material == Material.ICE) && worldIn.isAirBlock(blockpos1)) {
+            final BlockPos blockpos1 = blockpos.up();
+            final BlockState blockstate = worldIn.getBlockState(blockpos);
+            final Material material = blockstate.getMaterial();
+            final FluidState fluidstate = worldIn.getFluidState(blockpos);
+            if ((fluidstate.getFluid() == Fluids.WATER || material == Material.ICE)
+                    && worldIn.isAirBlock(blockpos1)) {
 
-				net.minecraftforge.common.util.BlockSnapshot blocksnapshot = net.minecraftforge.common.util.BlockSnapshot
-						.create(worldIn.getDimensionKey(), worldIn, blockpos1);
-				worldIn.setBlockState(blockpos1, BlockInit.GREEN_ALGAE.get().getDefaultState(), 11);
-				if (net.minecraftforge.event.ForgeEventFactory.onBlockPlace(playerIn, blocksnapshot,
-						net.minecraft.util.Direction.UP)) {
-					blocksnapshot.restore(true, false);
-					return ActionResult.resultFail(itemstack);
-				}
+                final net.minecraftforge.common.util.BlockSnapshot blocksnapshot = net.minecraftforge.common.util.BlockSnapshot
+                        .create(worldIn.getDimensionKey(), worldIn, blockpos1);
+                worldIn.setBlockState(blockpos1, BlockInit.GREEN_ALGAE.get().getDefaultState(), 11);
+                if (net.minecraftforge.event.ForgeEventFactory.onBlockPlace(playerIn, blocksnapshot,
+                        net.minecraft.util.Direction.UP)) {
+                    blocksnapshot.restore(true, false);
+                    return ActionResult.resultFail(itemstack);
+                }
 
-				if (playerIn instanceof ServerPlayerEntity) {
-					CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayerEntity) playerIn, blockpos1, itemstack);
-				}
+                if (playerIn instanceof ServerPlayerEntity) {
+                    CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayerEntity) playerIn, blockpos1,
+                            itemstack);
+                }
 
-				if (!playerIn.abilities.isCreativeMode) {
-					itemstack.shrink(1);
-				}
+                if (!playerIn.abilities.isCreativeMode) {
+                    itemstack.shrink(1);
+                }
 
-				playerIn.addStat(Stats.ITEM_USED.get(this));
-				worldIn.playSound(playerIn, blockpos, SoundEvents.BLOCK_LILY_PAD_PLACE, SoundCategory.BLOCKS, 1.0F,
-						1.0F);
-				return ActionResult.resultSuccess(itemstack);
-			}
-		}
+                playerIn.addStat(Stats.ITEM_USED.get(this));
+                worldIn.playSound(playerIn, blockpos, SoundEvents.BLOCK_LILY_PAD_PLACE, SoundCategory.BLOCKS,
+                        1.0F, 1.0F);
+                return ActionResult.resultSuccess(itemstack);
+            }
+        }
 
-		return ActionResult.resultFail(itemstack);
-	}
+        return ActionResult.resultFail(itemstack);
+    }
 
-	@Override
-	public ActionResultType onItemUse(final ItemUseContext context) {
-		return ActionResultType.PASS;
-	}
+    @Override
+    public ActionResultType onItemUse(final ItemUseContext context) {
+        return ActionResultType.PASS;
+    }
 }

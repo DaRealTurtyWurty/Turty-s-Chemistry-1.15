@@ -14,34 +14,34 @@ import net.minecraft.world.gen.feature.template.RuleTest;
 
 public class TagsRuleTest extends RuleTest {
 
-	public static class PredicateCodec implements Codec<TagsRuleTest> {
+    private final Predicate<BlockState> predicate;
 
-		public static final PredicateCodec CODEC = new PredicateCodec();
+    public TagsRuleTest(final Predicate<BlockState> predicateIn) {
+        this.predicate = predicateIn;
+    }
 
-		@Override
-		public <T> DataResult<Pair<TagsRuleTest, T>> decode(final DynamicOps<T> ops, final T input) {
-			return null;
-		}
+    @Override
+    public boolean test(final BlockState state, final Random rand) {
+        return this.predicate.test(state);
+    }
 
-		@Override
-		public <T> DataResult<T> encode(final TagsRuleTest input, final DynamicOps<T> ops, final T prefix) {
-			return null;
-		}
-	}
+    @Override
+    protected IRuleTestType<TagsRuleTest> getType() {
+        return () -> PredicateCodec.CODEC;
+    }
 
-	private final Predicate<BlockState> predicate;
+    public static class PredicateCodec implements Codec<TagsRuleTest> {
 
-	public TagsRuleTest(final Predicate<BlockState> predicateIn) {
-		this.predicate = predicateIn;
-	}
+        public static final PredicateCodec CODEC = new PredicateCodec();
 
-	@Override
-	protected IRuleTestType<TagsRuleTest> getType() {
-		return () -> PredicateCodec.CODEC;
-	}
+        @Override
+        public <T> DataResult<Pair<TagsRuleTest, T>> decode(final DynamicOps<T> ops, final T input) {
+            return null;
+        }
 
-	@Override
-	public boolean test(final BlockState state, final Random rand) {
-		return this.predicate.test(state);
-	}
+        @Override
+        public <T> DataResult<T> encode(final TagsRuleTest input, final DynamicOps<T> ops, final T prefix) {
+            return null;
+        }
+    }
 }

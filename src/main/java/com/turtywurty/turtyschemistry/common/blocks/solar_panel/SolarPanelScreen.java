@@ -14,49 +14,52 @@ import net.minecraft.util.ResourceLocation;
 
 public class SolarPanelScreen<T extends SolarPanelContainer> extends ContainerScreen<T> {
 
-	private static final ResourceLocation TEXTURE = new ResourceLocation(TurtyChemistry.MOD_ID,
-			"textures/gui/solar_panel.png");
-	private final AbstractSolarPanelTileEntity tileEntity;
+    private static final ResourceLocation TEXTURE = new ResourceLocation(TurtyChemistry.MOD_ID,
+            "textures/gui/solar_panel.png");
+    private final AbstractSolarPanelTileEntity tileEntity;
 
-	public SolarPanelScreen(final T container, final PlayerInventory playerInv,
-			final AbstractSolarPanelTileEntity tileIn) {
-		super(container, playerInv, tileIn.getBlock().getPanelInfo().get().getDisplayName());
-		this.tileEntity = tileIn;
-		this.xSize = 176;
-		this.ySize = 166;
-	}
+    public SolarPanelScreen(final T container, final PlayerInventory playerInv,
+            final AbstractSolarPanelTileEntity tileIn) {
+        super(container, playerInv, tileIn.getBlock().getPanelInfo().get().getDisplayName());
+        this.tileEntity = tileIn;
+        this.xSize = 176;
+        this.ySize = 166;
+    }
 
-	@Override
-	protected void drawGuiContainerBackgroundLayer(final MatrixStack stack, final float partialTicks, final int mouseX,
-			final int mouseY) {
-		ClientUtils.MC.getTextureManager().bindTexture(TEXTURE);
-		RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
-		ClientUtils.blit(stack, this, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
-	}
+    public AbstractSolarPanelTileEntity getTileEntity() {
+        return this.tileEntity;
+    }
 
-	@Override
-	protected void drawGuiContainerForegroundLayer(final MatrixStack stack, final int mouseX, final int mouseY) {
-		super.drawGuiContainerForegroundLayer(stack, mouseX, mouseY);
-		RenderSystem.pushMatrix();
-		RenderType renderType = ClientUtils.getGui(TEXTURE);
-		IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer());
-		MatrixStack transform = new MatrixStack();
-		RenderSystem.color3f(1.0f, 1.0f, 1.0f);
-		ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, this.guiLeft + 13, this.guiTop + 9, 24,
-				69, 256, 176, 199, 0, 69);
-		buffer.finish(renderType);
-		RenderSystem.popMatrix();
-	}
+    @Override
+    public void render(final MatrixStack stack, final int mouseX, final int mouseY,
+            final float partialTicks) {
+        this.renderBackground(stack);
+        super.render(stack, mouseX, mouseY, partialTicks);
+        this.guiLeft = ClientUtils.MC.currentScreen.width / 2 - 88;
+        this.guiTop = ClientUtils.MC.currentScreen.height / 2 - 83;
+    }
 
-	public AbstractSolarPanelTileEntity getTileEntity() {
-		return this.tileEntity;
-	}
+    @Override
+    protected void drawGuiContainerBackgroundLayer(final MatrixStack stack, final float partialTicks,
+            final int mouseX, final int mouseY) {
+        ClientUtils.MC.getTextureManager().bindTexture(TEXTURE);
+        RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        ClientUtils.blit(stack, this, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
+    }
 
-	@Override
-	public void render(final MatrixStack stack, final int mouseX, final int mouseY, final float partialTicks) {
-		this.renderBackground(stack);
-		super.render(stack, mouseX, mouseY, partialTicks);
-		this.guiLeft = ClientUtils.MC.currentScreen.width / 2 - 88;
-		this.guiTop = ClientUtils.MC.currentScreen.height / 2 - 83;
-	}
+    @Override
+    protected void drawGuiContainerForegroundLayer(final MatrixStack stack, final int mouseX,
+            final int mouseY) {
+        super.drawGuiContainerForegroundLayer(stack, mouseX, mouseY);
+        RenderSystem.pushMatrix();
+        final RenderType renderType = ClientUtils.getGui(TEXTURE);
+        final IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer
+                .getImpl(Tessellator.getInstance().getBuffer());
+        final MatrixStack transform = new MatrixStack();
+        RenderSystem.color3f(1.0f, 1.0f, 1.0f);
+        ClientUtils.drawTexturedRect(buffer.getBuffer(renderType), transform, this.guiLeft + 13,
+                this.guiTop + 9, 24, 69, 256, 176, 199, 0, 69);
+        buffer.finish(renderType);
+        RenderSystem.popMatrix();
+    }
 }

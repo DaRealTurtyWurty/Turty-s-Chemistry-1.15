@@ -22,41 +22,44 @@ import net.minecraftforge.fluids.FluidStack;
 
 public class AgitatorTileEntityRenderer extends TileEntityRenderer<AgitatorTileEntity> {
 
-	public AgitatorTileEntityRenderer(final TileEntityRendererDispatcher rendererDispatcherIn) {
-		super(rendererDispatcherIn);
-	}
+    public AgitatorTileEntityRenderer(final TileEntityRendererDispatcher rendererDispatcherIn) {
+        super(rendererDispatcherIn);
+    }
 
-	@SuppressWarnings("unused")
-	@Override
-	public void render(final AgitatorTileEntity tileEntityIn, final float partialTicks, final MatrixStack matrixStackIn,
-			final IRenderTypeBuffer bufferIn, final int combinedLightIn, final int combinedOverlayIn) {
-		IVertexBuilder buffer = bufferIn.getBuffer(RenderType.getTranslucent());
-		FluidStackHandler fluidHandler = tileEntityIn.getFluidHandler();
+    @SuppressWarnings("unused")
+    @Override
+    public void render(final AgitatorTileEntity tileEntityIn, final float partialTicks,
+            final MatrixStack matrixStackIn, final IRenderTypeBuffer bufferIn, final int combinedLightIn,
+            final int combinedOverlayIn) {
+        final IVertexBuilder buffer = bufferIn.getBuffer(RenderType.getTranslucent());
+        final FluidStackHandler fluidHandler = tileEntityIn.getFluidHandler();
 
-		double index = 0;
-		for (FluidStack fluid : fluidHandler.getContents()) {
-			if (!fluid.isEmpty()) {
-				matrixStackIn.push();
-				TextureAtlasSprite texture = Minecraft.getInstance()
-						.getAtlasSpriteGetter(PlayerContainer.LOCATION_BLOCKS_TEXTURE)
-						.apply(fluid.getFluid().getAttributes().getStillTexture());
+        double index = 0;
+        for (final FluidStack fluid : fluidHandler.getContents()) {
+            if (!fluid.isEmpty()) {
+                matrixStackIn.push();
+                final TextureAtlasSprite texture = Minecraft.getInstance()
+                        .getAtlasSpriteGetter(PlayerContainer.LOCATION_BLOCKS_TEXTURE)
+                        .apply(fluid.getFluid().getAttributes().getStillTexture());
 
-				IBakedModel model = ClientUtils.MC.getModelManager()
-						.getModel(new ResourceLocation(TurtyChemistry.MOD_ID, "block/agitator_fluid"));
-				int fluidColor = fluid.getFluid().getAttributes().getColor(tileEntityIn.getWorld(),
-						tileEntityIn.getPos());
-				// TODO: Color the fluid
+                final IBakedModel model = ClientUtils.MC.getModelManager()
+                        .getModel(new ResourceLocation(TurtyChemistry.MOD_ID, "block/agitator_fluid"));
+                final int fluidColor = fluid.getFluid().getAttributes().getColor(tileEntityIn.getWorld(),
+                        tileEntityIn.getPos());
+                // TODO: Color the fluid
 
-				matrixStackIn.scale(1.0f, 0.5f, 1.0f);
-				matrixStackIn.translate(0.0D, index++ / 4 + 0.1D, 0.0D);
+                matrixStackIn.scale(1.0f, 0.5f, 1.0f);
+                matrixStackIn.translate(0.0D, index / 4 + 0.1D, 0.0D);
+                index++;
 
-				ClientUtils.MC.getBlockRendererDispatcher().getBlockModelRenderer().renderModel(tileEntityIn.getWorld(),
-						new ReplacedTextureModel(model, texture),
-						fluid.getFluid().getFluid().getDefaultState().getBlockState(), tileEntityIn.getPos(),
-						matrixStackIn, buffer, true, tileEntityIn.getWorld().getRandom(),
-						((ServerWorld) tileEntityIn.getWorld()).getSeed(), combinedOverlayIn, EmptyModelData.INSTANCE);
-				matrixStackIn.pop();
-			}
-		}
-	}
+                ClientUtils.MC.getBlockRendererDispatcher().getBlockModelRenderer().renderModel(
+                        tileEntityIn.getWorld(), new ReplacedTextureModel(model, texture),
+                        fluid.getFluid().getFluid().getDefaultState().getBlockState(), tileEntityIn.getPos(),
+                        matrixStackIn, buffer, true, tileEntityIn.getWorld().getRandom(),
+                        ((ServerWorld) tileEntityIn.getWorld()).getSeed(), combinedOverlayIn,
+                        EmptyModelData.INSTANCE);
+                matrixStackIn.pop();
+            }
+        }
+    }
 }

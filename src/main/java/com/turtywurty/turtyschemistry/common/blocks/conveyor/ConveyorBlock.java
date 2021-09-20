@@ -23,89 +23,90 @@ import net.minecraftforge.common.IExtensibleEnum;
 
 public class ConveyorBlock extends Block {
 
-	public enum CornerDirection implements IStringSerializable, IExtensibleEnum {
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-		LEFT("left"), RIGHT("right"), NONE("none");
+    public static final BooleanProperty SLOPE = BooleanProperty.create("slope");
+    public static final EnumProperty<CornerDirection> LEFT_RIGHT = EnumProperty.create("left_right",
+            CornerDirection.class);
 
-		public static CornerDirection create(final String name) {
-			throw new IllegalStateException("Enum not extended: " + name);
-		}
+    public ConveyorBlock(final Properties properties) {
+        super(properties);
+        setDefaultState(this.stateContainer.getBaseState().with(FACING, Direction.NORTH).with(SLOPE, false)
+                .with(LEFT_RIGHT, CornerDirection.NONE));
+    }
 
-		private String name;
+    @Override
+    public TileEntity createTileEntity(final BlockState state, final IBlockReader world) {
+        // TODO: Create TileEntity
+        return super.createTileEntity(state, world);
+    }
 
-		CornerDirection(final String nameIn) {
-			this.name = nameIn;
-		}
+    @Override
+    public BlockState getStateForPlacement(final BlockItemUseContext context) {
+        return getDefaultState().with(FACING, context.getPlacementHorizontalFacing().getOpposite());
+    }
 
-		@Override
-		public String getString() {
-			return this.name;
-		}
-	}
+    @Override
+    public boolean hasTileEntity(final BlockState state) {
+        return true;
+    }
 
-	public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
-	public static final BooleanProperty SLOPE = BooleanProperty.create("slope");
+    @SuppressWarnings("deprecation")
+    @Override
+    public BlockState mirror(final BlockState state, final Mirror mirrorIn) {
+        return state.rotate(mirrorIn.toRotation(state.get(FACING)));
+    }
 
-	public static final EnumProperty<CornerDirection> LEFT_RIGHT = EnumProperty.create("left_right",
-			CornerDirection.class);
+    @Override
+    public void onBlockPlacedBy(final World worldIn, final BlockPos pos, final BlockState state,
+            final LivingEntity placer, final ItemStack stack) {
+        super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+    }
 
-	public ConveyorBlock(final Properties properties) {
-		super(properties);
-		setDefaultState(this.stateContainer.getBaseState().with(FACING, Direction.NORTH).with(SLOPE, false)
-				.with(LEFT_RIGHT, CornerDirection.NONE));
-	}
+    @Override
+    public void onReplaced(final BlockState state, final World worldIn, final BlockPos pos,
+            final BlockState newState, final boolean isMoving) {
+        if (state.hasTileEntity() && (state.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
+            worldIn.removeTileEntity(pos);
+        }
+    }
 
-	@Override
-	public TileEntity createTileEntity(final BlockState state, final IBlockReader world) {
-		// TODO: Create TileEntity
-		return super.createTileEntity(state, world);
-	}
+    @Override
+    public BlockState rotate(final BlockState state, final Rotation rot) {
+        return state.with(FACING, rot.rotate(state.get(FACING)));
+    }
 
-	@Override
-	protected void fillStateContainer(final Builder<Block, BlockState> builder) {
-		super.fillStateContainer(builder);
-		builder.add(FACING, SLOPE, LEFT_RIGHT);
-	}
+    @SuppressWarnings("deprecation")
+    @Override
+    public BlockState updatePostPlacement(final BlockState stateIn, final Direction facing,
+            final BlockState facingState, final IWorld worldIn, final BlockPos currentPos,
+            final BlockPos facingPos) {
+        return super.updatePostPlacement(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+    }
 
-	@Override
-	public BlockState getStateForPlacement(final BlockItemUseContext context) {
-		return getDefaultState().with(FACING, context.getPlacementHorizontalFacing().getOpposite());
-	}
+    @Override
+    protected void fillStateContainer(final Builder<Block, BlockState> builder) {
+        super.fillStateContainer(builder);
+        builder.add(FACING, SLOPE, LEFT_RIGHT);
+    }
 
-	@Override
-	public boolean hasTileEntity(final BlockState state) {
-		return true;
-	}
+    public enum CornerDirection implements IStringSerializable, IExtensibleEnum {
 
-	@SuppressWarnings("deprecation")
-	@Override
-	public BlockState mirror(final BlockState state, final Mirror mirrorIn) {
-		return state.rotate(mirrorIn.toRotation(state.get(FACING)));
-	}
+        LEFT("left"), RIGHT("right"), NONE("none");
 
-	@Override
-	public void onBlockPlacedBy(final World worldIn, final BlockPos pos, final BlockState state,
-			final LivingEntity placer, final ItemStack stack) {
-		super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
-	}
+        private String name;
 
-	@Override
-	public void onReplaced(final BlockState state, final World worldIn, final BlockPos pos, final BlockState newState,
-			final boolean isMoving) {
-		if (state.hasTileEntity() && (state.getBlock() != newState.getBlock() || !newState.hasTileEntity())) {
-			worldIn.removeTileEntity(pos);
-		}
-	}
+        CornerDirection(final String nameIn) {
+            this.name = nameIn;
+        }
 
-	@Override
-	public BlockState rotate(final BlockState state, final Rotation rot) {
-		return state.with(FACING, rot.rotate(state.get(FACING)));
-	}
+        public static CornerDirection create(final String name) {
+            throw new IllegalStateException("Enum not extended: " + name);
+        }
 
-	@SuppressWarnings("deprecation")
-	@Override
-	public BlockState updatePostPlacement(final BlockState stateIn, final Direction facing,
-			final BlockState facingState, final IWorld worldIn, final BlockPos currentPos, final BlockPos facingPos) {
-		return super.updatePostPlacement(stateIn, facing, facingState, worldIn, currentPos, facingPos);
-	}
+        @Override
+        public String getString() {
+            return this.name;
+        }
+    }
 }
