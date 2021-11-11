@@ -14,6 +14,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.item.FlintAndSteelItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.DirectionProperty;
@@ -162,6 +163,11 @@ public class BunsenBurnerBlock extends Block {
     @Override
     public ActionResultType onBlockActivated(final BlockState state, final World worldIn, final BlockPos pos,
             final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
+    	if(player.getHeldItemMainhand().getItem() instanceof FlintAndSteelItem && !state.get(HAS_GAS)) {
+        	worldIn.setBlockState(pos, state.with(HAS_GAS, true), BlockFlags.BLOCK_UPDATE);
+        	return ActionResultType.SUCCESS;
+        }
+    	
         if (player.isCrouching() && player.getHeldItemMainhand().isEmpty()) {
             worldIn.setBlockState(pos,
                     state.with(STRENGTH, state.get(STRENGTH) + 1 >= 9 ? 0 : state.get(STRENGTH) + 1),
@@ -224,6 +230,7 @@ public class BunsenBurnerBlock extends Block {
                 }
             }
         }
+        
         return ActionResultType.SUCCESS;
     }
 

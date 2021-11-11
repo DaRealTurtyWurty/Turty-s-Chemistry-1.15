@@ -30,7 +30,7 @@ public class BunsenBurnerTileEntity extends InventoryTile {
 
     private int completionTime;
 
-    private int maxTime;
+    private int maxTime = 500;
 
     public BunsenBurnerTileEntity() {
         this(TileEntityTypeInit.BUNSEN_BURNER.get());
@@ -66,7 +66,7 @@ public class BunsenBurnerTileEntity extends InventoryTile {
     }
 
     public boolean canStartBurning() {
-        return !getBlockState().get(BunsenBurnerBlock.HAS_GAS) && this.completionTime < this.maxTime;
+        return getBlockState().get(BunsenBurnerBlock.HAS_GAS) && this.completionTime < this.maxTime;
     }
 
     public int getCompletionTime() {
